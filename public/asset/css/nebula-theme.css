@@ -1,0 +1,552 @@
+/* Nebula Galaxy Background Theme */
+:root {
+    --nebula-primary: #1a0b2e;
+    --nebula-secondary: #16213e;
+    --nebula-accent: #0f3460;
+    --nebula-purple: #533483;
+    --nebula-pink: #e94560;
+    --nebula-cyan: #0f4c75;
+    --nebula-gold: #ffd700;
+    --nebula-silver: #c0c0c0;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Body dengan background nebula */
+body {
+    background: linear-gradient(135deg, var(--nebula-primary) 0%, var(--nebula-secondary) 25%, var(--nebula-accent) 50%, var(--nebula-purple) 75%, var(--nebula-primary) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated nebula background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 100%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 0% 0%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    animation: nebulaFloat 30s ease-in-out infinite;
+    z-index: -2;
+}
+
+/* Animated stars */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(2px 2px at 160px 30px, #ddd, transparent),
+        radial-gradient(1px 1px at 200px 90px, #fff, transparent),
+        radial-gradient(1px 1px at 240px 50px, rgba(255,255,255,0.7), transparent),
+        radial-gradient(2px 2px at 280px 20px, #eee, transparent),
+        radial-gradient(1px 1px at 320px 70px, #fff, transparent),
+        radial-gradient(1px 1px at 360px 40px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(2px 2px at 400px 80px, #ddd, transparent),
+        radial-gradient(1px 1px at 440px 30px, #fff, transparent),
+        radial-gradient(1px 1px at 480px 60px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(2px 2px at 520px 10px, #eee, transparent),
+        radial-gradient(1px 1px at 560px 90px, #fff, transparent);
+    background-repeat: repeat;
+    background-size: 600px 100px;
+    animation: twinkle 5s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+/* Animasi nebula - lebih tenang */
+@keyframes nebulaFloat {
+    0%, 100% {
+        transform: translate(0px, 0px) rotate(0deg);
+        opacity: 0.8;
+    }
+    33% {
+        transform: translate(15px, -15px) rotate(60deg);
+        opacity: 0.6;
+    }
+    66% {
+        transform: translate(-10px, 10px) rotate(120deg);
+        opacity: 0.9;
+    }
+}
+
+/* Animasi bintang berkedip - halus tanpa zoom */
+@keyframes twinkle {
+    0% {
+        opacity: 0.2;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+}
+
+/* Glass Card Effect */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    box-shadow: 
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 
+        0 12px 40px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Glass Card Header */
+.glass-card .card-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: 15px 15px 0 0 !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Glass Card Body */
+.glass-card .card-body {
+    background: transparent;
+}
+
+/* Text yang menyesuaikan dengan background nebula */
+.glass-card h1,
+.glass-card h2,
+.glass-card h3,
+.glass-card h4,
+.glass-card h5,
+.glass-card h6 {
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+}
+
+.glass-card p,
+.glass-card span,
+.glass-card small {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card .text-primary {
+    color: var(--nebula-gold) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card .text-secondary {
+    color: var(--nebula-silver) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Chart container dengan glass effect */
+.glass-chart {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Statistik cards dengan glass effect */
+.stat-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 
+        0 12px 40px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.stat-card img {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.stat-card h1 {
+    color: var(--nebula-gold);
+    font-size: 3rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 10px 0;
+}
+
+.stat-card .fs-5 {
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card .small {
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Sidebar dengan glass effect */
+.sidebar {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-right: 1px solid var(--glass-border);
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+    color: var(--nebula-gold) !important;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.sidebar .nav-link.active {
+    color: var(--nebula-gold) !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+}
+
+/* Topbar dengan glass effect */
+.navbar {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Footer dengan glass effect */
+footer {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid var(--glass-border);
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Button dengan glass effect */
+.btn-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--nebula-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--glass-shadow);
+}
+
+/* Modal dengan glass effect */
+.modal-content {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px var(--glass-shadow);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--glass-border);
+}
+
+.modal-title {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Scroll to top button dengan glass effect */
+.scroll-to-top {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--nebula-gold) !important;
+    box-shadow: 0 4px 15px var(--glass-shadow);
+}
+
+.scroll-to-top:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-card h1 {
+        font-size: 2rem;
+    }
+    
+    .glass-card {
+        margin-bottom: 15px;
+    }
+}
+
+/* Loading indicator dengan glass effect */
+#loadingIndicator {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Utility classes untuk text */
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.text-white-75 {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.border-white-25 {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Chart canvas background */
+canvas {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px;
+}
+
+/* Table dengan glass effect */
+.table {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table th {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    border-color: var(--glass-border);
+}
+
+.table td {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    border-color: var(--glass-border);
+}
+
+/* Form elements dengan glass effect */
+.form-control {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--nebula-gold);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+    color: #ffffff;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Select dengan glass effect */
+.form-select {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    border-radius: 10px;
+}
+
+.form-select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--nebula-gold);
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+    color: #ffffff;
+}
+
+/* Alert dengan glass effect */
+.alert {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.alert-success {
+    border-color: rgba(40, 167, 69, 0.5);
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.alert-danger {
+    border-color: rgba(220, 53, 69, 0.5);
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.alert-warning {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.alert-info {
+    border-color: rgba(23, 162, 184, 0.5);
+    background: rgba(23, 162, 184, 0.1);
+}
+
+/* Badge dengan glass effect */
+.badge {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Progress bar dengan glass effect */
+.progress {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    height: 20px;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, var(--nebula-gold), var(--nebula-pink));
+    border-radius: 10px;
+}
+
+/* Pagination dengan glass effect */
+.pagination .page-link {
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pagination .page-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--nebula-gold);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--nebula-gold);
+    border-color: var(--nebula-gold);
+    color: var(--nebula-primary);
+}
+
+/* Breadcrumb dengan glass effect */
+.breadcrumb {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 15px 20px;
+}
+
+.breadcrumb-item {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.breadcrumb-item.active {
+    color: var(--nebula-gold);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Dropdown dengan glass effect */
+.dropdown-menu {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px var(--glass-shadow);
+}
+
+.dropdown-item {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--nebula-gold);
+}
+
+.dropdown-divider {
+    border-color: var(--glass-border);
+}

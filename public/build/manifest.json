@@ -1,0 +1,39 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-0c13054f.css",
+    "isEntry": true,
+    "src": "resources/css/app.css"
+  },
+  "resources/css/design-system.css": {
+    "file": "assets/design-system-1b1f8ec7.css",
+    "isEntry": true,
+    "src": "resources/css/design-system.css"
+  },
+  "resources/css/galaxy-theme.css": {
+    "file": "assets/galaxy-theme-43210177.css",
+    "isEntry": true,
+    "src": "resources/css/galaxy-theme.css"
+  },
+  "resources/css/stars.css": {
+    "file": "assets/stars-290a7fa4.css",
+    "isEntry": true,
+    "src": "resources/css/stars.css"
+  },
+  "resources/css/tailwind.css": {
+    "file": "assets/tailwind-179954eb.css",
+    "isEntry": true,
+    "src": "resources/css/tailwind.css"
+  },
+  "resources/js/app.css": {
+    "file": "assets/app-68440be1.css",
+    "src": "resources/js/app.css"
+  },
+  "resources/js/app.js": {
+    "css": [
+      "assets/app-68440be1.css"
+    ],
+    "file": "assets/app-776845ad.js",
+    "isEntry": true,
+    "src": "resources/js/app.js"
+  }
+}

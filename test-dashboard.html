@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Assessment - Super Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="public/css/superadmin-dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="logo-text">Terra Assessment</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- Notification Dropdown -->
+            <div class="notification-container">
+                <button class="notification-btn" onclick="toggleNotificationDropdown()">
+                    <i class="ph-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="notification-header">
+                        <h4>Notifikasi</h4>
+                        <div class="notification-actions">
+                            <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
+                                <i class="ph-check-double"></i>
+                            </button>
+                            <a href="#" class="view-all-btn" title="Lihat Semua">
+                                <i class="ph-list"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-loading">
+                            <i class="ph-spinner ph-spin"></i>
+                            <span>Memuat notifikasi...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-container">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
+                    <div class="user-avatar">SA</div>
+                    <div class="user-info">
+                        <div class="user-name">Super Admin</div>
+                        <div class="user-role">Super Admin</div>
+                    </div>
+                    <i class="fas fa-chevron-down dropdown-icon"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">SA</div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">Super Admin</div>
+                            <div class="profile-dropdown-role">Super Admin</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="#" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <a href="#" class="profile-dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="#" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">Menu Utama</div>
+                <a href="#" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="menu-item-text">Push Notifikasi</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-wifi"></i>
+                    <span class="menu-item-text">Manajemen IoT</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Manajemen</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-book"></i>
+                    <span class="menu-item-text">Manajemen Tugas</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-bullseye"></i>
+                    <span class="menu-item-text">Manajemen Ujian</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-item-text">Manajemen Pengguna</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-item-text">Manajemen Kelas</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-database"></i>
+                    <span class="menu-item-text">Mata Pelajaran</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-item-text">Manajemen Materi</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Analitik</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="menu-item-text">Laporan</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Pengaturan</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-item-text">Pengaturan</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-item-text">Bantuan</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-crown"></i>
+                Super Admin Dashboard
+            </h1>
+            <p class="page-description">Kontrol penuh atas sistem Terra Assessment</p>
+        </div>
+
+        <div class="welcome-banner">
+            <div class="welcome-icon">
+                <i class="fas fa-exclamation"></i>
+            </div>
+            <div class="welcome-content">
+                <h2 class="welcome-title">Selamat datang, Super Admin!</h2>
+                <p class="welcome-description">Sebagai Super Admin, Anda memiliki akses penuh untuk mengelola seluruh sistem.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Row 1 -->
+            <a href="#" class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="card-title">Push Notifikasi</h3>
+                <p class="card-description">Kirim notifikasi ke semua pengguna, kelas, atau pengguna spesifik</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <h3 class="card-title">Manajemen IoT</h3>
+                <p class="card-description">Daftarkan perangkat IoT, test konektivitas, dan monitor data sensor</p>
+            </a>
+
+            <!-- Row 2 -->
+            <a href="#" class="card">
+                <div class="card-icon purple">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3 class="card-title">Manajemen Tugas</h3>
+                <p class="card-description">Kelola tugas per kelas dengan kategorisasi dan tingkat kesulitan</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon orange">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3 class="card-title">Manajemen Ujian</h3>
+                <p class="card-description">Buat, edit, dan kelola ujian dengan fitur lengkap</p>
+            </a>
+
+            <!-- Row 3 -->
+            <a href="#" class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="card-title">Manajemen Pengguna</h3>
+                <p class="card-description">Kelola semua pengguna sistem (Admin, Guru, Siswa)</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="card-title">Manajemen Kelas</h3>
+                <p class="card-description">Buat dan kelola semua kelas di sistem</p>
+            </a>
+
+            <!-- Row 4 -->
+            <a href="#" class="card">
+                <div class="card-icon purple">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3 class="card-title">Mata Pelajaran</h3>
+                <p class="card-description">Tambah dan kelola mata pelajaran</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-server"></i>
+                </div>
+                <h3 class="card-title">Tugas IoT</h3>
+                <p class="card-description">Buat dan kelola tugas penelitian IoT</p>
+            </a>
+
+            <!-- Row 5 -->
+            <a href="#" class="card">
+                <div class="card-icon purple">
+                    <i class="fas fa-wave-square"></i>
+                </div>
+                <h3 class="card-title">Penelitian IoT</h3>
+                <p class="card-description">Lihat hasil penelitian IoT siswa</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="card-title">Materi</h3>
+                <p class="card-description">Kelola materi pembelajaran dan konten</p>
+            </a>
+
+            <!-- Row 6 -->
+            <a href="#" class="card">
+                <div class="card-icon red">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="card-title">Ujian</h3>
+                <p class="card-description">Kelola semua ujian sistem</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon red">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="card-title">Laporan</h3>
+                <p class="card-description">Lihat laporan dan analitik sistem</p>
+            </a>
+        </div>
+
+        <div class="system-info">
+            <div class="info-section">
+                <h3 class="info-title">Hak Akses Super Admin</h3>
+                <ul class="info-list">
+                    <li>Kelola semua pengguna sistem</li>
+                    <li>Akses ke semua fitur aplikasi</li>
+                    <li>Konfigurasi sistem global</li>
+                    <li>Monitoring aktivitas pengguna</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3 class="info-title">Tanggung Jawab</h3>
+                <ul class="info-list">
+                    <li>Memastikan keamanan sistem</li>
+                    <li>Mengelola data pengguna</li>
+                    <li>Konfigurasi aplikasi</li>
+                    <li>Backup dan maintenance</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (window.innerWidth <= 1024) {
+                // Mobile behavior
+                sidebar.classList.toggle('collapsed');
+                mobileOverlay.classList.toggle('active');
+                mainContent.classList.toggle('sidebar-open');
+            } else {
+                // Desktop behavior
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.add('collapsed');
+            mobileOverlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-open');
+        }
+
+        // Notification functionality
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Profile dropdown functionality
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const notificationContainer = document.querySelector('.notification-container');
+            const profileContainer = document.querySelector('.profile-container');
+            
+            if (!notificationContainer.contains(event.target)) {
+                document.getElementById('notificationDropdown').style.display = 'none';
+            }
+            
+            if (!profileContainer.contains(event.target)) {
+                document.getElementById('profileDropdown').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

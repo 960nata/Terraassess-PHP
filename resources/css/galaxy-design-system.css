@@ -1,0 +1,700 @@
+/* ========================================
+   GALAXY DESIGN SYSTEM v3.0
+   Modern UI Components with Galaxy Theme
+   ======================================== */
+
+/* ========================================
+   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   ======================================== */
+:root {
+  /* Galaxy Colors */
+  --galaxy-primary: #8b5cf6;        /* purple-500 */
+  --galaxy-secondary: #3b82f6;      /* blue-500 */
+  --galaxy-accent: #ec4899;         /* pink-500 */
+  --galaxy-success: #10b981;        /* emerald-500 */
+  --galaxy-warning: #f59e0b;        /* amber-500 */
+  --galaxy-error: #ef4444;          /* red-500 */
+
+  /* Neutral Palette */
+  --white: #ffffff;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --black: #000000;
+
+  /* Typography Scale */
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-h4: 18px;
+  --text-body: 16px;
+  --text-small: 14px;
+  --text-caption: 12px;
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Border Radius */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-base: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ========================================
+   DROPDOWN ITEMS
+   ======================================== */
+.galaxy-dropdown-item {
+  height: 44px;
+  padding: 12px 16px;
+  color: var(--gray-700);
+  font-size: 14px;
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-base);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.galaxy-dropdown-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.galaxy-dropdown-item:active {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.galaxy-dropdown-item-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   PRIMARY BUTTON
+   ======================================== */
+.galaxy-btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: var(--font-medium);
+  height: 40px;
+  min-width: 120px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-base);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.galaxy-btn-primary:hover {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+}
+
+.galaxy-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   SECONDARY BUTTON
+   ======================================== */
+.galaxy-btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: var(--font-medium);
+  height: 40px;
+  transition: all var(--transition-base);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.galaxy-btn-secondary:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* ========================================
+   GHOST BUTTON
+   ======================================== */
+.galaxy-btn-ghost {
+  background: transparent;
+  color: var(--gray-400);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: var(--font-medium);
+  height: 36px;
+  transition: all var(--transition-fast);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.galaxy-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* ========================================
+   CARD COMPONENTS
+   ======================================== */
+.galaxy-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin: 16px 0;
+  transition: all var(--transition-base);
+}
+
+.galaxy-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.02);
+}
+
+.galaxy-card-header {
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.galaxy-card-title {
+  font-size: 18px;
+  font-weight: var(--font-semibold);
+  color: white;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.galaxy-card-subtitle {
+  font-size: 14px;
+  color: var(--gray-400);
+  margin: 4px 0 0 0;
+}
+
+.galaxy-card-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+}
+
+.galaxy-card-content {
+  padding: 16px 0;
+  color: var(--gray-300);
+  line-height: 1.6;
+}
+
+/* ========================================
+   INPUT COMPONENTS
+   ======================================== */
+.galaxy-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  height: 48px;
+  color: white;
+  font-size: 14px;
+  transition: all var(--transition-base);
+  width: 100%;
+}
+
+.galaxy-input::placeholder {
+  color: var(--gray-400);
+}
+
+.galaxy-input:focus {
+  outline: none;
+  border-color: var(--galaxy-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* ========================================
+   TEXTAREA COMPONENTS
+   ======================================== */
+.galaxy-textarea {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  min-height: 120px;
+  color: white;
+  font-size: 14px;
+  resize: vertical;
+  transition: all var(--transition-base);
+  width: 100%;
+  font-family: inherit;
+}
+
+.galaxy-textarea::placeholder {
+  color: var(--gray-400);
+}
+
+.galaxy-textarea:focus {
+  outline: none;
+  border-color: var(--galaxy-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* ========================================
+   SELECT COMPONENTS
+   ======================================== */
+.galaxy-select-trigger {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  height: 48px;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  width: 100%;
+}
+
+.galaxy-select-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.galaxy-select-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow: auto;
+  z-index: 50;
+  animation: fadeInScale 200ms ease;
+}
+
+.galaxy-select-item {
+  padding: 12px 16px;
+  color: var(--gray-700);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.galaxy-select-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.galaxy-select-item[data-selected="true"] {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+/* ========================================
+   TAB COMPONENTS
+   ======================================== */
+.galaxy-tab-list {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+}
+
+.galaxy-tab-trigger {
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: var(--font-medium);
+  color: var(--gray-400);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.galaxy-tab-trigger[data-active="true"] {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.galaxy-tab-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.galaxy-tab-content {
+  padding: 24px 0;
+  animation: fadeIn 200ms ease;
+}
+
+/* ========================================
+   BADGE COMPONENTS
+   ======================================== */
+.galaxy-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: var(--font-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.galaxy-badge-default {
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
+.galaxy-badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.galaxy-badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.galaxy-badge-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.galaxy-badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.galaxy-badge-galaxy {
+  background: #e9d5ff;
+  color: #6b21a8;
+}
+
+/* ========================================
+   GRID COMPONENTS
+   ======================================== */
+.galaxy-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.galaxy-grid-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-base);
+}
+
+.galaxy-grid-item:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ========================================
+   NOTIFICATION COMPONENTS
+   ======================================== */
+.galaxy-notification-bell {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.galaxy-notification-bell:hover {
+  color: white;
+}
+
+.galaxy-notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: var(--galaxy-error);
+  color: white;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+.galaxy-notification-dropdown {
+  width: 320px;
+  max-height: 400px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideDown 200ms ease;
+  z-index: 50;
+}
+
+/* ========================================
+   LOADING COMPONENTS
+   ======================================== */
+.galaxy-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid var(--galaxy-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.galaxy-skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-base);
+  animation: pulse 2s ease-in-out infinite;
+  height: 20px;
+  width: 100%;
+}
+
+/* ========================================
+   RESPONSIVE STYLES
+   ======================================== */
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .galaxy-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .galaxy-card {
+    padding: 16px;
+    margin: 8px 0;
+  }
+  
+  .galaxy-btn-primary,
+  .galaxy-btn-secondary {
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .galaxy-input,
+  .galaxy-select-trigger {
+    height: 44px;
+  }
+  
+  .galaxy-tab-trigger {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .galaxy-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 20px;
+  }
+  
+  .galaxy-card {
+    padding: 20px;
+  }
+  
+  .galaxy-tab-trigger {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 1025px) {
+  .galaxy-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px;
+  }
+  
+  .galaxy-tab-trigger {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.galaxy-fade-in {
+  animation: fadeIn 300ms ease;
+}
+
+.galaxy-scale-in {
+  animation: fadeInScale 200ms ease;
+}
+
+.galaxy-slide-up {
+  animation: slideDown 300ms ease;
+}
+
+.galaxy-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.galaxy-bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+/* ========================================
+   DARK MODE SUPPORT
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+  .galaxy-card {
+    background: rgba(17, 24, 39, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .galaxy-input,
+  .galaxy-textarea,
+  .galaxy-select-trigger {
+    background: rgba(17, 24, 39, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .galaxy-select-content {
+    background: rgba(17, 24, 39, 0.95);
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+  
+  .galaxy-tab-list {
+    background: rgba(17, 24, 39, 0.8);
+  }
+}

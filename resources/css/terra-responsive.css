@@ -1,0 +1,463 @@
+/* ========================================
+   TERRA RESPONSIVE DESIGN SYSTEM
+   Mobile-first responsive utilities
+   ======================================== */
+
+/* ========================================
+   BREAKPOINTS
+   ======================================== */
+/* 
+   sm: 640px
+   md: 768px
+   lg: 1024px
+   xl: 1280px
+   2xl: 1536px
+*/
+
+/* ========================================
+   MOBILE OPTIMIZATIONS
+   ======================================== */
+
+/* Touch-friendly button sizes */
+@media (max-width: 768px) {
+    .terra-btn {
+        min-height: 44px; /* iOS recommended touch target */
+        padding: var(--space-3) var(--space-6);
+    }
+    
+    .terra-btn-sm {
+        min-height: 40px;
+        padding: var(--space-2) var(--space-4);
+    }
+    
+    .terra-btn-lg {
+        min-height: 48px;
+        padding: var(--space-4) var(--space-8);
+    }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 1024px) {
+    .terra-nav-item {
+        padding: var(--space-4) var(--space-5);
+        font-size: var(--font-size-base);
+    }
+    
+    /* Mobile sidebar overlay */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* ========================================
+   RESPONSIVE GRID SYSTEM
+   ======================================== */
+
+/* Auto-responsive grid */
+.terra-grid-responsive {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Mobile-first grid utilities */
+.terra-grid-mobile {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    .terra-grid-mobile {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-6);
+    }
+}
+
+@media (min-width: 1024px) {
+    .terra-grid-mobile {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .terra-grid-mobile {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ========================================
+   RESPONSIVE TYPOGRAPHY
+   ======================================== */
+
+/* Fluid typography */
+.terra-text-fluid {
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    line-height: 1.5;
+}
+
+.terra-heading-fluid {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    line-height: 1.2;
+}
+
+/* Mobile typography adjustments */
+@media (max-width: 768px) {
+    .terra-heading-1 {
+        font-size: var(--font-size-4xl);
+    }
+    
+    .terra-heading-2 {
+        font-size: var(--font-size-3xl);
+    }
+    
+    .terra-heading-3 {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .terra-text-large {
+        font-size: var(--font-size-base);
+    }
+}
+
+/* ========================================
+   RESPONSIVE SPACING
+   ======================================== */
+
+/* Mobile spacing adjustments */
+@media (max-width: 768px) {
+    .terra-container {
+        padding: 0 var(--space-3);
+    }
+    
+    .terra-card-body {
+        padding: var(--space-4);
+    }
+    
+    .terra-card-header,
+    .terra-card-footer {
+        padding: var(--space-4);
+    }
+    
+    /* Reduce margins on mobile */
+    .terra-heading-1,
+    .terra-heading-2,
+    .terra-heading-3,
+    .terra-heading-4,
+    .terra-heading-5,
+    .terra-heading-6 {
+        margin-bottom: var(--space-3);
+    }
+}
+
+/* ========================================
+   RESPONSIVE FORMS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .terra-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .terra-form-group {
+        margin-bottom: var(--space-4);
+    }
+}
+
+/* ========================================
+   RESPONSIVE MODALS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .terra-modal {
+        margin: var(--space-4);
+        max-height: calc(100vh - 2rem);
+        width: calc(100% - 2rem);
+    }
+    
+    .terra-modal-content {
+        padding: var(--space-4);
+    }
+}
+
+/* ========================================
+   RESPONSIVE TABLES
+   ======================================== */
+
+@media (max-width: 768px) {
+    .terra-table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .terra-table {
+        min-width: 600px;
+    }
+    
+    /* Stack table cells on very small screens */
+    @media (max-width: 480px) {
+        .terra-table-mobile-stack {
+            display: block;
+        }
+        
+        .terra-table-mobile-stack thead {
+            display: none;
+        }
+        
+        .terra-table-mobile-stack tbody,
+        .terra-table-mobile-stack tr,
+        .terra-table-mobile-stack td {
+            display: block;
+            width: 100%;
+        }
+        
+        .terra-table-mobile-stack tr {
+            border: 1px solid var(--secondary-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+            padding: var(--space-4);
+        }
+        
+        .terra-table-mobile-stack td {
+            border: none;
+            padding: var(--space-2) 0;
+            text-align: left;
+        }
+        
+        .terra-table-mobile-stack td:before {
+            content: attr(data-label) ": ";
+            font-weight: var(--font-weight-semibold);
+            color: var(--secondary-600);
+        }
+    }
+}
+
+/* ========================================
+   RESPONSIVE CARDS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .terra-card {
+        margin-bottom: var(--space-4);
+    }
+    
+    .terra-card:hover {
+        transform: none; /* Disable hover effects on mobile */
+    }
+}
+
+/* ========================================
+   RESPONSIVE NAVIGATION
+   ======================================== */
+
+/* Mobile navigation drawer */
+@media (max-width: 1024px) {
+    .terra-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 280px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 50;
+        overflow-y: auto;
+    }
+    
+    .terra-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .terra-main-content {
+        margin-left: 0;
+    }
+}
+
+/* Mobile header */
+@media (max-width: 768px) {
+    .terra-header {
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .terra-header .terra-logo {
+        font-size: var(--font-size-lg);
+    }
+    
+    .terra-header .terra-nav {
+        display: none;
+    }
+}
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   ======================================== */
+
+/* Show/hide utilities */
+.terra-mobile-only {
+    display: block;
+}
+
+.terra-desktop-only {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .terra-mobile-only {
+        display: none;
+    }
+    
+    .terra-desktop-only {
+        display: block;
+    }
+}
+
+/* Responsive text alignment */
+@media (max-width: 768px) {
+    .terra-text-center-mobile {
+        text-align: center;
+    }
+    
+    .terra-text-left-mobile {
+        text-align: left;
+    }
+}
+
+/* ========================================
+   RESPONSIVE IMAGES
+   ======================================== */
+
+.terra-image-responsive {
+    max-width: 100%;
+    height: auto;
+}
+
+.terra-image-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ========================================
+   RESPONSIVE ANIMATIONS
+   ======================================== */
+
+/* Reduce animations on mobile for better performance */
+@media (max-width: 768px) {
+    .terra-animate-fade-in,
+    .terra-animate-slide-in {
+        animation: none;
+    }
+    
+    /* Disable hover effects on touch devices */
+    .terra-card:hover,
+    .terra-btn:hover {
+        transform: none;
+    }
+}
+
+/* ========================================
+   RESPONSIVE ACCESSIBILITY
+   ======================================== */
+
+/* Focus indicators for keyboard navigation */
+@media (prefers-reduced-motion: no-preference) {
+    .terra-focus-visible:focus-visible {
+        outline: 2px solid var(--primary-500);
+        outline-offset: 2px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .terra-card {
+        border: 2px solid var(--secondary-300);
+    }
+    
+    .terra-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ========================================
+   RESPONSIVE PRINT STYLES
+   ======================================== */
+
+@media print {
+    .terra-sidebar,
+    .terra-header,
+    .terra-btn,
+    .terra-modal {
+        display: none !important;
+    }
+    
+    .terra-main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .terra-card {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+    }
+    
+    .terra-text-secondary {
+        color: #000 !important;
+    }
+}
+
+/* ========================================
+   RESPONSIVE DARK MODE
+   ======================================== */
+
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+    .terra-mobile-dark {
+        background-color: var(--secondary-900);
+        color: var(--secondary-100);
+    }
+    
+    .terra-mobile-dark .terra-card {
+        background-color: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+}
+
+/* ========================================
+   RESPONSIVE PERFORMANCE
+   ======================================== */
+
+/* Optimize for mobile performance */
+@media (max-width: 768px) {
+    /* Reduce box shadows on mobile */
+    .terra-card {
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Simplify gradients on mobile */
+    .terra-btn-primary {
+        background-color: var(--primary-600);
+        background-image: none;
+    }
+    
+    /* Reduce backdrop blur on mobile */
+    .terra-glass {
+        backdrop-filter: none;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+}
+

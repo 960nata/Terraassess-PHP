@@ -1,0 +1,640 @@
+/* ========================================
+   TERRA ACCESSIBILITY & USABILITY
+   WCAG 2.1 AA compliant styles
+   ======================================== */
+
+/* ========================================
+   FOCUS MANAGEMENT
+   ======================================== */
+
+/* Skip links for keyboard navigation */
+.terra-skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--primary-600);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+    font-weight: var(--font-weight-medium);
+}
+
+.terra-skip-link:focus {
+    top: 6px;
+}
+
+/* Focus indicators */
+.terra-focus-visible:focus-visible,
+.terra-btn:focus-visible,
+.terra-input:focus-visible,
+.terra-nav-item:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--primary-100);
+}
+
+/* Remove default focus for mouse users */
+.terra-btn:focus:not(:focus-visible),
+.terra-input:focus:not(:focus-visible),
+.terra-nav-item:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+}
+
+/* ========================================
+   COLOR CONTRAST & VISIBILITY
+   ======================================== */
+
+/* Ensure sufficient color contrast */
+.terra-text-secondary {
+    color: var(--secondary-700); /* 4.5:1 contrast ratio */
+}
+
+.terra-text-muted {
+    color: var(--secondary-600); /* 4.5:1 contrast ratio */
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .terra-card {
+        border: 2px solid var(--secondary-300);
+    }
+    
+    .terra-btn {
+        border: 2px solid currentColor;
+    }
+    
+    .terra-input {
+        border: 2px solid var(--secondary-400);
+    }
+    
+    .terra-nav-item {
+        border: 1px solid var(--secondary-300);
+    }
+}
+
+/* ========================================
+   REDUCED MOTION SUPPORT
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .terra-animate-fade-in,
+    .terra-animate-slide-in,
+    .terra-animate-scale-in {
+        animation: none !important;
+    }
+    
+    .terra-card:hover {
+        transform: none !important;
+    }
+}
+
+/* ========================================
+   SCREEN READER SUPPORT
+   ======================================== */
+
+/* Screen reader only content */
+.terra-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Screen reader announcements */
+.terra-announcements {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ========================================
+   KEYBOARD NAVIGATION
+   ======================================== */
+
+/* Ensure all interactive elements are keyboard accessible */
+.terra-btn,
+.terra-nav-item,
+.terra-card[tabindex],
+.terra-input,
+.terra-select,
+.terra-textarea {
+    position: relative;
+}
+
+/* Keyboard navigation indicators */
+.terra-keyboard-nav .terra-btn:focus,
+.terra-keyboard-nav .terra-nav-item:focus,
+.terra-keyboard-nav .terra-card:focus {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   FORM ACCESSIBILITY
+   ======================================== */
+
+/* Required field indicators */
+.terra-input[required] + .terra-label::after,
+.terra-label:has(+ .terra-input[required])::after {
+    content: " *";
+    color: var(--error-600);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Error states */
+.terra-input[aria-invalid="true"] {
+    border-color: var(--error-500);
+    box-shadow: 0 0 0 3px var(--error-100);
+}
+
+.terra-input[aria-invalid="true"]:focus {
+    border-color: var(--error-500);
+    box-shadow: 0 0 0 3px var(--error-200);
+}
+
+/* Success states */
+.terra-input[aria-invalid="false"] {
+    border-color: var(--success-500);
+}
+
+/* Field descriptions */
+.terra-field-description {
+    font-size: var(--font-size-sm);
+    color: var(--secondary-600);
+    margin-top: var(--space-1);
+}
+
+/* ========================================
+   MODAL ACCESSIBILITY
+   ======================================== */
+
+.terra-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+}
+
+.terra-modal[aria-hidden="true"] {
+    display: none;
+}
+
+.terra-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.terra-modal-content {
+    position: relative;
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+/* ========================================
+   DROPDOWN ACCESSIBILITY
+   ======================================== */
+
+.terra-dropdown {
+    position: relative;
+}
+
+.terra-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-dropdown);
+    min-width: 200px;
+}
+
+.terra-dropdown-menu[aria-hidden="true"] {
+    display: none;
+}
+
+.terra-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border: none;
+    background: none;
+    color: var(--secondary-700);
+    text-decoration: none;
+    transition: background-color var(--transition-fast);
+}
+
+.terra-dropdown-item:hover,
+.terra-dropdown-item:focus {
+    background-color: var(--secondary-50);
+    color: var(--secondary-900);
+    outline: none;
+}
+
+.terra-dropdown-item:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: -2px;
+}
+
+/* ========================================
+   TAB ACCESSIBILITY
+   ======================================== */
+
+.terra-tabs {
+    border-bottom: 1px solid var(--secondary-200);
+}
+
+.terra-tab-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.terra-tab {
+    padding: var(--space-3) var(--space-6);
+    border: none;
+    background: none;
+    color: var(--secondary-600);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.terra-tab:hover {
+    color: var(--secondary-900);
+    background-color: var(--secondary-50);
+}
+
+.terra-tab:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: -2px;
+}
+
+.terra-tab[aria-selected="true"] {
+    color: var(--primary-600);
+    border-bottom-color: var(--primary-600);
+    background-color: var(--primary-50);
+}
+
+.terra-tab-panel {
+    padding: var(--space-6);
+}
+
+.terra-tab-panel[aria-hidden="true"] {
+    display: none;
+}
+
+/* ========================================
+   ACCORDION ACCESSIBILITY
+   ======================================== */
+
+.terra-accordion-item {
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-2);
+}
+
+.terra-accordion-trigger {
+    width: 100%;
+    padding: var(--space-4);
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: var(--font-weight-medium);
+    color: var(--secondary-900);
+}
+
+.terra-accordion-trigger:hover {
+    background-color: var(--secondary-50);
+}
+
+.terra-accordion-trigger:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: -2px;
+}
+
+.terra-accordion-trigger[aria-expanded="true"] {
+    background-color: var(--primary-50);
+    color: var(--primary-700);
+}
+
+.terra-accordion-content {
+    padding: 0 var(--space-4) var(--space-4);
+    color: var(--secondary-700);
+}
+
+.terra-accordion-content[aria-hidden="true"] {
+    display: none;
+}
+
+/* ========================================
+   TOOLTIP ACCESSIBILITY
+   ======================================== */
+
+.terra-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--secondary-900);
+    color: white;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    z-index: var(--z-tooltip);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+    pointer-events: none;
+}
+
+.terra-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.terra-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--secondary-900);
+}
+
+/* ========================================
+   PROGRESS INDICATORS
+   ======================================== */
+
+.terra-progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--secondary-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.terra-progress-bar {
+    height: 100%;
+    background-color: var(--primary-600);
+    transition: width var(--transition-normal);
+    border-radius: var(--radius-full);
+}
+
+.terra-progress[aria-label] {
+    position: relative;
+}
+
+.terra-progress[aria-label]::before {
+    content: attr(aria-label);
+    position: absolute;
+    top: -24px;
+    left: 0;
+    font-size: var(--font-size-xs);
+    color: var(--secondary-600);
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.terra-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.terra-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--secondary-200);
+    border-top-color: var(--primary-600);
+    border-radius: 50%;
+    animation: terra-spin 1s linear infinite;
+}
+
+@keyframes terra-spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* ========================================
+   ERROR STATES
+   ======================================== */
+
+.terra-error {
+    border-color: var(--error-500);
+    background-color: var(--error-50);
+}
+
+.terra-error-message {
+    color: var(--error-600);
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-1);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.terra-error-message::before {
+    content: '⚠';
+    font-size: var(--font-size-xs);
+}
+
+/* ========================================
+   SUCCESS STATES
+   ======================================== */
+
+.terra-success {
+    border-color: var(--success-500);
+    background-color: var(--success-50);
+}
+
+.terra-success-message {
+    color: var(--success-600);
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-1);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.terra-success-message::before {
+    content: '✓';
+    font-size: var(--font-size-xs);
+}
+
+/* ========================================
+   DARK MODE ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .terra-modal-content {
+        background: var(--secondary-800);
+        color: var(--secondary-100);
+    }
+    
+    .terra-dropdown-menu {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .terra-dropdown-item {
+        color: var(--secondary-300);
+    }
+    
+    .terra-dropdown-item:hover,
+    .terra-dropdown-item:focus {
+        background-color: var(--secondary-700);
+        color: var(--secondary-100);
+    }
+    
+    .terra-tooltip {
+        background: var(--secondary-100);
+        color: var(--secondary-900);
+    }
+    
+    .terra-tooltip::after {
+        border-top-color: var(--secondary-100);
+    }
+}
+
+/* ========================================
+   PRINT ACCESSIBILITY
+   ======================================== */
+
+@media print {
+    .terra-skip-link,
+    .terra-tooltip,
+    .terra-modal,
+    .terra-dropdown-menu {
+        display: none !important;
+    }
+    
+    .terra-btn {
+        border: 1px solid #000 !important;
+        background: transparent !important;
+        color: #000 !important;
+    }
+    
+    .terra-card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: #666;
+    }
+    
+    a[href^="#"]:after,
+    a[href^="javascript:"]:after {
+        content: "";
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Visually hidden but accessible to screen readers */
+.terra-visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* High contrast text */
+.terra-text-high-contrast {
+    color: var(--secondary-900);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Focus trap for modals */
+.terra-focus-trap {
+    outline: none;
+}
+
+/* Reduced motion fallbacks */
+.terra-no-motion {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ========================================
+   ACCESSIBILITY TESTING HELPERS
+   ======================================== */
+
+/* Debug mode for accessibility testing */
+.terra-debug-accessibility * {
+    outline: 1px solid red !important;
+}
+
+.terra-debug-accessibility .terra-btn,
+.terra-debug-accessibility .terra-input,
+.terra-debug-accessibility .terra-nav-item {
+    outline: 2px solid blue !important;
+}
+
+.terra-debug-accessibility .terra-focus-visible {
+    outline: 3px solid green !important;
+}
+

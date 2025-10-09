@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔌 USB IoT Demo - TerraAssessment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .sensor-card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+        
+        .status-connected {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+        
+        .status-disconnected {
+            background: linear-gradient(45deg, #f44336, #da190b);
+        }
+        
+        .status-connecting {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+        
+        .data-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .connection-method {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-method.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-success { color: #4CAF50; }
+        .log-error { color: #f44336; }
+        .log-info { color: #2196F3; }
+        .log-warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card p-4 text-center">
+                    <h1 class="text-white mb-2">
+                        <i class="fas fa-microchip me-3"></i>
+                        USB IoT Demo - TerraAssessment
+                    </h1>
+                    <p class="text-white-75 mb-0">
+                        Testing koneksi USB untuk perangkat IoT dengan platform Adreno
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="text-white mb-2">Status Koneksi</h5>
+                            <div class="d-flex align-items-center">
+                                <span id="connection-status" class="badge status-disconnected me-3 px-3 py-2">
+                                    <i class="fas fa-times-circle me-1"></i> Terputus
+                                </span>
+                                <span id="connection-method" class="text-white-75">Pilih metode koneksi</span>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-white-75" id="device-info">
+                                    Tidak ada perangkat terhubung
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <!-- Connection Method Selection -->
+                            <div class="mb-3">
+                                <label class="text-white mb-2 d-block">Pilih Metode Koneksi:</label>
+                                <div class="d-flex justify-content-md-end">
+                                    <div class="connection-method" id="usb-method" data-method="usb">
+                                        <i class="fas fa-usb me-2"></i>
+                                        <strong>USB</strong>
+                                        <br><small>Koneksi stabil (1m)</small>
+                                    </div>
+                                    <div class="connection-method" id="bluetooth-method" data-method="bluetooth">
+                                        <i class="fas fa-bluetooth me-2"></i>
+                                        <strong>Bluetooth</strong>
+                                        <br><small>Wireless (10m)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="connect-btn" class="btn btn-success me-2">
+                                    <i class="fas fa-plug me-1"></i> Hubungkan
+                                </button>
+                                <button id="disconnect-btn" class="btn btn-danger" disabled>
+                                    <i class="fas fa-times me-1"></i> Putuskan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Sensor Data -->
+        <div class="row mb-4">
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-thermometer-half fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">Suhu Tanah</h6>
+                    <div class="data-value text-white" id="temperature">--°C</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-tint fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">Kelembaban Udara</h6>
+                    <div class="data-value text-white" id="humidity">--%</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-seedling fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">Kelembaban Tanah</h6>
+                    <div class="data-value text-white" id="soil-moisture">--%</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-flask fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">pH Tanah</h6>
+                    <div class="data-value text-white" id="ph-level">--</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-leaf fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">Level Nutrisi</h6>
+                    <div class="data-value text-white" id="nutrient-level">--%</div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                <div class="sensor-card p-3 text-center">
+                    <div class="text-white mb-2">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                    <h6 class="text-white mb-1">Terakhir Update</h6>
+                    <div class="text-white small" id="last-update">--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Log -->
+        <div class="row">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-list-alt me-2"></i>
+                        Data Log
+                    </h5>
+                    <div class="log-container" id="data-log">
+                        <div class="log-entry log-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            [<span id="current-time">--:--:--</span>] Demo page siap digunakan
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/asset/js/usb-iot.js"></script>
+    <script>
+        // Global variables
+        let currentMethod = 'usb';
+        let iotManager = null;
+        let isConnected = false;
+        let dataInterval = null;
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDemo();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        function initializeDemo() {
+            // Initialize IoT Manager
+            if (typeof CombinedIoTManager !== 'undefined') {
+                iotManager = new CombinedIoTManager();
+                setupEventHandlers();
+                logMessage('IoT Manager initialized', 'success');
+            } else {
+                logMessage('IoT Manager not found. Please check usb-iot.js', 'error');
+            }
+
+            // Setup connection method selection
+            document.querySelectorAll('.connection-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    selectConnectionMethod(this.dataset.method);
+                });
+            });
+
+            // Setup connect/disconnect buttons
+            document.getElementById('connect-btn').addEventListener('click', connectDevice);
+            document.getElementById('disconnect-btn').addEventListener('click', disconnectDevice);
+
+            // Select USB by default
+            selectConnectionMethod('usb');
+        }
+
+        function selectConnectionMethod(method) {
+            currentMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.connection-method').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(method + '-method').classList.add('active');
+            
+            // Update connection method display
+            document.getElementById('connection-method').textContent = 
+                method === 'usb' ? 'USB Connection' : 'Bluetooth Connection';
+            
+            logMessage(`Metode koneksi dipilih: ${method.toUpperCase()}`, 'info');
+        }
+
+        function setupEventHandlers() {
+            if (!iotManager) return;
+
+            // Data received handler
+            iotManager.onDataReceived = function(data) {
+                updateSensorData(data);
+                logMessage(`Data diterima: ${JSON.stringify(data)}`, 'success');
+            };
+
+            // Connection change handler
+            iotManager.onConnectionChange = function(connected, device) {
+                isConnected = connected;
+                updateConnectionStatus(connected, device);
+                
+                if (connected) {
+                    logMessage(`Terhubung ke perangkat: ${device?.getInfo?.() || 'Unknown'}`, 'success');
+                    startDataMonitoring();
+                } else {
+                    logMessage('Koneksi terputus', 'warning');
+                    stopDataMonitoring();
+                }
+            };
+
+            // Error handler
+            iotManager.onError = function(message, error) {
+                logMessage(`Error: ${message}`, 'error');
+                console.error('IoT Error:', error);
+            };
+
+            // Status update handler
+            iotManager.onStatusUpdate = function(message) {
+                logMessage(`Status: ${message}`, 'info');
+            };
+        }
+
+        async function connectDevice() {
+            if (!iotManager) {
+                logMessage('IoT Manager tidak tersedia', 'error');
+                return;
+            }
+
+            try {
+                logMessage(`Mencoba koneksi ${currentMethod.toUpperCase()}...`, 'info');
+                updateConnectionStatus('connecting');
+                
+                await iotManager.connect(currentMethod);
+                
+            } catch (error) {
+                logMessage(`Gagal koneksi: ${error.message}`, 'error');
+                updateConnectionStatus(false);
+            }
+        }
+
+        async function disconnectDevice() {
+            if (!iotManager || !isConnected) return;
+
+            try {
+                await iotManager.disconnect();
+                logMessage('Koneksi diputuskan', 'info');
+            } catch (error) {
+                logMessage(`Error saat memutuskan: ${error.message}`, 'error');
+            }
+        }
+
+        function updateConnectionStatus(status, device = null) {
+            const statusElement = document.getElementById('connection-status');
+            const deviceInfo = document.getElementById('device-info');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+
+            if (status === 'connecting') {
+                statusElement.className = 'badge status-connecting me-3 px-3 py-2';
+                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menghubungkan...';
+                deviceInfo.textContent = 'Sedang menghubungkan...';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = true;
+            } else if (status === true) {
+                statusElement.className = 'badge status-connected me-3 px-3 py-2';
+                statusElement.innerHTML = '<i class="fas fa-check-circle me-1"></i> Terhubung';
+                deviceInfo.textContent = device ? `Perangkat: ${device.getInfo?.() || 'Unknown'}` : 'Perangkat terhubung';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusElement.className = 'badge status-disconnected me-3 px-3 py-2';
+                statusElement.innerHTML = '<i class="fas fa-times-circle me-1"></i> Terputus';
+                deviceInfo.textContent = 'Tidak ada perangkat terhubung';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function updateSensorData(data) {
+            if (data.temperature !== undefined) {
+                document.getElementById('temperature').textContent = `${data.temperature}°C`;
+            }
+            if (data.humidity !== undefined) {
+                document.getElementById('humidity').textContent = `${data.humidity}%`;
+            }
+            if (data.soil_moisture !== undefined) {
+                document.getElementById('soil-moisture').textContent = `${data.soil_moisture}%`;
+            }
+            if (data.ph_level !== undefined) {
+                document.getElementById('ph-level').textContent = data.ph_level;
+            }
+            if (data.nutrient_level !== undefined) {
+                document.getElementById('nutrient-level').textContent = `${data.nutrient_level}%`;
+            }
+            
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        }
+
+        function startDataMonitoring() {
+            if (dataInterval) clearInterval(dataInterval);
+            
+            // Simulate data if no real device connected
+            dataInterval = setInterval(() => {
+                if (!isConnected) {
+                    // Generate random sensor data for demo
+                    const mockData = {
+                        temperature: (Math.random() * 10 + 20).toFixed(1),
+                        humidity: (Math.random() * 30 + 40).toFixed(1),
+                        soil_moisture: (Math.random() * 40 + 30).toFixed(1),
+                        ph_level: (Math.random() * 2 + 6).toFixed(1),
+                        nutrient_level: (Math.random() * 30 + 50).toFixed(1)
+                    };
+                    updateSensorData(mockData);
+                }
+            }, 2000);
+        }
+
+        function stopDataMonitoring() {
+            if (dataInterval) {
+                clearInterval(dataInterval);
+                dataInterval = null;
+            }
+        }
+
+        function logMessage(message, type = 'info') {
+            const logContainer = document.getElementById('data-log');
+            const time = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+            
+            logEntry.innerHTML = `
+                <i class="fas fa-${icon} me-2"></i>
+                [${time}] ${message}
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        function updateTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
+        }
+    </script>
+</body>
+</html>

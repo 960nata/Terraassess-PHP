@@ -1,0 +1,48 @@
+# Terra Assessment - Optimized Login Configuration
+# Copy this to your .env file for better login stability
+
+# Application
+APP_NAME="Terra Assessment"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=terra_assessment
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Session Configuration (Optimized for Login)
+SESSION_DRIVER=file
+SESSION_LIFETIME=480
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+SESSION_SECURE_COOKIE=false
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+
+# Cache Configuration
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+
+# Mail Configuration (Optional)
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="noreply@terraassessment.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# Redis Configuration (Optional)
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# Sanctum Configuration
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:8000,127.0.0.1,127.0.0.1:8000
