@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Buat Ujian Pilihan Ganda')
 
@@ -279,8 +279,6 @@
             border: 2px solid #333;
             border-radius: 8px;
             color: #ffffff;
-            position: relative;
-            z-index: 1;
         }
 
         .quill-editor-modern .ql-toolbar {
@@ -299,8 +297,6 @@
         .quill-editor-modern .ql-editor {
             color: #ffffff;
             min-height: 120px;
-            cursor: text;
-            pointer-events: auto;
         }
 
         .quill-editor-modern .ql-editor.ql-blank::before {
@@ -366,8 +362,6 @@
 
         .option-editor .ql-editor {
             min-height: 60px;
-            cursor: text;
-            pointer-events: auto;
         }
 
         /* Responsive Quill */
@@ -380,12 +374,23 @@
                 margin-right: 8px;
             }
             
+            .quill-editor-modern .ql-toolbar button {
+                width: 24px;
+                height: 24px;
+                padding: 2px;
+            }
+            
             .question-editor .ql-editor {
                 min-height: 120px;
             }
             
             .option-editor .ql-editor {
                 min-height: 50px;
+            }
+            
+            /* Mobile toolbar optimization */
+            .quill-editor-modern .ql-toolbar .ql-formats:not(:last-child) {
+                margin-right: 4px;
             }
         }
 </style>
@@ -517,7 +522,6 @@ const quillEditors = {}; // Store Quill editor instances
 
 // Initialize with first question
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, adding first question');
     addQuestion();
 });
 
@@ -605,26 +609,27 @@ function addQuestion() {
     
     container.insertAdjacentHTML('beforeend', questionHTML);
     
-    // Initialize Quill editors for the new question after a short delay
-    setTimeout(() => {
-        initializeQuillEditors(questionCount);
-    }, 100);
+    // Initialize Quill editors for the new question
+    initializeQuillEditors(questionCount);
 }
 
 // Initialize Quill editors for a question
 function initializeQuillEditors(questionNum) {
-    console.log(`Initializing Quill editors for question ${questionNum}`);
-    
     // Question editor
     const questionEditorId = `quill-editor-question-${questionNum}`;
     const questionTextareaId = `quill-textarea-question-${questionNum}`;
     
     if (document.getElementById(questionEditorId)) {
-        console.log(`Creating question editor: ${questionEditorId}`);
+        const isMobile = window.innerWidth <= 768;
         const questionEditor = new Quill(`#${questionEditorId}`, {
             theme: 'snow',
             modules: {
-                toolbar: [
+                toolbar: isMobile ? [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ] : [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
                     [{ 'color': [] }, { 'background': [] }],
@@ -640,6 +645,26 @@ function initializeQuillEditors(questionNum) {
         
         quillEditors[questionEditorId] = questionEditor;
         
+        // Apply dark theme
+        setTimeout(() => {
+            const toolbar = document.querySelector(`#${questionEditorId} .ql-toolbar`);
+            const container = document.querySelector(`#${questionEditorId} .ql-container`);
+            if (toolbar) {
+                toolbar.style.background = '#1e293b';
+                toolbar.style.borderColor = '#333';
+            }
+            if (container) {
+                container.style.background = '#2a2a3e';
+                container.style.borderColor = '#333';
+            }
+        }, 100);
+        
+        // Add image upload handler
+        const toolbar = questionEditor.getModule('toolbar');
+        toolbar.addHandler('image', function() {
+            selectLocalImage(questionEditor);
+        });
+        
         // Sync with textarea
         questionEditor.on('text-change', function() {
             const textarea = document.getElementById(questionTextareaId);
@@ -650,26 +675,50 @@ function initializeQuillEditors(questionNum) {
     }
     
     // Option editors
-    [1, 2, 3, 4].forEach(option => {
-        const optionEditorId = `quill-editor-option-${option}-${questionNum}`;
-        const optionTextareaId = `quill-textarea-option-${option}-${questionNum}`;
+    [1, 2, 3, 4].forEach(optionNum => {
+        const optionEditorId = `quill-editor-option-${optionNum}-${questionNum}`;
+        const optionTextareaId = `quill-textarea-option-${optionNum}-${questionNum}`;
         
         if (document.getElementById(optionEditorId)) {
-            console.log(`Creating option editor: ${optionEditorId}`);
+            const isMobile = window.innerWidth <= 768;
             const optionEditor = new Quill(`#${optionEditorId}`, {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
+                    toolbar: isMobile ? [
+                        ['bold', 'italic'],
+                        ['link', 'image'],
+                        ['clean']
+                    ] : [
                         ['bold', 'italic', 'underline'],
                         [{ 'color': [] }, { 'background': [] }],
                         ['link', 'image'],
                         ['clean']
                     ]
                 },
-                placeholder: `Pilihan ${String.fromCharCode(64 + option)}`
+                placeholder: `Pilihan ${String.fromCharCode(64 + optionNum)}`
             });
             
             quillEditors[optionEditorId] = optionEditor;
+            
+            // Apply dark theme
+            setTimeout(() => {
+                const toolbar = document.querySelector(`#${optionEditorId} .ql-toolbar`);
+                const container = document.querySelector(`#${optionEditorId} .ql-container`);
+                if (toolbar) {
+                    toolbar.style.background = '#1e293b';
+                    toolbar.style.borderColor = '#333';
+                }
+                if (container) {
+                    container.style.background = '#2a2a3e';
+                    container.style.borderColor = '#333';
+                }
+            }, 100);
+            
+            // Add image upload handler
+            const toolbar = optionEditor.getModule('toolbar');
+            toolbar.addHandler('image', function() {
+                selectLocalImage(optionEditor);
+            });
             
             // Sync with textarea
             optionEditor.on('text-change', function() {
@@ -690,7 +739,7 @@ function removeQuestion(questionId) {
     
     // Clean up Quill editors for this question
     const questionEditorId = `quill-editor-question-${questionId}`;
-    const optionEditorIds = [1, 2, 3, 4].map(option => `quill-editor-option-${option}-${questionId}`);
+    const optionEditorIds = [1, 2, 3, 4].map(optionNum => `quill-editor-option-${optionNum}-${questionId}`);
     
     // Remove question editor
     if (quillEditors[questionEditorId]) {
@@ -710,6 +759,32 @@ function removeQuestion(questionId) {
     if (questionElement) {
         questionElement.remove();
     }
+}
+
+// Image upload handler
+function selectLocalImage(quill) {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+    
+    input.onchange = function() {
+        const file = input.files[0];
+        if (file) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function() {
+                const range = quill.getSelection();
+                quill.insertEmbed(range.index, 'image', reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 }
 
 function saveExam() {
@@ -766,9 +841,10 @@ function saveDraft() {
             const questionContent = quillEditors[questionEditorId] ? quillEditors[questionEditorId].root.innerHTML : '';
             
             const options = {};
-            [1, 2, 3, 4].forEach(option => {
-                const optionEditorId = `quill-editor-option-${option}-${i}`;
-                options[option] = quillEditors[optionEditorId] ? quillEditors[optionEditorId].root.innerHTML : '';
+            [1, 2, 3, 4].forEach(optionNum => {
+                const optionEditorId = `quill-editor-option-${optionNum}-${i}`;
+                const optionKey = String.fromCharCode(64 + optionNum); // A, B, C, D
+                options[optionKey] = quillEditors[optionEditorId] ? quillEditors[optionEditorId].root.innerHTML : '';
             });
             
             const questionData = {
@@ -835,10 +911,11 @@ function loadDraft() {
                     }
                     
                     // Set option editor content
-                    ['A', 'B', 'C', 'D'].forEach(option => {
-                        const optionEditorId = `quill-editor-option-${option}-${questionCount}`;
-                        if (quillEditors[optionEditorId] && questionData.options?.[option]) {
-                            quillEditors[optionEditorId].root.innerHTML = questionData.options[option];
+                    [1, 2, 3, 4].forEach(optionNum => {
+                        const optionEditorId = `quill-editor-option-${optionNum}-${questionCount}`;
+                        const optionKey = String.fromCharCode(64 + optionNum); // A, B, C, D
+                        if (quillEditors[optionEditorId] && questionData.options?.[optionKey]) {
+                            quillEditors[optionEditorId].root.innerHTML = questionData.options[optionKey];
                         }
                     });
                     

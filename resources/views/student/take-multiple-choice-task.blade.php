@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.student')
 
 @section('title', 'Kerjakan Tugas Pilihan Ganda')
 

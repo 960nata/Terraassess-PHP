@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Buat Tugas - Superadmin')
 
@@ -162,7 +162,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                         <!-- Hidden input untuk tipe tugas -->
                         <input type="hidden" name="tipe" value="{{ $tipe }}">
                         <!-- Pilih Kelas dan Mata Pelajaran -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
                             <div>
                                 <label for="kelas_id" class="block text-sm font-medium text-gray-300 mb-2">
                                     Pilih Kelas <span class="text-red-400">*</span>
@@ -201,7 +201,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                         </div>
                         
                         <!-- Informasi Tugas -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
                                     Judul Tugas <span class="text-red-400">*</span>
@@ -224,7 +224,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                         </div>
 
                         <!-- Waktu Tugas -->
-                        <div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
+                        <div class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
                             <div>
                                 <label for="due" class="block text-sm font-medium text-gray-300 mb-2">
                                     Tanggal Tenggat <span class="text-red-400">*</span>
@@ -349,7 +349,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                             </div>
 
                             <!-- Sistem Penilaian -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                                 <!-- Penilaian Ya/Tidak -->
                                 <div class="bg-gray-800 rounded-lg p-6 border border-gray-600">
                                     <h6 class="text-lg font-semibold text-white mb-4 flex items-center">
@@ -364,7 +364,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                                                 <textarea name="kelompok[ya_tidak][pertanyaan]" id="quill-textarea-kelompok-ya-tidak" style="display: none;"></textarea>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-300 mb-2">Poin Ya</label>
                                                 <input type="number" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
@@ -453,7 +453,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
 
                         <!-- Submit Button -->
                         <!-- Tombol Aksi -->
-                        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-600">
+                        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-600">
                             <a href="{{ route('superadmin.task-management') }}" 
                                class="px-6 py-3 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition duration-200 flex items-center">
                                 <i class="fas fa-arrow-left mr-2"></i>
@@ -671,7 +671,7 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
     font-size: 12px;
 }
 
-/* Responsive */
+/* Mobile Responsive Improvements */
 @media (max-width: 768px) {
     .question-header {
         flex-direction: column;
@@ -689,6 +689,91 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
         margin-right: 0;
         margin-bottom: 5px;
     }
+    
+    /* Container adjustments */
+    .min-h-screen {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    .max-w-7xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Form adjustments */
+    .bg-gray-800 {
+        padding: 1rem;
+    }
+    
+    /* Quill editor mobile optimization */
+    .quill-editor-dark .ql-toolbar {
+        padding: 8px;
+    }
+    
+    .quill-editor-dark .ql-toolbar .ql-formats {
+        margin-right: 8px;
+    }
+    
+    .quill-editor-dark .ql-toolbar button {
+        width: 24px;
+        height: 24px;
+        padding: 2px;
+    }
+    
+    /* Button adjustments */
+    .flex.flex-col.sm\\:flex-row {
+        gap: 0.75rem;
+    }
+    
+    .px-6.py-3, .px-8.py-3 {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Input adjustments */
+    .px-4.py-3 {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Grid adjustments */
+    .grid.grid-cols-1.lg\\:grid-cols-2 {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens */
+    .max-w-7xl {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .bg-gray-800 {
+        padding: 0.75rem;
+    }
+    
+    .px-6.py-3, .px-8.py-3 {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .px-4.py-3 {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Quill editor for very small screens */
+    .quill-editor-dark .ql-toolbar {
+        padding: 4px;
+    }
+    
+    .quill-editor-dark .ql-toolbar button {
+        width: 20px;
+        height: 20px;
+        padding: 1px;
+    }
 }
 </style>
 @endpush
@@ -700,12 +785,18 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Initialize deskripsi Quill editor
+    // Initialize deskripsi Quill editor with mobile-optimized toolbar
+    const isMobile = window.innerWidth <= 768;
     const deskripsiEditor = new Quill('#deskripsi-editor', {
         theme: 'snow',
         placeholder: 'Masukkan deskripsi tugas...',
         modules: {
-            toolbar: [
+            toolbar: isMobile ? [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link'],
+                ['clean']
+            ] : [
                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
                 ['bold', 'italic', 'underline', 'strike'],
                 [{ 'color': [] }, { 'background': [] }],
@@ -777,6 +868,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Only pilihan ganda questions are available on this page
+    
+    // Handle window resize for mobile responsiveness
+    window.addEventListener('resize', function() {
+        const isMobile = window.innerWidth <= 768;
+        
+        // Update Quill editor toolbars if needed
+        if (deskripsiEditor) {
+            const toolbar = document.querySelector('#deskripsi-editor .ql-toolbar');
+            if (toolbar) {
+                if (isMobile) {
+                    toolbar.style.padding = '8px';
+                } else {
+                    toolbar.style.padding = '12px';
+                }
+            }
+        }
+    });
 });
 
 
@@ -794,11 +902,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
+            const isMobile = window.innerWidth <= 768;
             const quill = new Quill(`#${editorId}`, {
                 theme: 'snow',
                 placeholder: 'Masukkan pertanyaan...',
                 modules: {
-                    toolbar: [
+                    toolbar: isMobile ? [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link'],
+                        ['clean']
+                    ] : [
                         [{ 'header': [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
                         [{ 'list': 'ordered'}, { 'list': 'bullet' }],

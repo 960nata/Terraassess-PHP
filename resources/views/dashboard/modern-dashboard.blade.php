@@ -83,7 +83,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900 dark:text-white">Assignment Submitted</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Sistem IoT siap digunakan</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">John Doe submitted "IoT Sensor Analysis"</p>
                         <p class="text-xs text-gray-400 dark:text-gray-500">2 minutes ago</p>
                     </div>
                 </div>

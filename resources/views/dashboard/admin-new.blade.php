@@ -1,93 +1,118 @@
-@extends('layouts.unified-layout-consistent')
+@extends('layout.template.dashboard-template')
 
-@section('title', 'Terra Assessment - Admin Dashboard')
-@section('page-title', 'Admin Dashboard')
-@section('page-description', 'Kelola sistem Terra Assessment')
+@section('dashboard-cards')
+    <a href="{{ route('admin.push-notification') }}" class="card">
+        <div class="card-icon blue">
+            <i class="fas fa-bell"></i>
+        </div>
+        <h3 class="card-title">Push Notifikasi</h3>
+        <p class="card-description">Kirim notifikasi ke pengguna dan kelas</p>
+    </a>
 
-@section('content')
-<div class="space-y-6">
-    <!-- Welcome Section -->
-    <x-unified-welcome-section 
-        :userName="Auth::user()->name"
-        roleName="Admin"
-        roleIcon="fas fa-user-shield"
-        roleColor="blue"
-        description="Kelola sistem Terra Assessment"
-    />
+    <a href="{{ route('superadmin.iot-management') }}" class="card">
+        <div class="card-icon green">
+            <i class="fas fa-wifi"></i>
+        </div>
+        <h3 class="card-title">Manajemen IoT</h3>
+        <p class="card-description">Monitor perangkat IoT dan data sensor</p>
+    </a>
 
-    <!-- Dashboard Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <x-unified-dashboard-card
-            title="Push Notifikasi"
-            description="Kirim notifikasi ke pengguna dan kelas"
-            icon="fas fa-bell"
-            iconColor="blue"
-            :href="route('admin.push-notification')"
-        />
+    <a href="{{ route('superadmin.task-management') }}" class="card">
+        <div class="card-icon purple">
+            <i class="fas fa-book"></i>
+        </div>
+        <h3 class="card-title">Manajemen Tugas</h3>
+        <p class="card-description">Kelola tugas per kelas dan mata pelajaran</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Manajemen IoT"
-            description="Monitor perangkat IoT dan data sensor"
-            icon="fas fa-microchip"
-            iconColor="green"
-            :href="route('admin.iot-management')"
-        />
+    <a href="{{ route('superadmin.exam-management') }}" class="card">
+        <div class="card-icon orange">
+            <i class="fas fa-bullseye"></i>
+        </div>
+        <h3 class="card-title">Manajemen Ujian</h3>
+        <p class="card-description">Buat dan kelola ujian untuk kelas</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Manajemen Tugas"
-            description="Kelola tugas per kelas dan mata pelajaran"
-            icon="fas fa-tasks"
-            iconColor="purple"
-            :href="route('admin.task-management')"
-        />
+    <a href="{{ route('superadmin.user-management') }}" class="card">
+        <div class="card-icon blue">
+            <i class="fas fa-users"></i>
+        </div>
+        <h3 class="card-title">Manajemen Pengguna</h3>
+        <p class="card-description">Kelola pengguna sistem (Guru, Siswa)</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Manajemen Ujian"
-            description="Buat dan kelola ujian untuk kelas"
-            icon="fas fa-clipboard-check"
-            iconColor="orange"
-            :href="route('admin.exam-management')"
-        />
+    <a href="{{ route('superadmin.class-management') }}" class="card">
+        <div class="card-icon green">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <h3 class="card-title">Manajemen Kelas</h3>
+        <p class="card-description">Buat dan kelola kelas di sistem</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Manajemen Pengguna"
-            description="Kelola pengguna sistem (Guru, Siswa)"
-            icon="fas fa-users"
-            iconColor="indigo"
-            :href="route('admin.user-management')"
-        />
+    <a href="{{ route('superadmin.subject-management') }}" class="card">
+        <div class="card-icon purple">
+            <i class="fas fa-database"></i>
+        </div>
+        <h3 class="card-title">Mata Pelajaran</h3>
+        <p class="card-description">Tambah dan kelola mata pelajaran</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Manajemen Kelas"
-            description="Buat dan kelola kelas di sistem"
-            icon="fas fa-chalkboard"
-            iconColor="teal"
-            :href="route('admin.class-management')"
-        />
+    <a href="{{ route('iot.tugas') }}" class="card">
+        <div class="card-icon blue">
+            <i class="fas fa-server"></i>
+        </div>
+        <h3 class="card-title">Tugas IoT</h3>
+        <p class="card-description">Kelola tugas penelitian IoT</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Mata Pelajaran"
-            description="Tambah dan kelola mata pelajaran"
-            icon="fas fa-book"
-            iconColor="pink"
-            :href="route('admin.subject-management')"
-        />
+    <a href="{{ route('iot.research-projects') }}" class="card">
+        <div class="card-icon purple">
+            <i class="fas fa-wave-square"></i>
+        </div>
+        <h3 class="card-title">Penelitian IoT</h3>
+        <p class="card-description">Lihat hasil penelitian IoT siswa</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Materi"
-            description="Kelola materi pembelajaran"
-            icon="fas fa-file-alt"
-            iconColor="cyan"
-            :href="route('admin.material-management')"
-        />
+    <a href="{{ route('superadmin.material-management') }}" class="card">
+        <div class="card-icon green">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <h3 class="card-title">Materi</h3>
+        <p class="card-description">Kelola materi pembelajaran</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Laporan"
-            description="Lihat laporan dan analitik"
-            icon="fas fa-chart-line"
-            iconColor="red"
-            :href="route('admin.reports')"
-        />
-    </div>
-</div>
+    <a href="{{ route('superadmin.reports') }}" class="card">
+        <div class="card-icon red">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="card-title">Laporan</h3>
+        <p class="card-description">Lihat laporan dan analitik</p>
+    </a>
+
 @endsection
+
+@php
+    $roleTitle = 'Admin';
+    $roleIcon = 'fas fa-user-shield';
+    $roleInitial = 'A';
+    $roleDescription = 'Kelola sistem Terra Assessment dengan akses admin';
+    $welcomeMessage = 'Sebagai Admin, Anda memiliki akses untuk mengelola sistem Terra Assessment.';
+    $permissionsTitle = 'Hak Akses Admin';
+    $permissions = [
+        'Kelola pengguna sistem (Guru dan Siswa)',
+        'Akses ke fitur manajemen',
+        'Konfigurasi sistem',
+        'Monitoring aktivitas pengguna'
+    ];
+    $responsibilitiesTitle = 'Tanggung Jawab';
+    $responsibilities = [
+        'Memastikan keamanan sistem',
+        'Mengelola data pengguna',
+        'Konfigurasi aplikasi',
+        'Backup dan maintenance'
+    ];
+    $profileRoute = route('admin.profile');
+    $role = 'admin';
+    $roleId = 2;
+    $roleColor = 'blue';
+@endphp

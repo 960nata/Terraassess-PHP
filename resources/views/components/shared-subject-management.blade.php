@@ -5,11 +5,19 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-database"></i>
-            Mata Pelajaran
-        </h1>
-        <p class="page-description">Kelola data mata pelajaran</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-database"></i>
+                Mata Pelajaran
+            </h1>
+            <p class="page-subtitle">Kelola data mata pelajaran</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="openCreateSubjectModal()">
+                <i class="fas fa-plus"></i>
+                Tambah Mata Pelajaran
+            </button>
+        </div>
     </div>
 
     <!-- Statistics Cards -->

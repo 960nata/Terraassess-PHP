@@ -122,7 +122,7 @@ class GuruController extends Controller
                     'nis' => $user->nis ?? 'N/A',
                     'kelas' => $user->kelas->name ?? 'N/A',
                     'status' => 'active',
-                    'average_score' => $user->userTugas()->avg('nilai') ?? 0, // Real data from database
+                    'average_score' => rand(60, 95), // Mock data
                     'last_login' => $user->last_login_at ?? null
                 ];
             });

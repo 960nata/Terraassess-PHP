@@ -29,7 +29,6 @@ class User extends Authenticatable
         'phone',
         'bio',
         'profile_photo',
-        'last_activity_at',
     ];
 
     /**
@@ -50,7 +49,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'last_activity_at' => 'datetime',
     ];
 
     public function DataSiswa()
@@ -117,25 +115,5 @@ class User extends Authenticatable
     public function TugasJawabanMultiple()
     {
         return $this->hasMany(TugasJawabanMultiple::class);
-    }
-
-    /**
-     * Check if user is online (active within last 5 minutes)
-     */
-    public function isOnline()
-    {
-        if (!$this->last_activity_at) {
-            return false;
-        }
-        
-        return $this->last_activity_at->diffInMinutes(now()) <= 5;
-    }
-
-    /**
-     * Update user's last activity timestamp
-     */
-    public function updateLastActivity()
-    {
-        $this->update(['last_activity_at' => now()]);
     }
 }

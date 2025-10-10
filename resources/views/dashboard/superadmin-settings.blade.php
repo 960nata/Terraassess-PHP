@@ -7,6 +7,184 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="logo-text">Terra Assessment</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- Notification Dropdown -->
+            <div class="notification-container">
+                <button class="notification-icon" onclick="toggleNotificationDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h3>Notifikasi</h3>
+                        <button class="mark-all-read" onclick="markAllAsRead()">Tandai Semua Dibaca</button>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item unread">
+                            <div class="notification-icon-small">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Admin Baru Ditambahkan</div>
+                                <div class="notification-message">Admin baru "John Doe" telah ditambahkan ke sistem</div>
+                                <div class="notification-time">2 menit yang lalu</div>
+                            </div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-icon-small">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Sistem Maintenance</div>
+                                <div class="notification-message">Jadwal maintenance sistem akan dilakukan malam ini</div>
+                                <div class="notification-time">1 jam yang lalu</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-icon-small">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Backup Berhasil</div>
+                                <div class="notification-message">Backup data harian telah selesai</div>
+                                <div class="notification-time">3 jam yang lalu</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notification-footer">
+                        <a href="#" class="view-all-notifications">Lihat Semua Notifikasi</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-container">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
+                    <div class="user-avatar">{{ substr($user->name ?? 'SA', 0, 2) }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ $user->name ?? 'Super Admin' }}</div>
+                        <div class="user-role">Super Admin</div>
+                    </div>
+                    <i class="fas fa-chevron-down dropdown-icon"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">{{ substr($user->name ?? 'SA', 0, 2) }}</div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? 'Super Admin' }}</div>
+                            <div class="profile-dropdown-role">Super Admin</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="{{ route('superadmin.profile') }}" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <a href="{{ route('superadmin.settings') }}" class="profile-dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">Menu Utama</div>
+                <a href="{{ route('superadmin.dashboard') }}" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="menu-item-text">Push Notifikasi</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-wifi"></i>
+                    <span class="menu-item-text">Manajemen IoT</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Manajemen</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-book"></i>
+                    <span class="menu-item-text">Manajemen Tugas</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-bullseye"></i>
+                    <span class="menu-item-text">Manajemen Ujian</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-user-shield"></i>
+                    <span class="menu-item-text">Manajemen Admin</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-item-text">Manajemen Pengguna</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-item-text">Manajemen Kelas</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-database"></i>
+                    <span class="menu-item-text">Mata Pelajaran</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-item-text">Manajemen Materi</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Analitik</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="menu-item-text">Laporan</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Pengaturan</div>
+                <a href="{{ route('superadmin.settings') }}" class="menu-item active">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-item-text">Pengaturan</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-item-text">Bantuan</span>
+                </a>
+            </div>
+        </div>
+    </nav>
 
     <!-- Main Content -->
     <main class="main-content">

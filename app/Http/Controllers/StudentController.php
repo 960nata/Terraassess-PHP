@@ -17,6 +17,7 @@ use App\Models\UserUjian;
 use App\Models\IotReading;
 use App\Models\KelasMapel;
 use App\Models\Nilai;
+use App\Models\GroupTask;
 use Carbon\Carbon;
 
 class StudentController extends Controller
@@ -118,16 +119,36 @@ class StudentController extends Controller
     {
         $user = Auth::user();
         
+        // Get individual tasks (tipe 1, 2, 3) - exclude group tasks (tipe 4)
         $tugas = Tugas::whereHas('kelasMapel', function($query) use ($user) {
             $query->where('kelas_id', $user->kelas_id);
         })
+        ->where('tipe', '!=', 4) // Exclude old group tasks
         ->with(['kelasMapel.mapel', 'userTugas' => function($query) use ($user) {
             $query->where('user_id', $user->id);
         }])
         ->orderBy('created_at', 'desc')
         ->get();
         
-        return view('student.tugas', compact('tugas', 'user'))->with('title', 'Student Tugas');
+        // Get old group tasks (Tugas tipe 4) for backward compatibility
+        $tugasKelompokLama = Tugas::whereHas('kelasMapel', function($query) use ($user) {
+            $query->where('kelas_id', $user->kelas_id);
+        })
+        ->where('tipe', 4)
+        ->with(['kelasMapel.mapel', 'userTugas' => function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
+        
+        // Get new group tasks (GroupTask model)
+        $groupTasks = \App\Models\GroupTask::with(['subject', 'members'])
+            ->where('class_id', $user->kelas_id)
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('student.tugas', compact('tugas', 'tugasKelompokLama', 'groupTasks', 'user'))->with('title', 'Student Tugas');
     }
     
     /**
@@ -305,30 +326,18 @@ class StudentController extends Controller
     {
         $user = Auth::user();
         
-        $myReadings = IotReading::where('student_id', $user->id)
-            ->with(['kelas'])
+        $myReadings = \DB::table('iot_readings')
+            ->where('student_id', $user->id)
             ->orderBy('timestamp', 'desc')
             ->paginate(10);
         
-        $classReadings = IotReading::where('class_id', $user->kelas_id)
-            ->with(['student', 'kelas'])
+        $classReadings = \DB::table('iot_readings')
+            ->where('class_id', $user->kelas_id)
             ->orderBy('timestamp', 'desc')
             ->limit(20)
             ->get();
         
-        // Calculate statistics for myReadings
-        $myReadingsStats = [
-            'total' => $myReadings->total(),
-            'today_count' => IotReading::where('student_id', $user->id)
-                ->whereDate('timestamp', today())
-                ->count(),
-            'avg_temperature' => IotReading::where('student_id', $user->id)
-                ->avg('soil_temperature'),
-            'avg_moisture' => IotReading::where('student_id', $user->id)
-                ->avg('soil_moisture')
-        ];
-        
-        return view('student.iot', compact('myReadings', 'classReadings', 'myReadingsStats', 'user'))->with('title', 'Student IoT');
+        return view('student.iot', compact('myReadings', 'classReadings', 'user'))->with('title', 'Student IoT');
     }
     
     /**

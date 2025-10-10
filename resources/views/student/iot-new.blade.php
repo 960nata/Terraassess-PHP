@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - IoT Research')
 
@@ -882,26 +882,59 @@
             // Get device information service
             const service = await server.getPrimaryService('0000180a-0000-1000-8000-00805f9b34fb');
             
-            // Simulate data reading (replace with actual characteristic reading)
-            setInterval(() => {
-                if (isConnected) {
-                    // Load real sensor data from database
+            // Initialize Bluetooth IoT Manager for real data reading
+            if (typeof IoTBluetoothManager !== 'undefined') {
+                const bluetoothManager = new IoTBluetoothManager();
+                bluetoothManager.server = server;
+                
+                // Set up data received callback
+                bluetoothManager.onDataReceived = function(data) {
                     currentData = {
-                        soil_temperature: '--', // Data akan dimuat dari database
-                        soil_humus: '--', // Data akan dimuat dari database
-                        soil_moisture: '--', // Data akan dimuat dari database
+                        soil_temperature: data.soil_temperature || 0,
+                        soil_humus: data.soil_humus || 0,
+                        soil_moisture: data.soil_moisture || 0,
                         timestamp: new Date().toISOString()
                     };
                     
-                    // Update UI
-                    document.getElementById('realTimeTemp').textContent = currentData.soil_temperature + '°C';
-                    document.getElementById('realTimeHumus').textContent = currentData.soil_humus + '%';
-                    document.getElementById('realTimeMoisture').textContent = currentData.soil_moisture + '%';
-                }
-            }, 2000);
+                    // Update UI with real data
+                    updateRealTimeDisplay();
+                };
+                
+                // Set up error callback
+                bluetoothManager.onError = function(error) {
+                    console.error('Bluetooth data reading error:', error);
+                    // Show error message to user
+                    alert('Gagal membaca data dari perangkat: ' + error.message);
+                };
+                
+                // Start reading real sensor data
+                await bluetoothManager.readSensorData();
+                
+                // Set up periodic reading
+                setInterval(async () => {
+                    if (isConnected && bluetoothManager) {
+                        try {
+                            await bluetoothManager.readSensorData();
+                        } catch (error) {
+                            console.error('Error reading sensor data:', error);
+                        }
+                    }
+                }, 2000);
+                
+            } else {
+                // Fallback: Show no data message
+                console.warn('IoTBluetoothManager not available, showing no data');
+                document.getElementById('realTimeTemp').textContent = '--°C';
+                document.getElementById('realTimeHumus').textContent = '--%';
+                document.getElementById('realTimeMoisture').textContent = '--%';
+            }
             
         } catch (error) {
             console.error('Error reading data:', error);
+            // Show error in UI
+            document.getElementById('realTimeTemp').textContent = 'Error';
+            document.getElementById('realTimeHumus').textContent = 'Error';
+            document.getElementById('realTimeMoisture').textContent = 'Error';
         }
     }
 

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68
+class ComposerStaticInitbe122973e930821cccacb5e791f1127f
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -557,7 +557,6 @@ class ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\Admin' => __DIR__ . '/../..' . '/app/Http/Middleware/Admin.php',
         'App\\Http\\Middleware\\Authenticate' => __DIR__ . '/../..' . '/app/Http/Middleware/Authenticate.php',
-        'App\\Http\\Middleware\\DebugRole' => __DIR__ . '/../..' . '/app/Http/Middleware/DebugRole.php',
         'App\\Http\\Middleware\\EncryptCookies' => __DIR__ . '/../..' . '/app/Http/Middleware/EncryptCookies.php',
         'App\\Http\\Middleware\\GranularRbacProtection' => __DIR__ . '/../..' . '/app/Http/Middleware/GranularRbacProtection.php',
         'App\\Http\\Middleware\\Guru' => __DIR__ . '/../..' . '/app/Http/Middleware/Guru.php',
@@ -568,11 +567,9 @@ class ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68
         'App\\Http\\Middleware\\RedirectIfAuthenticated' => __DIR__ . '/../..' . '/app/Http/Middleware/RedirectIfAuthenticated.php',
         'App\\Http\\Middleware\\RestrictGuruCreate' => __DIR__ . '/../..' . '/app/Http/Middleware/RestrictGuruCreate.php',
         'App\\Http\\Middleware\\Role' => __DIR__ . '/../..' . '/app/Http/Middleware/Role.php',
-        'App\\Http\\Middleware\\RoleBypass' => __DIR__ . '/../..' . '/app/Http/Middleware/RoleBypass.php',
         'App\\Http\\Middleware\\SelfAuth' => __DIR__ . '/../..' . '/app/Http/Middleware/SelfAuth.php',
         'App\\Http\\Middleware\\TeacherAccessControl' => __DIR__ . '/../..' . '/app/Http/Middleware/TeacherAccessControl.php',
         'App\\Http\\Middleware\\TeacherLimitedAccess' => __DIR__ . '/../..' . '/app/Http/Middleware/TeacherLimitedAccess.php',
-        'App\\Http\\Middleware\\TrackUserActivity' => __DIR__ . '/../..' . '/app/Http/Middleware/TrackUserActivity.php',
         'App\\Http\\Middleware\\TrimStrings' => __DIR__ . '/../..' . '/app/Http/Middleware/TrimStrings.php',
         'App\\Http\\Middleware\\TrustHosts' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustHosts.php',
         'App\\Http\\Middleware\\TrustProxies' => __DIR__ . '/../..' . '/app/Http/Middleware/TrustProxies.php',
@@ -5442,7 +5439,6 @@ class ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68
         'Symfony\\Component\\VarDumper\\Cloner\\Cursor' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Cursor.php',
         'Symfony\\Component\\VarDumper\\Cloner\\Data' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Data.php',
         'Symfony\\Component\\VarDumper\\Cloner\\DumperInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/DumperInterface.php',
-        'Symfony\\Component\\VarDumper\\Cloner\\Internal\\NoDefault' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Internal/NoDefault.php',
         'Symfony\\Component\\VarDumper\\Cloner\\Stub' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Stub.php',
         'Symfony\\Component\\VarDumper\\Cloner\\VarCloner' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/VarCloner.php',
         'Symfony\\Component\\VarDumper\\Command\\Descriptor\\CliDescriptor' => __DIR__ . '/..' . '/symfony/var-dumper/Command/Descriptor/CliDescriptor.php',
@@ -5571,10 +5567,10 @@ class ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInite79f8a90c73ac96bdda390c2960c3c68::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitbe122973e930821cccacb5e791f1127f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitbe122973e930821cccacb5e791f1127f::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitbe122973e930821cccacb5e791f1127f::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitbe122973e930821cccacb5e791f1127f::$classMap;
 
         }, null, ClassLoader::class);
     }

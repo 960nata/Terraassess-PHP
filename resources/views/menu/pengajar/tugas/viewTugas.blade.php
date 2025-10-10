@@ -970,6 +970,7 @@
                                                         <th scope="col">Submittion</th>
                                                         <th scope="col">Nilai</th>
                                                         <th scope="col">Input Nilai</th>
+                                                        <th scope="col">Feedback</th>
                                                     </tr>
                                                 </thead>
 
@@ -1013,6 +1014,19 @@
                                                                 <input type="number" class="form-control w-100"
                                                                     placeholder="-" aria-label="nilai" name="nilai[]"
                                                                     value="{{ $nilai !== null ? $nilai : '' }}">
+                                                            </td>
+                                                            <td class="w-30">
+                                                                <div class="feedback-container">
+                                                                    <textarea class="form-control feedback-textarea" 
+                                                                        name="komentar[]" 
+                                                                        rows="2" 
+                                                                        placeholder="Berikan feedback untuk siswa...">{{ $userTugas->komentar ?? '' }}</textarea>
+                                                                    <div class="quick-comments mt-2">
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary quick-comment" data-comment="Bagus! Kerja yang sangat baik.">Bagus</button>
+                                                                        <button type="button" class="btn btn-sm btn-outline-warning quick-comment" data-comment="Perlu perbaikan pada bagian ini.">Perlu Perbaikan</button>
+                                                                        <button type="button" class="btn btn-sm btn-outline-success quick-comment" data-comment="Sangat memuaskan! Pertahankan!">Memuaskan</button>
+                                                                    </div>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     @endforeach
@@ -2081,6 +2095,72 @@
                 console.log(id);
                 $('#idKelompok').val(id);
             }
+
+            // Quick Comments Functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                // Quick comment buttons
+                document.querySelectorAll('.quick-comment').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const comment = this.getAttribute('data-comment');
+                        const textarea = this.closest('.feedback-container').querySelector('.feedback-textarea');
+                        textarea.value = comment;
+                        textarea.focus();
+                    });
+                });
+
+                // Auto-save functionality
+                let autoSaveTimeout;
+                document.querySelectorAll('.feedback-textarea').forEach(textarea => {
+                    textarea.addEventListener('input', function() {
+                        clearTimeout(autoSaveTimeout);
+                        autoSaveTimeout = setTimeout(() => {
+                            // Auto-save logic here
+                            console.log('Auto-saving feedback...');
+                        }, 2000);
+                    });
+                });
+            });
         </script>
+
+        <style>
+            .feedback-container {
+                min-width: 300px;
+            }
+            
+            .feedback-textarea {
+                resize: vertical;
+                min-height: 60px;
+            }
+            
+            .quick-comments {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+            
+            .quick-comment {
+                font-size: 0.75rem;
+                padding: 2px 8px;
+            }
+            
+            .table td {
+                vertical-align: middle;
+            }
+            
+            @media (max-width: 768px) {
+                .feedback-container {
+                    min-width: 200px;
+                }
+                
+                .quick-comments {
+                    flex-direction: column;
+                }
+                
+                .quick-comment {
+                    width: 100%;
+                    margin-bottom: 2px;
+                }
+            }
+        </style>
     @endif
 @endsection

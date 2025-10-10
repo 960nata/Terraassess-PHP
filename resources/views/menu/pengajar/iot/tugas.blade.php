@@ -334,11 +334,11 @@
                 // Simulate data reading (replace with actual characteristic reading)
                 setInterval(() => {
                     if (isConnected) {
-                        // Load real sensor data from database
+                        // Generate sample data (replace with actual sensor reading)
                         currentData = {
-                            soil_temperature: '--', // Data akan dimuat dari database
-                            soil_humus: '--', // Data akan dimuat dari database
-                            soil_moisture: '--', // Data akan dimuat dari database
+                            soil_temperature: (Math.random() * 20 + 15).toFixed(1), // 15-35°C
+                            soil_humus: (Math.random() * 5 + 3).toFixed(1), // 3-8%
+                            soil_moisture: (Math.random() * 40 + 30).toFixed(1), // 30-70%
                             timestamp: new Date().toISOString()
                         };
                         

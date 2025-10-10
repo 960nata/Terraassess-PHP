@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Laporan Guru')
 
@@ -133,13 +133,22 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Data Tidak Tersedia</td>
-                                <td>-</td>
-                                <td>-</td>
+                                <td>John Doe</td>
+                                <td>X IPA 1</td>
+                                <td>85.5</td>
                                 <td><span class="badge bg-success">Baik</span></td>
                             </tr>
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
+                                <td>Jane Smith</td>
+                                <td>X IPA 1</td>
+                                <td>78.2</td>
+                                <td><span class="badge bg-warning">Cukup</span></td>
+                            </tr>
+                            <tr>
+                                <td>Bob Johnson</td>
+                                <td>X IPA 1</td>
+                                <td>92.1</td>
+                                <td><span class="badge bg-success">Sangat Baik</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -200,7 +209,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    // Chart data from database
+    // Sample chart data
     const options = {
         series: [{
             name: 'Nilai Rata-rata',

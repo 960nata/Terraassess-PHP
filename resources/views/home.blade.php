@@ -454,31 +454,6 @@
                     <span>Masuk ke Akun</span>
                 </button>
                 
-                <!-- Demo Accounts Info -->
-                <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl">
-                    <h4 class="text-white font-semibold mb-2 sm:mb-3 text-center text-xs sm:text-sm">🔐 AKUN SISTEM TERRA ASSESSMENT</h4>
-                    <div class="space-y-1 sm:space-y-2 text-xs sm:text-sm text-white/70">
-                        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                            <span>Super Admin:</span>
-                            <span class="text-purple-300 text-xs sm:text-sm break-all">superadmin@terraassessment.com</span>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                            <span>Admin:</span>
-                            <span class="text-blue-300 text-xs sm:text-sm break-all">admin@terraassessment.com</span>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                            <span>Guru:</span>
-                            <span class="text-green-300 text-xs sm:text-sm break-all">guru@terraassessment.com</span>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                            <span>Siswa:</span>
-                            <span class="text-yellow-300 text-xs sm:text-sm break-all">siswa@terraassessment.com</span>
-                        </div>
-                        <div class="text-center mt-2 text-white/50 text-xs sm:text-sm">
-                            <span>Password: <strong>superadmin123</strong> | <strong>admin123</strong> | <strong>guru123</strong> | <strong>siswa123</strong></span>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Error Messages -->
                 @if(isset($hasAdmin) && $hasAdmin == 0)

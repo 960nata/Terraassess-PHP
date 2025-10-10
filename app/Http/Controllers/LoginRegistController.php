@@ -73,7 +73,7 @@ class LoginRegistController extends Controller
                     // Buat data untuk user baru
                     $data = [
                         'name' => $dataSiswa2['name'],
-                        'roles_id' => 4, // 4 = Student/Siswa
+                        'roles_id' => 3, // 3 = Siswa
                         'kelas_id' => $kelasSiswa,
 
                         'gambar' => null,
@@ -134,13 +134,7 @@ class LoginRegistController extends Controller
                 'password' => $credentials['password']
             ], $request->filled('remember'))) {
                 $user = Auth::user();
-                
-                // Regenerate session ID untuk keamanan
                 $request->session()->regenerate();
-                
-                // Set session data untuk debugging
-                $request->session()->put('user_id', $user->id);
-                $request->session()->put('user_role', $user->roles_id);
 
                 \Log::info('Login successful for user: ' . $user->email);
                 

@@ -35,23 +35,33 @@ class IotClassController extends Controller
     {
         $user = Auth::user();
         
-        // Guru memiliki akses penuh ke semua kelas
-        $assignedKelas = Kelas::with(['KelasMapel.Mapel'])->get();
+        // Get classes that this teacher teaches through EditorAccess
+        $assignedKelas = EditorAccess::where('user_id', $user->id)
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+            ->get()
+            ->pluck('kelasMapel')
+            ->groupBy('kelas.id');
 
-        // Get all IoT devices
-        $devices = IotDevice::with('latestSensorData')->get();
+        // Get IoT devices assigned to teacher's classes
+        $devices = IotDevice::whereHas('sensorData', function($query) use ($assignedKelas) {
+            $kelasIds = $assignedKelas->keys()->toArray();
+            $query->whereIn('kelas_id', $kelasIds);
+        })->with('latestSensorData')->get();
 
-        // Get recent sensor data from all classes
-        $recentData = IotSensorData::with(['device', 'kelas', 'user'])
+        // Get recent sensor data from teacher's classes only
+        $recentData = IotSensorData::whereIn('kelas_id', $assignedKelas->keys()->toArray())
+            ->with(['device', 'kelas', 'user'])
             ->latest('measured_at')
             ->limit(10)
             ->get();
 
-        // Get statistics for all classes
+        // Get statistics for teacher's classes
         $totalDevices = $devices->count();
         $onlineDevices = $devices->where('status', 'online')->count();
-        $totalReadings = IotSensorData::count();
-        $todayReadings = IotSensorData::whereDate('measured_at', today())->count();
+        $totalReadings = IotSensorData::whereIn('kelas_id', $assignedKelas->keys()->toArray())->count();
+        $todayReadings = IotSensorData::whereIn('kelas_id', $assignedKelas->keys()->toArray())
+            ->whereDate('measured_at', today())
+            ->count();
 
         return view('teacher.iot.dashboard', [
             'title' => 'IoT Dashboard - Guru',
@@ -73,8 +83,19 @@ class IotClassController extends Controller
     {
         $user = Auth::user();
         
-        // Guru memiliki akses penuh ke semua kelas
-        $kelas = Kelas::findOrFail($kelasId);
+        // Verify teacher has access to this class through EditorAccess
+        $editorAccess = EditorAccess::where('user_id', $user->id)
+            ->whereHas('kelasMapel', function($q) use ($kelasId) {
+                $q->where('kelas_id', $kelasId);
+            })
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+            ->first();
+        
+        $kelasMapel = $editorAccess?->kelasMapel;
+
+        if (!$kelasMapel) {
+            abort(403, 'Anda tidak memiliki akses ke kelas ini');
+        }
 
         // Get IoT devices for this specific class
         $devices = IotDevice::whereHas('sensorData', function($query) use ($kelasId) {

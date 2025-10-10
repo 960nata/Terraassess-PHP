@@ -1,80 +1,112 @@
-@extends('layouts.unified-layout-consistent')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - IoT Research')
-@section('page-title', 'IoT Research')
-@section('page-description', 'Kumpulkan dan analisis data sensor IoT untuk penelitian Anda')
 
 @section('content')
-<div class="space-y-6">
-    <div class="iot-container">
-    <div class="glass-card">
-        <div class="iot-header">
-            <h2 class="iot-title">Sistem Monitoring IoT</h2>
-            <div class="iot-meta">
-                <div class="meta-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span id="currentDateTime"></span>
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-microchip"></i>
+        Penelitian IoT
+    </h1>
+    <p class="page-description">Kumpulkan dan analisis data sensor IoT untuk penelitian Anda</p>
+</div>
+
+<div class="iot-container">
+    <!-- Modern Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-icon">
+                    <i class="fas fa-database"></i>
                 </div>
-                <div class="meta-item">
-                    <i class="fas fa-circle"></i>
-                    <span id="connectionStatus">Terputus</span>
+                <div class="stats-trend">
+                    <i class="fas fa-arrow-up"></i>
                 </div>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ $myReadings->total() }}</div>
+                <div class="stats-label">Total Data Saya</div>
+                <div class="stats-description">Data yang telah dikumpulkan</div>
             </div>
         </div>
-
-        <div class="iot-content">
-            <div class="iot-description">
-                <h3>Deskripsi Sistem</h3>
-                <p>Gunakan perangkat IoT untuk mengumpulkan data sensor tanah seperti suhu, kelembaban, dan kadar humus. Data ini dapat digunakan untuk penelitian dan analisis kualitas tanah.</p>
-            </div>
-
-            <!-- Statistics Cards -->
-            <div class="stats-grid">
-                <div class="stats-card">
-                    <div class="stats-icon">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <div class="stats-number">{{ $myReadingsStats['total'] }}</div>
-                    <div class="stats-label">Total Data Saya</div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-icon">
+                    <i class="fas fa-calendar-day"></i>
                 </div>
-                <div class="stats-card">
-                    <div class="stats-icon">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <div class="stats-number">{{ $myReadingsStats['today_count'] }}</div>
-                    <div class="stats-label">Data Hari Ini</div>
-                </div>
-                <div class="stats-card">
-                    <div class="stats-icon">
-                        <i class="fas fa-thermometer-half"></i>
-                    </div>
-                    <div class="stats-number">{{ $myReadingsStats['avg_temperature'] ? number_format($myReadingsStats['avg_temperature'], 1) . '°C' : 'N/A' }}</div>
-                    <div class="stats-label">Suhu Rata-rata</div>
-                </div>
-                <div class="stats-card">
-                    <div class="stats-icon">
-                        <i class="fas fa-tint"></i>
-                    </div>
-                    <div class="stats-number">{{ $myReadingsStats['avg_moisture'] ? number_format($myReadingsStats['avg_moisture'], 1) . '%' : 'N/A' }}</div>
-                    <div class="stats-label">Kelembaban Rata-rata</div>
+                <div class="stats-trend">
+                    <i class="fas fa-clock"></i>
                 </div>
             </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ $myReadings->where('timestamp', '>=', today())->count() }}</div>
+                <div class="stats-label">Data Hari Ini</div>
+                <div class="stats-description">Pengukuran terbaru</div>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ $myReadings->avg('soil_temperature') ? number_format($myReadings->avg('soil_temperature'), 1) . '°C' : 'N/A' }}</div>
+                <div class="stats-label">Suhu Rata-rata</div>
+                <div class="stats-description">Temperatur tanah</div>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="stats-trend">
+                    <i class="fas fa-droplet"></i>
+                </div>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ $myReadings->avg('soil_moisture') ? number_format($myReadings->avg('soil_moisture'), 1) . '%' : 'N/A' }}</div>
+                <div class="stats-label">Kelembaban Rata-rata</div>
+                <div class="stats-description">Kadar air tanah</div>
+            </div>
+        </div>
+    </div>
 
-            <!-- IoT Control Panel -->
-            <div class="iot-control-panel">
-                <h3>Kontrol Perangkat IoT</h3>
-                
-                <div class="control-form">
+    <!-- Modern Control Panel -->
+    <div class="control-panel">
+        <div class="control-header">
+            <h2 class="control-title">
+                <i class="fas fa-cogs"></i>
+                Kontrol Perangkat IoT
+            </h2>
+            <div class="connection-status">
+                <div class="status-indicator" id="connectionIndicator"></div>
+                <span id="connectionStatus">Terputus</span>
+            </div>
+        </div>
+        
+        <div class="control-content">
+            <div class="control-grid">
+                <div class="control-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Informasi Pengukuran
+                    </h3>
                     <div class="form-group">
                         <label>Lokasi Pengukuran</label>
                         <input type="text" id="location" placeholder="Masukkan lokasi pengukuran">
                     </div>
-                    
                     <div class="form-group">
                         <label>Catatan</label>
                         <textarea id="notes" rows="3" placeholder="Masukkan catatan tambahan"></textarea>
                     </div>
-                    
                     <div class="form-group">
                         <label>Kelas</label>
                         <select id="selectKelas">
@@ -84,88 +116,186 @@
                             @endif
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Mode Pengukuran</label>
-                        <select id="measurementMode">
-                            <option value="auto">Otomatis (dari alat IoT)</option>
-                            <option value="manual">Manual (input sendiri)</option>
-                        </select>
-                    </div>
                 </div>
                 
-                <div class="form-actions">
-                    <button class="btn btn-primary" id="scanDeviceBtn" onclick="scanDevice()">
+                <div class="control-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-sliders-h"></i>
+                        Mode Pengukuran
+                    </h3>
+                    <div class="mode-selector">
+                        <div class="mode-option" data-mode="auto">
+                            <div class="mode-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="mode-content">
+                                <h4>Otomatis</h4>
+                                <p>Dari alat IoT</p>
+                            </div>
+                            <input type="radio" name="measurementMode" value="auto" id="mode-auto" checked>
+                        </div>
+                        <div class="mode-option" data-mode="manual">
+                            <div class="mode-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="mode-content">
+                                <h4>Manual</h4>
+                                <p>Input sendiri</p>
+                            </div>
+                            <input type="radio" name="measurementMode" value="manual" id="mode-manual">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="connection-methods">
+                <h3 class="section-title">
+                    <i class="fas fa-wifi"></i>
+                    Metode Koneksi
+                </h3>
+                <div class="method-buttons">
+                    <button type="button" class="method-btn" id="usb-method-btn" onclick="selectConnectionMethod('usb')">
+                        <i class="fas fa-usb"></i>
+                        <span>USB</span>
+                    </button>
+                    <button type="button" class="method-btn active" id="bluetooth-method-btn" onclick="selectConnectionMethod('bluetooth')">
                         <i class="fas fa-bluetooth"></i>
-                        Scan & Ambil Data
-                    </button>
-                    <button class="btn btn-success" id="saveDataBtn" onclick="saveData()" disabled>
-                        <i class="fas fa-save"></i>
-                        Simpan Data
+                        <span>Bluetooth</span>
                     </button>
                 </div>
             </div>
+            
+            <div class="action-buttons">
+                <button class="btn-primary" id="scanDeviceBtn" onclick="scanDevice()">
+                    <i class="fas fa-bluetooth"></i>
+                    <span>Scan & Ambil Data</span>
+                </button>
+                <button class="btn-success" id="saveDataBtn" onclick="saveData()" disabled>
+                    <i class="fas fa-save"></i>
+                    <span>Simpan Data</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Real-time Data Display -->
-            <div class="real-time-display" id="realTimeDataSection" style="display: none;">
-                <h3>Data Real-time</h3>
-                
-                <div class="sensor-grid">
-                    <div class="sensor-card">
-                        <i class="fas fa-thermometer-half"></i>
-                        <h4 id="realTimeTemp">--°C</h4>
-                        <small>Suhu Tanah</small>
-                    </div>
-                    <div class="sensor-card">
-                        <i class="fas fa-seedling"></i>
-                        <h4 id="realTimeHumus">--%</h4>
-                        <small>Kadar Humus</small>
-                    </div>
-                    <div class="sensor-card">
-                        <i class="fas fa-tint"></i>
-                        <h4 id="realTimeMoisture">--%</h4>
-                        <small>Kelembaban Tanah</small>
-                    </div>
+    <!-- Real-time Data Display -->
+    <div class="realtime-panel" id="realTimeDataSection" style="display: none;">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-chart-line"></i>
+                Data Real-time
+            </h2>
+            <div class="live-indicator">
+                <div class="pulse-dot"></div>
+                <span>LIVE</span>
+            </div>
+        </div>
+        
+        <div class="sensor-grid">
+            <div class="sensor-card temperature">
+                <div class="sensor-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="sensor-content">
+                    <div class="sensor-value" id="realTimeTemp">--°C</div>
+                    <div class="sensor-label">Suhu Tanah</div>
+                    <div class="sensor-status">Normal</div>
                 </div>
             </div>
-
-            <!-- Manual Input Form -->
-            <div class="manual-input-section" id="manualInputSection" style="display: none;">
-                <h3>Input Data Manual</h3>
-                
-                <div class="input-grid">
-                    <div class="form-group">
-                        <label>Suhu Tanah (°C)</label>
-                        <input type="number" id="manualTemp" step="0.1" placeholder="Masukkan suhu">
-                    </div>
-                    <div class="form-group">
-                        <label>Kadar Humus (%)</label>
-                        <input type="number" id="manualHumus" step="0.1" placeholder="Masukkan kadar humus">
-                    </div>
-                    <div class="form-group">
-                        <label>Kelembaban Tanah (%)</label>
-                        <input type="number" id="manualMoisture" step="0.1" placeholder="Masukkan kelembaban">
-                    </div>
+            
+            <div class="sensor-card humus">
+                <div class="sensor-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <div class="sensor-content">
+                    <div class="sensor-value" id="realTimeHumus">--%</div>
+                    <div class="sensor-label">Kadar Humus</div>
+                    <div class="sensor-status">Baik</div>
                 </div>
             </div>
-
-            <!-- Data Table -->
-            <div class="data-section">
-                <div class="data-header">
-                    <h3>Data Saya</h3>
-                    <div class="data-actions">
-                        <button class="btn btn-secondary" onclick="refreshData()">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh
-                        </button>
-                        <button class="btn btn-success" onclick="exportMyData()">
-                            <i class="fas fa-download"></i>
-                            Export CSV
-                        </button>
-                    </div>
+            
+            <div class="sensor-card moisture">
+                <div class="sensor-icon">
+                    <i class="fas fa-tint"></i>
                 </div>
-                
-                <div class="data-table">
+                <div class="sensor-content">
+                    <div class="sensor-value" id="realTimeMoisture">--%</div>
+                    <div class="sensor-label">Kelembaban Tanah</div>
+                    <div class="sensor-status">Optimal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Input Form -->
+    <div class="manual-panel" id="manualInputSection" style="display: none;">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-edit"></i>
+                Input Data Manual
+            </h2>
+            <p class="panel-description">Masukkan data sensor secara manual</p>
+        </div>
+        
+        <div class="input-grid">
+            <div class="input-card">
+                <div class="input-icon">
+                    <i class="fas fa-thermometer-half"></i>
+                </div>
+                <div class="input-content">
+                    <label>Suhu Tanah (°C)</label>
+                    <input type="number" id="manualTemp" step="0.1" placeholder="Masukkan suhu">
+                    <small>Rentang: 15-35°C</small>
+                </div>
+            </div>
+            
+            <div class="input-card">
+                <div class="input-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <div class="input-content">
+                    <label>Kadar Humus (%)</label>
+                    <input type="number" id="manualHumus" step="0.1" placeholder="Masukkan kadar humus">
+                    <small>Rentang: 3-8%</small>
+                </div>
+            </div>
+            
+            <div class="input-card">
+                <div class="input-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="input-content">
+                    <label>Kelembaban Tanah (%)</label>
+                    <input type="number" id="manualMoisture" step="0.1" placeholder="Masukkan kelembaban">
+                    <small>Rentang: 30-70%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="data-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-database"></i>
+                Data Saya
+            </h2>
+            <div class="data-actions">
+                <button class="btn-secondary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+                <button class="btn-success" onclick="exportMyData()">
+                    <i class="fas fa-download"></i>
+                    <span>Export CSV</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="data-content">
+            @if($myReadings->count() > 0)
+                <!-- Desktop Table -->
+                <div class="data-table desktop-table">
                     <table>
                         <thead>
                             <tr>
@@ -179,64 +309,47 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($myReadings as $reading)
+                            @foreach($myReadings as $reading)
                                 <tr>
-                                    <td>{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('d/m/Y H:i') : $reading->timestamp->format('d/m/Y H:i')) : '-' }}</td>
-                                    <td>{{ $reading->kelas->name ?? $reading->class_id }}</td>
-                                    <td>{{ $reading->formatted_soil_temperature }}</td>
-                                    <td>{{ $reading->formatted_soil_humus }}</td>
-                                    <td>{{ $reading->formatted_soil_moisture }}</td>
-                                    <td>{{ $reading->location ?? '-' }}</td>
                                     <td>
-                                        <span class="status-badge status-{{ $reading->soil_quality_color }}">
-                                            {{ $reading->soil_quality_status }}
-                                        </span>
+                                        <div class="time-info">
+                                            <div class="date">{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('d M Y') : $reading->timestamp->format('d M Y')) : '-' }}</div>
+                                            <div class="time">{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('H:i') : $reading->timestamp->format('H:i')) : '-' }}</div>
+                                        </div>
                                     </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">Belum ada data</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="pagination">
-                    {{ $myReadings->links() }}
-                </div>
-            </div>
-
-            <!-- Class Data (if available) -->
-            @if($classReadings->count() > 0)
-            <div class="data-section">
-                <h3>Data Kelas</h3>
-                
-                <div class="data-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Waktu</th>
-                                <th>Siswa</th>
-                                <th>Suhu</th>
-                                <th>Humus</th>
-                                <th>Kelembaban</th>
-                                <th>Lokasi</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($classReadings as $reading)
-                                <tr>
-                                    <td>{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('d/m/Y H:i') : $reading->timestamp->format('d/m/Y H:i')) : '-' }}</td>
-                                    <td>{{ $reading->student->name ?? $reading->student_id }}</td>
-                                    <td>{{ $reading->formatted_soil_temperature }}</td>
-                                    <td>{{ $reading->formatted_soil_humus }}</td>
-                                    <td>{{ $reading->formatted_soil_moisture }}</td>
-                                    <td>{{ $reading->location ?? '-' }}</td>
                                     <td>
-                                        <span class="status-badge status-{{ $reading->soil_quality_color }}">
-                                            {{ $reading->soil_quality_status }}
+                                        <div class="class-info">
+                                            <i class="fas fa-graduation-cap"></i>
+                                            <span>{{ $reading->kelas->name ?? $reading->class_id }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-thermometer-half"></i>
+                                            <span>{{ $reading->formatted_soil_temperature ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-seedling"></i>
+                                            <span>{{ $reading->formatted_soil_humus ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-tint"></i>
+                                            <span>{{ $reading->formatted_soil_moisture ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="location-info">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{{ $reading->location ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ $reading->soil_quality_color ?? 'unknown' }}">
+                                            {{ $reading->soil_quality_status ?? 'Unknown' }}
                                         </span>
                                     </td>
                                 </tr>
@@ -244,753 +357,311 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+                
+                <!-- Mobile Cards -->
+                <div class="mobile-cards">
+                    @foreach($myReadings as $reading)
+                        <div class="data-card">
+                            <div class="card-header">
+                                <div class="card-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span>{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('d M Y H:i') : $reading->timestamp->format('d M Y H:i')) : '-' }}</span>
+                                </div>
+                                <span class="status-badge status-{{ $reading->soil_quality_color ?? 'unknown' }}">
+                                    {{ $reading->soil_quality_status ?? 'Unknown' }}
+                                </span>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="sensor-readings">
+                                    <div class="reading-item">
+                                        <i class="fas fa-thermometer-half"></i>
+                                        <div class="reading-info">
+                                            <span class="reading-label">Suhu</span>
+                                            <span class="reading-value">{{ $reading->formatted_soil_temperature ?? '-' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="reading-item">
+                                        <i class="fas fa-seedling"></i>
+                                        <div class="reading-info">
+                                            <span class="reading-label">Humus</span>
+                                            <span class="reading-value">{{ $reading->formatted_soil_humus ?? '-' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="reading-item">
+                                        <i class="fas fa-tint"></i>
+                                        <div class="reading-info">
+                                            <span class="reading-label">Kelembaban</span>
+                                            <span class="reading-value">{{ $reading->formatted_soil_moisture ?? '-' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span>{{ $reading->kelas->name ?? $reading->class_id }}</span>
+                                    </div>
+                                    @if($reading->location)
+                                    <div class="meta-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ $reading->location }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                
+                <div class="pagination">
+                    {{ $myReadings->links() }}
+                </div>
+            @else
+                <div class="no-data">
+                    <div class="no-data-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Belum Ada Data</h3>
+                    <p>Mulai kumpulkan data IoT dengan mengklik tombol "Scan & Ambil Data" di atas.</p>
+                </div>
             @endif
         </div>
     </div>
+
+    <!-- Class Data (if available) -->
+    @if($classReadings->count() > 0)
+    <div class="data-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i class="fas fa-users"></i>
+                Data Kelas
+            </h2>
+            <div class="class-stats">
+                <span class="stat-item">
+                    <i class="fas fa-user"></i>
+                    {{ $classReadings->count() }} Siswa
+                </span>
+            </div>
+        </div>
+        
+        <div class="data-content">
+            <div class="data-table desktop-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Siswa</th>
+                            <th>Suhu</th>
+                            <th>Humus</th>
+                            <th>Kelembaban</th>
+                            <th>Lokasi</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($classReadings as $reading)
+                            <tr>
+                                <td>
+                                    <div class="time-info">
+                                        <div class="date">{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('d M Y') : $reading->timestamp->format('d M Y')) : '-' }}</div>
+                                        <div class="time">{{ $reading->timestamp ? (is_string($reading->timestamp) ? \Carbon\Carbon::parse($reading->timestamp)->format('H:i') : $reading->timestamp->format('H:i')) : '-' }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="student-info">
+                                        <i class="fas fa-user"></i>
+                                        <span>{{ $reading->student->name ?? $reading->student_id }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-thermometer-half"></i>
+                                        <span>{{ $reading->formatted_soil_temperature ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-seedling"></i>
+                                        <span>{{ $reading->formatted_soil_humus ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-tint"></i>
+                                        <span>{{ $reading->formatted_soil_moisture ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="location-info">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ $reading->location ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ $reading->soil_quality_color ?? 'unknown' }}">
+                                        {{ $reading->soil_quality_status ?? 'Unknown' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
 
+@push('scripts')
+<script src="{{ asset('asset/js/usb-iot.js') }}"></script>
+<script src="{{ asset('asset/js/iot-bluetooth.js') }}"></script>
+@endpush
+
 @section('styles')
 <style>
-/* Student IoT Management Styles - Consistent with Superadmin */
-    .iot-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
-        min-height: 100vh;
+/* Dark Theme Base */
+body {
+    background: #0f172a !important;
+    color: #ffffff !important;
 }
 
-.glass-card {
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 20px;
-    padding: 2rem;
-    margin: 1.5rem 0;
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.glass-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 
-        0 32px 64px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(59, 130, 246, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.iot-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding: 2rem 0;
-    border-bottom: 2px solid rgba(59, 130, 246, 0.2);
-    position: relative;
-}
-
-.iot-header::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-}
-
-.iot-title {
-    color: #ffffff;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-}
-
-.iot-meta {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: #cbd5e1;
-    font-size: 1rem;
-    padding: 0.75rem 1.5rem;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 50px;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    transition: all 0.3s ease;
-}
-
-.meta-item:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: translateY(-2px);
-}
-
-.meta-item i {
-    color: #3b82f6;
-    font-size: 1.1rem;
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-}
-
-.iot-content {
-    color: #ffffff;
-}
-
-.iot-description {
-    margin-bottom: 2rem;
-}
-
-.iot-description h3 {
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.iot-description h3::before {
-    content: "🔬";
-    font-size: 1.5rem;
-}
-
-.iot-description p {
-    color: #cbd5e1;
-    line-height: 1.6;
-    font-size: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid #3b82f6;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.stats-card {
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 20px;
-    padding: 2rem;
-    text-align: center;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.stats-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-}
-
-.stats-card:hover {
-    transform: translateY(-8px) scale(1.05);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(59, 130, 246, 0.1);
-}
-
-.stats-icon {
-    font-size: 3rem;
-    color: #3b82f6;
-    margin-bottom: 1rem;
-    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
-    transition: all 0.3s ease;
-}
-
-.stats-card:hover .stats-icon {
-    transform: scale(1.1) rotate(5deg);
-    filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.8));
-}
-
-.stats-number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #ffffff;
-    margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-.stats-label {
-    font-size: 1rem;
-    color: #cbd5e1;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.iot-control-panel {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.iot-control-panel:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.iot-control-panel h3 {
-    color: #ffffff;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.iot-control-panel h3::before {
-    content: "🎛️";
-    font-size: 1.2rem;
-}
-
-.control-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    color: #ffffff;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 0.5rem 0.75rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: #ffffff;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    width: 100%;
+/* Override any white backgrounds */
+* {
     box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-    background: rgba(255, 255, 255, 0.15);
+/* Ensure all text is visible on dark background */
+h1, h2, h3, h4, h5, h6, p, span, div, a, label, select, option {
+    color: inherit;
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+/* Dark theme for form elements */
+select, input, textarea {
+    background: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
 }
 
-.form-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
+select option {
+    background: #1e293b !important;
+    color: #ffffff !important;
 }
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 140px;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+/* Override any white backgrounds that might appear */
+.card, .panel, .box, .container-fluid, .row, .col, .col-md, .col-lg, .col-xl {
+    background: #0f172a !important;
+    color: #ffffff !important;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+/* Ensure navigation and header are dark */
+.navbar, .header, .sidebar, .menu {
+    background: #1e293b !important;
+    color: #ffffff !important;
 }
 
-.btn:hover::before {
-    left: 100%;
+/* Override any framework defaults */
+.bg-white, .bg-light, .text-dark {
+    background: #1e293b !important;
+    color: #ffffff !important;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8, #7c3aed);
-    color: #ffffff;
-    box-shadow: 
-        0 8px 25px rgba(59, 130, 246, 0.4),
-        0 0 0 1px rgba(59, 130, 246, 0.1);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #2563eb, #1e40af, #6d28d9);
-    box-shadow: 
-        0 12px 35px rgba(59, 130, 246, 0.6),
-        0 0 0 1px rgba(59, 130, 246, 0.2);
-    transform: translateY(-4px) scale(1.05);
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #10b981, #059669, #047857);
-    color: #ffffff;
-    box-shadow: 
-        0 8px 25px rgba(16, 185, 129, 0.4),
-        0 0 0 1px rgba(16, 185, 129, 0.1);
-}
-
-.btn-success:hover {
-    background: linear-gradient(135deg, #059669, #047857, #065f46);
-    box-shadow: 
-        0 12px 35px rgba(16, 185, 129, 0.6),
-        0 0 0 1px rgba(16, 185, 129, 0.2);
-    transform: translateY(-4px) scale(1.05);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 12px 35px rgba(255, 255, 255, 0.1);
-}
-
-.real-time-display {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.real-time-display:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.real-time-display h3 {
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.real-time-display h3::before {
-    content: "📊";
-    font-size: 1.5rem;
-}
-
-.sensor-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-.sensor-card {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.sensor-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.sensor-card i {
-    font-size: 2rem;
-    color: #3b82f6;
-    margin-bottom: 1rem;
-}
-
-.sensor-card h4 {
-    color: #ffffff;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-
-.sensor-card small {
-    color: #cbd5e1;
-    font-size: 0.9rem;
-}
-
-.manual-input-section {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.manual-input-section:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.manual-input-section h3 {
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.manual-input-section h3::before {
-    content: "✏️";
-    font-size: 1.5rem;
-}
-
-.input-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.data-section {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.data-section:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.data-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.data-header h3 {
-    color: #ffffff;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.data-header h3::before {
-    content: "📋";
-    font-size: 1.5rem;
-}
-
-.data-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.data-table {
-    overflow-x: auto;
-    margin-bottom: 1.5rem;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
-}
-
-.data-table table {
-    width: 100%;
-    min-width: 600px;
-    border-collapse: collapse;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.data-table th {
-    background: rgba(59, 130, 246, 0.2);
-    color: #3b82f6;
-    font-weight: 600;
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-}
-
-.data-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.status-excellent { 
-    background: rgba(16, 185, 129, 0.2); 
-    color: #10b981; 
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.status-good { 
-    background: rgba(59, 130, 246, 0.2); 
-    color: #3b82f6; 
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.status-fair { 
-    background: rgba(245, 158, 11, 0.2); 
-    color: #f59e0b; 
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.status-poor { 
-    background: rgba(239, 68, 68, 0.2); 
-    color: #ef4444; 
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 1.5rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
     .iot-container {
-        padding: 0.5rem;
-    }
-
-    .glass-card {
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-
-    .iot-title {
-        font-size: 1.25rem;
-    }
-
-    .iot-meta {
-        flex-direction: column;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-
-    .control-form {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .btn {
-        width: 100%;
-        min-width: auto;
-    }
-
-    .data-header {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: flex-start;
-    }
-
-    .data-actions {
-        width: 100%;
-        justify-content: center;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .data-table {
-        font-size: 0.8rem;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: 0.5rem 0.25rem;
-    }
-
-    .sensor-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .input-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .iot-container {
-        padding: 0.25rem;
-    }
-
-    .glass-card {
-        padding: 0.75rem;
-        margin: 0.25rem 0;
-    }
-
-    .iot-title {
-        font-size: 1.1rem;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-card,
-    .sensor-card {
-        padding: 0.75rem;
-    }
-}
-
-.text-center {
-    text-align: center;
-    color: #ffffff;
-}
-
-.status-badge {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
-}
-</style>
-@endsection
-
-    <div class="iot-container">
-        <div class="glass-card">
-            <div class="iot-header">
-                <h2 class="iot-title">Sistem Monitoring IoT</h2>
-                <div class="iot-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span id="currentDateTime"></span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-circle"></i>
-                        <span id="connectionStatus">Terputus</span>
-                    </div>
-                </div>
-            </div>
-        border-radius: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 2rem;
-        margin: 1.5rem 0;
-        box-shadow: 
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #0f172a;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Full width dark background */
+    .iot-container::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #0f172a;
+        z-index: -1;
+    }
+
+    /* Ensure full width dark background */
+    html, body {
+        background: #0f172a !important;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    /* Override any parent container backgrounds */
+    .container, .main-content, .content-wrapper {
+        background: #0f172a !important;
+    }
+
+    /* Force dark theme on all elements */
+    *, *::before, *::after {
+        background-color: transparent;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        color: white;
         position: relative;
         overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="25" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="25" cy="75" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        position: relative;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-description {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+    }
+
+    .glass-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        position: relative;
+        overflow: hidden;
+        margin: 2rem 0;
     }
 
     .glass-card::before {
@@ -999,48 +670,35 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        z-index: 1;
+    }
+
+    .glass-card > * {
+        position: relative;
+        z-index: 2;
     }
 
     .glass-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        border-color: rgba(59, 130, 246, 0.4);
-        box-shadow: 
-            0 32px 64px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(59, 130, 246, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
     }
 
     .iot-header {
         text-align: center;
         margin-bottom: 2rem;
-        padding: 2rem 0;
-        border-bottom: 2px solid rgba(59, 130, 246, 0.2);
-        position: relative;
-    }
-
-    .iot-header::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100px;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .iot-title {
         color: #ffffff;
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         margin-bottom: 1rem;
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .iot-meta {
@@ -1048,31 +706,19 @@
         justify-content: center;
         gap: 2rem;
         flex-wrap: wrap;
-        margin-top: 1rem;
     }
 
     .meta-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
         color: #cbd5e1;
-        font-size: 1rem;
-        padding: 0.75rem 1.5rem;
-        background: rgba(59, 130, 246, 0.1);
-        border-radius: 50px;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .meta-item:hover {
-        background: rgba(59, 130, 246, 0.2);
-        transform: translateY(-2px);
+        font-size: 0.9rem;
     }
 
     .meta-item i {
         color: #3b82f6;
-        font-size: 1.1rem;
-        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+        font-size: 1rem;
     }
 
     .iot-content {
@@ -1116,19 +762,15 @@
     }
 
     .stats-card {
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
         padding: 2rem;
-        text-align: center;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 160px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(10px);
     }
 
     .stats-card::before {
@@ -1137,87 +779,280 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 16px 16px 0 0;
     }
 
     .stats-card:hover {
-        transform: translateY(-8px) scale(1.05);
-        border-color: rgba(59, 130, 246, 0.4);
-        box-shadow: 
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(59, 130, 246, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.5);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .stats-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
     }
 
     .stats-icon {
-        font-size: 3rem;
-        color: #3b82f6;
-        margin-bottom: 1rem;
-        filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
-        transition: all 0.3s ease;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
 
-    .stats-card:hover .stats-icon {
-        transform: scale(1.1) rotate(5deg);
-        filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.8));
+    .stats-trend {
+        color: #10b981;
+        font-size: 1.2rem;
+        opacity: 0.8;
+    }
+
+    .stats-content {
+        text-align: left;
     }
 
     .stats-number {
         font-size: 2.5rem;
-        font-weight: 800;
+        font-weight: 700;
         color: #ffffff;
-        margin-bottom: 0.75rem;
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        line-height: 1;
+        margin-bottom: 0.5rem;
     }
 
     .stats-label {
         font-size: 1rem;
-        color: #cbd5e1;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        color: #ffffff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
     }
 
-    .iot-control-panel {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
+    .stats-description {
+        font-size: 0.875rem;
+        color: #94a3b8;
+    }
+
+    /* Modern Control Panel */
+    .control-panel {
+        background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .control-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .control-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .control-title {
+        color: #ffffff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .control-title i {
+        color: #667eea;
+        font-size: 1.25rem;
+    }
+
+    .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #ef4444;
+        font-weight: 500;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #ef4444;
+        animation: pulse 2s infinite;
+    }
+
+    .status-indicator.connected {
+        background: #10b981;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .control-content {
+        color: #ffffff;
+    }
+
+    .control-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .control-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
     }
 
-    .iot-control-panel:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .iot-control-panel h3 {
+    .section-title {
         color: #ffffff;
         font-size: 1.1rem;
         font-weight: 600;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
 
-    .iot-control-panel h3::before {
-        content: "🎛️";
-        font-size: 1.2rem;
+    .section-title i {
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .mode-selector {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .mode-option {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .mode-option:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .mode-option.selected {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+    }
+
+    .mode-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .mode-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .mode-content h4 {
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .mode-content p {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .connection-methods {
+        margin-bottom: 2rem;
+    }
+
+    .method-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .method-btn {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .method-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .method-btn.active {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
     }
 
     .control-form {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .form-group {
@@ -1235,15 +1070,13 @@
     .form-group input,
     .form-group select,
     .form-group textarea {
-        padding: 0.5rem 0.75rem;
+        padding: 0.75rem 1rem;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 6px;
+        border-radius: 8px;
         color: #ffffff;
-        font-size: 0.9rem;
+        font-size: 1rem;
         transition: all 0.3s ease;
-        width: 100%;
-        box-sizing: border-box;
     }
 
     .form-group input:focus,
@@ -1251,7 +1084,7 @@
     .form-group textarea:focus {
         outline: none;
         border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         background: rgba(255, 255, 255, 0.15);
     }
 
@@ -1262,181 +1095,326 @@
 
     .form-actions {
         display: flex;
-        gap: 0.75rem;
+        gap: 1rem;
         justify-content: center;
-        flex-wrap: wrap;
     }
 
     .btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 1rem 2rem;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 500;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 140px;
+        transition: all 0.3s ease;
+        min-width: 150px;
         justify-content: center;
-        position: relative;
-        overflow: hidden;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn:hover::before {
-        left: 100%;
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8, #7c3aed);
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         color: #ffffff;
-        box-shadow: 
-            0 8px 25px rgba(59, 130, 246, 0.4),
-            0 0 0 1px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
     .btn-primary:hover {
-        background: linear-gradient(135deg, #2563eb, #1e40af, #6d28d9);
-        box-shadow: 
-            0 12px 35px rgba(59, 130, 246, 0.6),
-            0 0 0 1px rgba(59, 130, 246, 0.2);
-        transform: translateY(-4px) scale(1.05);
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        transform: translateY(-2px);
     }
 
     .btn-success {
-        background: linear-gradient(135deg, #10b981, #059669, #047857);
+        background: linear-gradient(135deg, #10b981, #059669);
         color: #ffffff;
-        box-shadow: 
-            0 8px 25px rgba(16, 185, 129, 0.4),
-            0 0 0 1px rgba(16, 185, 129, 0.1);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .btn-success:hover {
-        background: linear-gradient(135deg, #059669, #047857, #065f46);
-        box-shadow: 
-            0 12px 35px rgba(16, 185, 129, 0.6),
-            0 0 0 1px rgba(16, 185, 129, 0.2);
-        transform: translateY(-4px) scale(1.05);
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        transform: translateY(-2px);
     }
 
     .btn-secondary {
         background: rgba(255, 255, 255, 0.1);
         color: #ffffff;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
     }
 
     .btn-secondary:hover {
         background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-4px) scale(1.05);
-        box-shadow: 0 12px 35px rgba(255, 255, 255, 0.1);
-    }
-
-    .real-time-display {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .real-time-display:hover {
+        border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
-    .real-time-display h3 {
+    /* Real-time Display Panel */
+    .realtime-panel {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .realtime-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #10b981, #059669);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .panel-title {
         color: #ffffff;
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         font-weight: 600;
-        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .panel-title i {
+        color: #10b981;
+        font-size: 1.25rem;
+    }
+
+    .live-indicator {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        color: #10b981;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .real-time-display h3::before {
-        content: "📊";
-        font-size: 1.5rem;
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        animation: pulse 1.5s infinite;
     }
 
     .sensor-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1.5rem;
     }
 
     .sensor-card {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         padding: 1.5rem;
-        text-align: center;
         transition: all 0.3s ease;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        position: relative;
+        overflow: hidden;
     }
 
     .sensor-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-2px);
     }
 
-    .sensor-card i {
-        font-size: 2rem;
-        color: #3b82f6;
+    .sensor-card.temperature {
+        border-left: 4px solid #ef4444;
+    }
+
+    .sensor-card.humus {
+        border-left: 4px solid #10b981;
+    }
+
+    .sensor-card.moisture {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .sensor-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
         margin-bottom: 1rem;
     }
 
-    .sensor-card h4 {
-        color: #ffffff;
-        font-size: 1.5rem;
+    .sensor-card.temperature .sensor-icon {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .sensor-card.humus .sensor-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .sensor-card.moisture .sensor-icon {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+    }
+
+    .sensor-content {
+        text-align: left;
+    }
+
+    .sensor-value {
+        font-size: 2rem;
         font-weight: 700;
+        color: #ffffff;
         margin-bottom: 0.5rem;
+        line-height: 1;
     }
 
-    .sensor-card small {
-        color: #cbd5e1;
-        font-size: 0.9rem;
+    .sensor-label {
+        color: #ffffff;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
     }
 
-    .manual-input-section {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
+    .sensor-status {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    /* Manual Input Panel */
+    .manual-panel {
+        background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .manual-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .panel-description {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .input-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .input-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
         transition: all 0.3s ease;
     }
 
-    .manual-input-section:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    .input-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .input-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .input-content label {
+        color: #ffffff;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .input-content input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .input-content input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .input-content small {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .manual-input-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .manual-input-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        z-index: 1;
+    }
+
+    .manual-input-section > * {
+        position: relative;
+        z-index: 2;
     }
 
     .manual-input-section h3 {
@@ -1460,42 +1438,27 @@
         gap: 1.5rem;
     }
 
-    .data-section {
-        background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(10px);
+    /* Data Panel */
+    .data-panel {
+        background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
     }
 
-    .data-section:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .data-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .data-header h3 {
-        color: #ffffff;
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .data-header h3::before {
-        content: "📋";
-        font-size: 1.5rem;
+    .data-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        border-radius: 16px 16px 0 0;
     }
 
     .data-actions {
@@ -1503,43 +1466,226 @@
         gap: 0.75rem;
     }
 
+    .class-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .stat-item i {
+        color: #3b82f6;
+    }
+
     .data-table {
         overflow-x: auto;
         margin-bottom: 1.5rem;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
     }
 
     .data-table table {
         width: 100%;
-        min-width: 600px;
         border-collapse: collapse;
-        background: rgba(15, 23, 42, 0.6);
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
         overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .data-table th {
-        background: rgba(59, 130, 246, 0.2);
+        background: rgba(59, 130, 246, 0.1);
         color: #3b82f6;
         font-weight: 600;
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         text-align: left;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .data-table td {
-        padding: 1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         color: #ffffff;
+        vertical-align: middle;
     }
 
     .data-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
     }
 
     .data-table tbody tr:last-child td {
         border-bottom: none;
+    }
+
+    .time-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .time-info .date {
+        font-weight: 600;
+        color: #ffffff;
+        font-size: 0.875rem;
+    }
+
+    .time-info .time {
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .class-info, .student-info, .location-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #cbd5e1;
+    }
+
+    .class-info i, .student-info i, .location-info i {
+        color: #3b82f6;
+        font-size: 0.875rem;
+    }
+
+    .sensor-value {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .sensor-value i {
+        color: #3b82f6;
+        font-size: 0.875rem;
+    }
+
+    /* Mobile Cards */
+    .mobile-cards {
+        display: none;
+    }
+
+    .data-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .data-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .card-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .card-time i {
+        color: #3b82f6;
+    }
+
+    .sensor-readings {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .reading-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+    }
+
+    .reading-item i {
+        color: #3b82f6;
+        font-size: 1rem;
+    }
+
+    .reading-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .reading-label {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .reading-value {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .card-meta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .card-meta .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .card-meta .meta-item i {
+        color: #3b82f6;
+        font-size: 0.75rem;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #94a3b8;
+    }
+
+    .no-data-icon {
+        font-size: 4rem;
+        color: #3b82f6;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .no-data h3 {
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .no-data p {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        line-height: 1.5;
     }
 
     .status-badge {
@@ -1581,9 +1727,106 @@
     }
 
     /* Responsive Design */
+    @media (max-width: 1024px) {
+        .control-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
     @media (max-width: 768px) {
         .iot-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .stats-card {
+            padding: 1.5rem;
+        }
+
+        .control-panel, .realtime-panel, .manual-panel, .data-panel {
+            padding: 1.5rem;
+        }
+
+        .mode-selector {
+            flex-direction: column;
+        }
+
+        .method-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .sensor-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .input-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sensor-readings {
+            grid-template-columns: 1fr;
+        }
+
+        /* Show mobile cards, hide desktop table */
+        .desktop-table {
+            display: none;
+        }
+        
+        .mobile-cards {
+            display: block;
+        }
+
+        .panel-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .data-actions {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .iot-container {
             padding: 0.5rem;
+        }
+
+        .page-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
         }
 
         .glass-card {
@@ -1595,233 +1838,36 @@
             font-size: 1.25rem;
         }
 
-        .iot-meta {
-            flex-direction: column;
-            gap: 0.5rem;
-            align-items: center;
+        .stats-card,
+        .sensor-card {
+            padding: 1rem;
         }
 
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
+        .data-table {
+            font-size: 0.9rem;
         }
 
-        .control-form {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 0.5rem;
         }
 
-        .form-actions {
-            flex-direction: column;
-            gap: 0.5rem;
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
         }
 
         .btn {
-            width: 100%;
-            min-width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
         }
-
-        .data-header {
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: flex-start;
-        }
-
-        .data-actions {
-            width: 100%;
-            justify-content: center;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .data-table {
-            font-size: 0.8rem;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 0.5rem 0.25rem;
-        }
-
-        .sensor-grid {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-
-        .input-grid {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .iot-container {
-            padding: 0.25rem;
-        }
-
-        .glass-card {
-            padding: 0.75rem;
-            margin: 0.25rem 0;
-        }
-
-        .iot-title {
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stats-card,
-        .sensor-card {
-            padding: 0.75rem;
-        }
-    }
-
-    /* Animation Keyframes */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-        }
-        50% {
-            transform: scale(1.05);
-        }
-    }
-
-    @keyframes glow {
-        0%, 100% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-        }
-        50% {
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            background-position: -200% 0;
-        }
-        100% {
-            background-position: 200% 0;
-        }
-    }
-
-    /* Apply animations */
-    .glass-card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    .stats-card:nth-child(1) { animation-delay: 0.1s; }
-    .stats-card:nth-child(2) { animation-delay: 0.2s; }
-    .stats-card:nth-child(3) { animation-delay: 0.3s; }
-    .stats-card:nth-child(4) { animation-delay: 0.4s; }
-
-    .stats-card:hover {
-        animation: pulse 2s infinite;
-    }
-
-    .meta-item i {
-        animation: glow 3s ease-in-out infinite;
-    }
-
-    /* Loading animation for real-time data */
-    .loading {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .loading::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
-        animation: shimmer 2s infinite;
-    }
-
-    /* Enhanced focus states */
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 
-            0 0 0 3px rgba(59, 130, 246, 0.1),
-            0 0 20px rgba(59, 130, 246, 0.3);
-        background: rgba(255, 255, 255, 0.15);
-        transform: scale(1.02);
-    }
-
-    /* Status indicators with animation */
-    .status-badge {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .status-badge::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: shimmer 3s infinite;
-    }
-
-        .data-table {
-            font-size: 0.75rem;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 0.4rem 0.2rem;
-        }
-    }
-
-    /* Additional fixes */
-    .data-table {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .data-table table {
-        min-width: 600px;
-    }
-
-    .data-table td {
-        word-wrap: break-word;
-        max-width: 150px;
-    }
-
-    .text-center {
-        text-align: center;
-        color: #ffffff;
-    }
-
-    .status-badge {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100px;
     }
 </style>
 @endsection
 
-@section('additional-scripts')
+@section('scripts')
 <script>
     let currentDevice = null;
     let currentData = null;
@@ -1838,46 +1884,115 @@
             hour: '2-digit',
             minute: '2-digit'
         };
-        const dateTimeElement = document.getElementById('currentDateTime');
-        if (dateTimeElement) {
-            dateTimeElement.textContent = now.toLocaleDateString('id-ID', options);
-        }
+        document.getElementById('currentDateTime').textContent = now.toLocaleDateString('id-ID', options);
     }
     
-    // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        updateDateTime();
-        setInterval(updateDateTime, 60000);
-    });
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
 
     // Handle measurement mode change
     document.addEventListener('DOMContentLoaded', function() {
-        const measurementMode = document.getElementById('measurementMode');
-        if (measurementMode) {
-            measurementMode.addEventListener('change', function() {
-                const mode = this.value;
+        // Mode selector functionality
+        const modeOptions = document.querySelectorAll('.mode-option');
+        modeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                modeOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                // Update radio button
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Update UI based on mode
+                const mode = this.dataset.mode;
                 const scanBtn = document.getElementById('scanDeviceBtn');
                 const manualSection = document.getElementById('manualInputSection');
                 
-                if (scanBtn && manualSection) {
-                    if (mode === 'manual') {
-                        scanBtn.innerHTML = '<i class="fas fa-edit"></i>Input Data Manual';
-                        manualSection.style.display = 'block';
-                    } else {
-                        scanBtn.innerHTML = '<i class="fas fa-bluetooth"></i>Scan & Ambil Data';
-                        manualSection.style.display = 'none';
-                    }
+                if (mode === 'manual') {
+                    scanBtn.innerHTML = '<i class="fas fa-edit"></i><span>Input Data Manual</span>';
+                    manualSection.style.display = 'block';
+                } else {
+                    scanBtn.innerHTML = '<i class="fas fa-bluetooth"></i><span>Scan & Ambil Data</span>';
+                    manualSection.style.display = 'none';
                 }
             });
+        });
+        
+        // Set initial selected mode
+        const autoMode = document.querySelector('.mode-option[data-mode="auto"]');
+        if (autoMode) {
+            autoMode.classList.add('selected');
         }
     });
 
+    // Connection method variables
+    let selectedConnectionMethod = 'bluetooth';
+    let usbManager = null;
+    let bluetoothManager = null;
+
+    // Select connection method
+    function selectConnectionMethod(method) {
+        selectedConnectionMethod = method;
+        
+        // Update button states
+        document.getElementById('usb-method-btn').classList.toggle('active', method === 'usb');
+        document.getElementById('bluetooth-method-btn').classList.toggle('active', method === 'bluetooth');
+        
+        // Update scan button icon
+        const scanBtn = document.getElementById('scanDeviceBtn');
+        if (method === 'usb') {
+            scanBtn.innerHTML = '<i class="fas fa-usb me-1"></i>Hubungkan USB';
+        } else {
+            scanBtn.innerHTML = '<i class="fas fa-bluetooth me-1"></i>Scan & Ambil Data';
+        }
+    }
+
+    // Initialize USB Manager if available
+    function initUSBManager() {
+        if (typeof USBIoTManager !== 'undefined') {
+            usbManager = new USBIoTManager();
+            
+            usbManager.onDataReceived = function(data) {
+                console.log('USB data received:', data);
+                currentData = {
+                    soil_temperature: data.temperature || 0,
+                    soil_humus: data.soil_moisture || 0,
+                    soil_moisture: data.humidity || 0,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Update UI
+                updateRealTimeDisplay();
+            };
+            
+            usbManager.onConnectionChange = function(connected, device) {
+                isConnected = connected;
+                const statusElement = document.getElementById('connectionStatus');
+                const indicatorElement = document.getElementById('connectionIndicator');
+                
+                if (connected) {
+                    statusElement.textContent = 'Terhubung via USB';
+                    statusElement.style.color = '#10b981';
+                    indicatorElement.classList.add('connected');
+                    document.getElementById('realTimeDataSection').style.display = 'block';
+                } else {
+                    statusElement.textContent = 'Terputus';
+                    statusElement.style.color = '#ef4444';
+                    indicatorElement.classList.remove('connected');
+                }
+            };
+            
+            usbManager.onError = function(message, error) {
+                console.error('USB Error:', message, error);
+                alert('USB Error: ' + message);
+            };
+        }
+    }
+
     // Scan and connect to IoT device
     async function scanDevice() {
-        const measurementMode = document.getElementById('measurementMode');
-        if (!measurementMode) return;
-        
-        const mode = measurementMode.value;
+        const mode = document.getElementById('measurementMode').value;
         
         if (mode === 'manual') {
             showManualInput();
@@ -1887,62 +2002,83 @@
         const scanBtn = document.getElementById('scanDeviceBtn');
         const saveBtn = document.getElementById('saveDataBtn');
         
-        if (!scanBtn || !saveBtn) return;
-        
         scanBtn.disabled = true;
-        scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Scanning...';
+        scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Menghubungkan...';
         
         try {
-            // Check if Web Bluetooth is supported
-            if (!navigator.bluetooth) {
-                throw new Error('Web Bluetooth tidak didukung di browser ini. Gunakan mode manual.');
+            if (selectedConnectionMethod === 'usb') {
+                // USB Connection
+                if (!usbManager) {
+                    initUSBManager();
+                }
+                
+                if (!usbManager) {
+                    throw new Error('USB Manager tidak tersedia. Gunakan Bluetooth atau mode manual.');
+                }
+                
+                if (!usbManager.isSupported()) {
+                    throw new Error('Web Serial API tidak didukung di browser ini. Gunakan Chrome/Edge atau mode manual.');
+                }
+                
+                await usbManager.connect();
+                await usbManager.startReading();
+                
+                scanBtn.innerHTML = '<i class="fas fa-check"></i>Terhubung USB';
+                saveBtn.disabled = false;
+                
+            } else {
+                // Bluetooth Connection (existing code)
+                if (!navigator.bluetooth) {
+                    throw new Error('Web Bluetooth tidak didukung di browser ini. Gunakan mode manual.');
+                }
+                
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['0000180a-0000-1000-8000-00805f9b34fb']
+                });
+                
+                currentDevice = device;
+                const server = await device.gatt.connect();
+                isConnected = true;
+                
+                document.getElementById('realTimeDataSection').style.display = 'block';
+                startReadingData(server);
+                
+                scanBtn.innerHTML = '<i class="fas fa-check"></i><span>Terhubung</span>';
+                saveBtn.disabled = false;
+                
+                const statusElement = document.getElementById('connectionStatus');
+                const indicatorElement = document.getElementById('connectionIndicator');
+                statusElement.textContent = 'Terhubung via Bluetooth';
+                statusElement.style.color = '#10b981';
+                indicatorElement.classList.add('connected');
             }
-            
-            // Request device
-            const device = await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: ['0000180a-0000-1000-8000-00805f9b34fb'] // Device Information Service
-            });
-            
-            currentDevice = device;
-            
-            // Connect to device
-            const server = await device.gatt.connect();
-            isConnected = true;
-            
-            // Show real-time data section
-            document.getElementById('realTimeDataSection').style.display = 'block';
-            
-            // Start reading data
-            startReadingData(server);
-            
-            scanBtn.innerHTML = '<i class="fas fa-check"></i>Terhubung';
-            saveBtn.disabled = false;
-            
-            // Update connection status
-            document.getElementById('connectionStatus').textContent = 'Terhubung';
-            document.getElementById('connectionStatus').style.color = '#10b981';
             
         } catch (error) {
             console.error('Error connecting to device:', error);
             alert('Gagal terhubung ke perangkat: ' + error.message + '\n\nGunakan mode manual untuk input data.');
             
             scanBtn.disabled = false;
-            scanBtn.innerHTML = '<i class="fas fa-bluetooth"></i>Scan & Ambil Data';
+            if (selectedConnectionMethod === 'usb') {
+                scanBtn.innerHTML = '<i class="fas fa-usb me-1"></i>Hubungkan USB';
+            } else {
+                scanBtn.innerHTML = '<i class="fas fa-bluetooth me-1"></i>Scan & Ambil Data';
+            }
         }
     }
 
     // Show manual input form
     function showManualInput() {
-        const manualSection = document.getElementById('manualInputSection');
-        const saveBtn = document.getElementById('saveDataBtn');
-        
-        if (manualSection) {
-            manualSection.style.display = 'block';
-        }
-        
-        if (saveBtn) {
-            saveBtn.disabled = false;
+        document.getElementById('manualInputSection').style.display = 'block';
+        document.getElementById('saveDataBtn').disabled = false;
+    }
+
+    // Update real-time display
+    function updateRealTimeDisplay() {
+        if (currentData) {
+            document.getElementById('realTimeTemp').textContent = currentData.soil_temperature + '°C';
+            document.getElementById('realTimeHumus').textContent = currentData.soil_humus + '%';
+            document.getElementById('realTimeMoisture').textContent = currentData.soil_moisture + '%';
         }
     }
 
@@ -1952,45 +2088,68 @@
             // Get device information service
             const service = await server.getPrimaryService('0000180a-0000-1000-8000-00805f9b34fb');
             
-            // Simulate data reading (replace with actual characteristic reading)
-            setInterval(() => {
-                if (isConnected) {
-                    // Load real sensor data from database
+            // Initialize Bluetooth IoT Manager for real data reading
+            if (typeof IoTBluetoothManager !== 'undefined') {
+                const bluetoothManager = new IoTBluetoothManager();
+                bluetoothManager.server = server;
+                
+                // Set up data received callback
+                bluetoothManager.onDataReceived = function(data) {
                     currentData = {
-                        soil_temperature: '--', // Data akan dimuat dari database
-                        soil_humus: '--', // Data akan dimuat dari database
-                        soil_moisture: '--', // Data akan dimuat dari database
+                        soil_temperature: data.soil_temperature || 0,
+                        soil_humus: data.soil_humus || 0,
+                        soil_moisture: data.soil_moisture || 0,
                         timestamp: new Date().toISOString()
                     };
                     
-                    // Update UI
-                    document.getElementById('realTimeTemp').textContent = currentData.soil_temperature + '°C';
-                    document.getElementById('realTimeHumus').textContent = currentData.soil_humus + '%';
-                    document.getElementById('realTimeMoisture').textContent = currentData.soil_moisture + '%';
-                }
-            }, 2000);
+                    // Update UI with real data
+                    updateRealTimeDisplay();
+                };
+                
+                // Set up error callback
+                bluetoothManager.onError = function(error) {
+                    console.error('Bluetooth data reading error:', error);
+                    // Show error message to user
+                    alert('Gagal membaca data dari perangkat: ' + error.message);
+                };
+                
+                // Start reading real sensor data
+                await bluetoothManager.readSensorData();
+                
+                // Set up periodic reading
+                setInterval(async () => {
+                    if (isConnected && bluetoothManager) {
+                        try {
+                            await bluetoothManager.readSensorData();
+                        } catch (error) {
+                            console.error('Error reading sensor data:', error);
+                        }
+                    }
+                }, 2000);
+                
+            } else {
+                // Fallback: Show no data message
+                console.warn('IoTBluetoothManager not available, showing no data');
+                document.getElementById('realTimeTemp').textContent = '--°C';
+                document.getElementById('realTimeHumus').textContent = '--%';
+                document.getElementById('realTimeMoisture').textContent = '--%';
+            }
             
         } catch (error) {
             console.error('Error reading data:', error);
+            // Show error in UI
+            document.getElementById('realTimeTemp').textContent = 'Error';
+            document.getElementById('realTimeHumus').textContent = 'Error';
+            document.getElementById('realTimeMoisture').textContent = 'Error';
         }
     }
 
     // Save data to database
     async function saveData() {
-        const measurementMode = document.getElementById('measurementMode');
-        const selectKelas = document.getElementById('selectKelas');
-        const location = document.getElementById('location');
-        const notes = document.getElementById('notes');
-        
-        if (!measurementMode || !selectKelas || !location || !notes) {
-            console.error('Required form elements not found');
-            return;
-        }
-        
-        const mode = measurementMode.value;
-        const classId = selectKelas.value;
-        const locationValue = location.value;
-        const notesValue = notes.value;
+        const mode = document.getElementById('measurementMode').value;
+        const classId = document.getElementById('selectKelas').value;
+        const location = document.getElementById('location').value;
+        const notes = document.getElementById('notes').value;
         
         if (!classId) {
             alert('Pilih kelas terlebih dahulu');
@@ -2000,18 +2159,9 @@
         let dataToSave = {};
         
         if (mode === 'manual') {
-            const manualTemp = document.getElementById('manualTemp');
-            const manualHumus = document.getElementById('manualHumus');
-            const manualMoisture = document.getElementById('manualMoisture');
-            
-            if (!manualTemp || !manualHumus || !manualMoisture) {
-                console.error('Manual input elements not found');
-                return;
-            }
-            
-            const temp = manualTemp.value;
-            const humus = manualHumus.value;
-            const moisture = manualMoisture.value;
+            const temp = document.getElementById('manualTemp').value;
+            const humus = document.getElementById('manualHumus').value;
+            const moisture = document.getElementById('manualMoisture').value;
             
             if (!temp || !humus || !moisture) {
                 alert('Isi semua data manual terlebih dahulu');
@@ -2047,8 +2197,8 @@
                     soil_humus: parseFloat(dataToSave.soil_humus),
                     soil_moisture: parseFloat(dataToSave.soil_moisture),
                     device_id: currentDevice ? currentDevice.id : 'manual',
-                    location: locationValue,
-                    notes: notesValue,
+                    location: location,
+                    notes: notes,
                     raw_data: dataToSave
                 })
             });
@@ -2070,23 +2220,12 @@
 
     // Refresh data table
     function refreshData() {
-        try {
-            location.reload();
-        } catch (error) {
-            console.error('Error refreshing data:', error);
-        }
+        location.reload();
     }
 
     // Export my data to CSV
     function exportMyData() {
-        try {
-            const exportUrl = '/api/iot/readings/export?student_id={{ Auth::user()->nis }}';
-            window.open(exportUrl, '_blank');
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            alert('Gagal mengekspor data. Silakan coba lagi.');
-        }
+        window.open('/api/iot/readings/export?student_id={{ Auth::user()->nis }}', '_blank');
     }
 </script>
-</div>
 @endsection

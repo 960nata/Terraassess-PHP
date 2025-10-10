@@ -132,8 +132,8 @@ A responsive table component.
     
     <x-slot name="body">
         <tr>
-            <td>Data Real</td>
-            <td>user@terraassessment.com</td>
+            <td>John Doe</td>
+            <td>john@example.com</td>
             <td>
                 <button class="btn btn-sm btn-primary">Edit</button>
             </td>

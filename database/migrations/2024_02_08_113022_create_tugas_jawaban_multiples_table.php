@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId("user_id");
             $table->string("user_jawaban");
             $table->bigInteger("nilai")->nullable();
-            $table->text("koreksi")->nullable();
+            $table->text("koreksi")->nullable()->default('-');
             $table->foreignId("tugas_kelompok_quiz_id")->nullable();
             $table->timestamps();
         });

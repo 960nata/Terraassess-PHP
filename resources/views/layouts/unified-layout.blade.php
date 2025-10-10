@@ -44,366 +44,22 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
-    <!-- Custom CSS instead of Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: {
+                        'md': '768px',
+                    }
+                }
+            }
+        }
+    </script>
     <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/galaxy-theme.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <style>
-        /* Dark mode styles */
-        .dark {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-primary: #334155;
-            --border-secondary: #475569;
-        }
-        
-        .dark body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-        }
-        
-        .dark .header {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-primary) !important;
-        }
-        
-        .dark .sidebar {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-primary) !important;
-        }
-        
-        .dark .main-content {
-            background-color: var(--bg-primary) !important;
-        }
-        
-        .dark .logo-text {
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .menu-item {
-            color: var(--text-secondary) !important;
-        }
-        
-        .dark .menu-item:hover {
-            background-color: var(--bg-tertiary) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .menu-item.active {
-            background-color: var(--bg-tertiary) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .menu-section-title {
-            color: var(--text-muted) !important;
-        }
-        
-        .dark .notification-btn {
-            color: var(--text-secondary) !important;
-        }
-        
-        .dark .notification-btn:hover {
-            background-color: var(--bg-tertiary) !important;
-        }
-        
-        .dark .profile-dropdown-button {
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .profile-dropdown-button:hover {
-            background-color: var(--bg-tertiary) !important;
-        }
-        
-        .dark .notification-dropdown {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-primary) !important;
-        }
-        
-        .dark .profile-dropdown-menu {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-primary) !important;
-        }
-        
-        .dark .notification-item {
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .notification-item:hover {
-            background-color: var(--bg-tertiary) !important;
-        }
-        
-        .dark .notification-title {
-            color: var(--text-primary) !important;
-        }
-        
-        .dark .notification-excerpt {
-            color: var(--text-secondary) !important;
-        }
-        
-        .dark .notification-time {
-            color: var(--text-muted) !important;
-        }
-        
-        /* Modern Profile Dropdown Styles */
-        .profile-dropdown-container {
-            position: relative;
-        }
-
-        .profile-dropdown-button {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0.75rem;
-            background: rgba(30, 41, 59, 0.3);
-            border: 1px solid rgba(71, 85, 105, 0.2);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .profile-dropdown-button:hover {
-            background: rgba(51, 65, 85, 0.9);
-            border-color: rgba(71, 85, 105, 0.5);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-        }
-
-        .profile-name {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #f8fafc;
-            line-height: 1.2;
-        }
-
-        .profile-role {
-            font-size: 0.75rem;
-            color: #cbd5e1;
-            line-height: 1.2;
-        }
-
-        .profile-arrow {
-            color: #cbd5e1;
-            font-size: 0.75rem;
-            transition: transform 0.3s ease;
-        }
-
-        .profile-dropdown-button:hover .profile-arrow {
-            transform: rotate(180deg);
-        }
-
-        .profile-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            min-width: 280px;
-            max-width: 320px;
-            width: auto;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            z-index: 1000;
-            overflow: hidden;
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            animation: dropdownFadeIn 0.3s ease-out;
-        }
-
-        @keyframes dropdownFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px) scale(0.95);
-                backdrop-filter: blur(0px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                backdrop-filter: blur(25px) saturate(180%);
-            }
-        }
-
-        .profile-dropdown-header {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
-            background: rgba(51, 65, 85, 0.8);
-        }
-
-        .profile-dropdown-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .profile-dropdown-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .profile-dropdown-details h6 {
-            margin: 0 0 0.25rem 0;
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .profile-dropdown-details span {
-            font-size: 0.75rem;
-            color: #cbd5e1;
-            word-break: break-all;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 200px;
-        }
-
-        .profile-dropdown-items {
-            padding: 0.5rem 0;
-        }
-
-        .profile-dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: #e2e8f0;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .profile-dropdown-item:hover {
-            background: rgba(71, 85, 105, 0.3);
-            color: #f8fafc;
-            text-decoration: none;
-            padding-left: 1.25rem;
-        }
-
-        .profile-dropdown-item i {
-            width: 16px;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        .profile-dropdown-item:hover i {
-            color: #f8fafc;
-        }
-
-        .profile-dropdown-item.logout {
-            color: #f87171;
-        }
-
-        .profile-dropdown-item.logout:hover {
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-        }
-
-        .profile-dropdown-item.logout i {
-            color: #f87171;
-        }
-
-        .profile-dropdown-divider {
-            height: 1px;
-            background: rgba(71, 85, 105, 0.3);
-            margin: 0.5rem 0;
-        }
-
-        /* Fix any white cards or elements that might interfere */
-        .profile-dropdown-container * {
-            box-sizing: border-box;
-        }
-
-        /* Ensure no white backgrounds interfere - FORCE DARK THEME */
-        .profile-dropdown-container,
-        .profile-dropdown-container *,
-        .profile-dropdown-button,
-        .profile-dropdown-button *,
-        .profile-dropdown-menu,
-        .profile-dropdown-menu * {
-            background: transparent !important;
-        }
-
-        .profile-dropdown-button {
-            background: rgba(30, 41, 59, 0.3) !important;
-        }
-
-        .profile-dropdown-button:hover {
-            background: rgba(51, 65, 85, 0.6) !important;
-        }
-
-        .profile-dropdown-menu {
-            background: rgba(30, 41, 59, 0.7) !important;
-        }
-
-        .profile-dropdown-header {
-            background: rgba(51, 65, 85, 0.8) !important;
-        }
-
-        /* Force all text to be light colored */
-        .profile-dropdown-container * {
-            color: #f8fafc !important;
-        }
-
-        .profile-dropdown-container .profile-role,
-        .profile-dropdown-container .profile-arrow,
-        .profile-dropdown-container .profile-dropdown-details span {
-            color: #cbd5e1 !important;
-        }
-
-        .profile-dropdown-container .profile-dropdown-item.logout {
-            color: #f87171 !important;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .profile-info {
-                display: none;
-            }
-            
-            .profile-dropdown-menu {
-                min-width: 250px;
-                max-width: 280px;
-                right: -10px;
-            }
-        }
-    </style>
     @yield('styles')
 </head>
 <body>
@@ -439,7 +95,7 @@
                             <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
                                 <i class="fas fa-check-double"></i>
                             </button>
-                            <a href="{{ route('notifications.user') }}" class="view-all-btn" title="Lihat Semua">
+                            <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
                                 <i class="fas fa-list"></i>
                             </a>
                         </div>
@@ -454,54 +110,50 @@
             </div>
 
             <!-- Profile Dropdown -->
-            <div class="profile-dropdown-container">
-                <button class="profile-dropdown-button" onclick="toggleProfile()">
-                    <div class="profile-avatar">
+            <div class="profile-container">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
+                    <div class="user-avatar {{ $roleColor }}">
                         @if($user->profile_photo)
-                            <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
                         @else
                             {{ substr($user->name ?? $roleInitial, 0, 2) }}
                         @endif
                     </div>
-                    <div class="profile-info">
-                        <div class="profile-name">{{ $user->name ?? $roleTitle }}</div>
-                        <div class="profile-role">{{ $roleTitle }}</div>
+                    <div class="user-info hidden sm:block">
+                        <div class="user-name">{{ $user->name ?? $roleTitle }}</div>
+                        <div class="user-role">{{ $roleTitle }}</div>
                     </div>
-                    <i class="fas fa-chevron-down profile-arrow"></i>
-                </button>
-                
-                <!-- Profile Dropdown Menu -->
-                <div class="profile-dropdown-menu hidden" id="profileDropdown">
+                    <i class="fas fa-chevron-down dropdown-icon hidden sm:block"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
                     <div class="profile-dropdown-header">
-                        <div class="profile-dropdown-user-info">
-                            <div class="profile-dropdown-avatar">
-                                @if($user->profile_photo)
-                                    <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                                @else
-                                    {{ substr($user->name ?? $roleInitial, 0, 2) }}
-                                @endif
-                            </div>
-                            <div class="profile-dropdown-details">
-                                <h6>{{ $user->name ?? $roleTitle }}</h6>
-                                <span>{{ $user->email ?? '' }}</span>
-                            </div>
+                        <div class="profile-dropdown-avatar {{ $roleColor }}">
+                            @if($user->profile_photo)
+                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
+                            @else
+                                {{ substr($user->name ?? $roleInitial, 0, 2) }}
+                            @endif
+                        </div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? $roleTitle }}</div>
+                            <div class="profile-dropdown-role">{{ $roleTitle }}</div>
                         </div>
                     </div>
-                    <div class="profile-dropdown-items">
+                    <div class="profile-dropdown-menu">
                         <a href="{{ $profileRoute }}" class="profile-dropdown-item">
                             <i class="fas fa-user"></i>
-                            Profil
+                            <span>Profil</span>
                         </a>
-                        @if($roleId != 2)
+                        @if($roleId != 2) {{-- Hide settings for Admin role --}}
                         <a href="{{ $settingsRoute }}" class="profile-dropdown-item">
                             <i class="fas fa-cog"></i>
-                            Pengaturan
+                            <span>Pengaturan</span>
                         </a>
                         @endif
                         <div class="profile-dropdown-divider"></div>
                         <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
                             <i class="fas fa-sign-out-alt"></i>
-                            Logout
+                            <span>Logout</span>
                         </a>
                     </div>
                 </div>
@@ -512,166 +164,7 @@
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-menu">
-            <div class="menu-section">
-                <div class="menu-section-title">Menu Utama</div>
-                
-                {{-- Dynamic Dashboard Menu Based on Role --}}
-                @php
-                    $dashboardRoutes = [
-                        1 => 'superadmin.dashboard',
-                        2 => 'admin.dashboard', 
-                        3 => 'teacher.dashboard',
-                        4 => 'student.dashboard'
-                    ];
-                    $dashboardRoute = $dashboardRoutes[$roleId] ?? 'dashboard';
-                    $dashboardPatterns = [
-                        1 => 'superadmin/dashboard*',
-                        2 => 'admin/dashboard*',
-                        3 => 'teacher/dashboard*', 
-                        4 => 'student/dashboard*'
-                    ];
-                    $dashboardPattern = $dashboardPatterns[$roleId] ?? 'dashboard*';
-                @endphp
-                
-                <a href="{{ route($dashboardRoute) }}" class="menu-item {{ Request::is($dashboardPattern) ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span class="menu-item-text">Dashboard</span>
-                </a>
-                
-                {{-- Push Notifikasi - All roles --}}
-                @if($roleId == 1) {{-- Super Admin --}}
-                    <a href="{{ route('superadmin.push-notification') }}" class="menu-item {{ Request::is('superadmin/push-notification*') ? 'active' : '' }}">
-                        <i class="fas fa-bell"></i>
-                        <span class="menu-item-text">Push Notifikasi</span>
-                    </a>
-                @elseif($roleId == 2) {{-- Admin --}}
-                    <a href="{{ route('admin.push-notification') }}" class="menu-item {{ Request::is('admin/push-notification*') ? 'active' : '' }}">
-                        <i class="fas fa-bell"></i>
-                        <span class="menu-item-text">Push Notifikasi</span>
-                    </a>
-                @elseif($roleId == 3) {{-- Teacher --}}
-                    <a href="{{ route('teacher.push-notification') }}" class="menu-item {{ Request::is('teacher/push-notification*') ? 'active' : '' }}">
-                        <i class="fas fa-bell"></i>
-                        <span class="menu-item-text">Push Notifikasi</span>
-                    </a>
-                @endif
-            </div>
-
-            <!-- Management Section - RBAC Controlled -->
-            @if($roleId != 4) {{-- Not for Student --}}
-                <div class="menu-section">
-                    <div class="menu-section-title">Manajemen</div>
-                    
-                    @include('components.rbac-sidebar')
-                </div>
-            @endif
-
-            <!-- IoT & Research Section - All roles -->
-            <div class="menu-section">
-                <div class="menu-section-title">IoT & Penelitian</div>
-                
-                {{-- Manajemen IoT - All roles --}}
-                @if($roleId == 1) {{-- Super Admin --}}
-                    <a href="{{ route('superadmin.iot-management') }}" class="menu-item {{ Request::is('superadmin/iot-management*') ? 'active' : '' }}">
-                        <i class="fas fa-wifi"></i>
-                        <span class="menu-item-text">Manajemen IoT</span>
-                    </a>
-                    <a href="{{ route('iot.tugas') }}" class="menu-item {{ Request::is('iot/tugas*') ? 'active' : '' }}">
-                        <i class="fas fa-server"></i>
-                        <span class="menu-item-text">Tugas IoT</span>
-                    </a>
-                    <a href="{{ route('iot.research-projects') }}" class="menu-item {{ Request::is('iot/research-projects*') ? 'active' : '' }}">
-                        <i class="fas fa-wave-square"></i>
-                        <span class="menu-item-text">Penelitian IoT</span>
-                    </a>
-                @elseif($roleId == 2) {{-- Admin --}}
-                    <a href="{{ route('admin.iot-management') }}" class="menu-item {{ Request::is('admin/iot-management*') ? 'active' : '' }}">
-                        <i class="fas fa-wifi"></i>
-                        <span class="menu-item-text">Manajemen IoT</span>
-                    </a>
-                @elseif($roleId == 3) {{-- Teacher --}}
-                    <a href="{{ route('teacher.iot.dashboard') }}" class="menu-item {{ Request::is('teacher/iot*') ? 'active' : '' }}">
-                        <i class="fas fa-wifi"></i>
-                        <span class="menu-item-text">Manajemen IoT</span>
-                    </a>
-                @elseif($roleId == 4) {{-- Student --}}
-                    <a href="{{ route('student.iot') }}" class="menu-item {{ Request::is('student/iot*') ? 'active' : '' }}">
-                        <i class="fas fa-wifi"></i>
-                        <span class="menu-item-text">Manajemen IoT</span>
-                    </a>
-                @endif
-            </div>
-
-            <!-- Analytics & Reports - All roles -->
-            <div class="menu-section">
-                <div class="menu-section-title">Analitik</div>
-                
-                {{-- Laporan - All roles --}}
-                @if($roleId == 1) {{-- Super Admin --}}
-                    <a href="{{ route('superadmin.reports') }}" class="menu-item {{ Request::is('superadmin/reports*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="menu-item-text">Laporan</span>
-                    </a>
-                @elseif($roleId == 2) {{-- Admin --}}
-                    <a href="{{ route('admin.reports') }}" class="menu-item {{ Request::is('admin/reports*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="menu-item-text">Laporan</span>
-                    </a>
-                @elseif($roleId == 3) {{-- Teacher --}}
-                    <a href="{{ route('teacher.reports') }}" class="menu-item {{ Request::is('teacher/reports*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="menu-item-text">Laporan</span>
-                    </a>
-                @elseif($roleId == 4) {{-- Student --}}
-                    <a href="{{ route('student.reports') }}" class="menu-item {{ Request::is('student/reports*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span class="menu-item-text">Laporan</span>
-                    </a>
-                @endif
-            </div>
-
-            <!-- Settings Section - All roles -->
-            <div class="menu-section">
-                <div class="menu-section-title">Pengaturan</div>
-                
-                @if($roleId == 1) {{-- Super Admin --}}
-                    <a href="{{ route('superadmin.settings') }}" class="menu-item {{ Request::is('superadmin/settings*') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span class="menu-item-text">Pengaturan</span>
-                    </a>
-                    <a href="{{ route('superadmin.help') }}" class="menu-item {{ Request::is('superadmin/help*') ? 'active' : '' }}">
-                        <i class="fas fa-question-circle"></i>
-                        <span class="menu-item-text">Bantuan</span>
-                    </a>
-                @elseif($roleId == 2) {{-- Admin --}}
-                    <a href="{{ route('admin.settings') }}" class="menu-item {{ Request::is('admin/settings*') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span class="menu-item-text">Pengaturan</span>
-                    </a>
-                    <a href="{{ route('admin.help') }}" class="menu-item {{ Request::is('admin/help*') ? 'active' : '' }}">
-                        <i class="fas fa-question-circle"></i>
-                        <span class="menu-item-text">Bantuan</span>
-                    </a>
-                @elseif($roleId == 3) {{-- Teacher --}}
-                    <a href="{{ route('teacher.settings') }}" class="menu-item {{ Request::is('teacher/settings*') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span class="menu-item-text">Pengaturan</span>
-                    </a>
-                    <a href="{{ route('teacher.help') }}" class="menu-item {{ Request::is('teacher/help*') ? 'active' : '' }}">
-                        <i class="fas fa-question-circle"></i>
-                        <span class="menu-item-text">Bantuan</span>
-                    </a>
-                @elseif($roleId == 4) {{-- Student --}}
-                    <a href="{{ route('student.settings') }}" class="menu-item {{ Request::is('student/settings*') ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span class="menu-item-text">Pengaturan</span>
-                    </a>
-                    <a href="{{ route('student.help') }}" class="menu-item {{ Request::is('student/help*') ? 'active' : '' }}">
-                        <i class="fas fa-question-circle"></i>
-                        <span class="menu-item-text">Bantuan</span>
-                    </a>
-                @endif
-            </div>
+            @include('layout.navbar.role-sidebar', ['roleId' => $roleId])
         </div>
     </nav>
 
@@ -684,83 +177,25 @@
     <script src="{{ asset('js/superadmin-dashboard.js') }}"></script>
     
     <script>
-        // Toggle sidebar - ULTRA FORCE LOGIC
+        // Toggle sidebar for mobile - using the same logic as external JS
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mobileOverlay = document.getElementById('mobileOverlay');
             const mainContent = document.querySelector('.main-content');
             
-            console.log('=== TOGGLE SIDEBAR DEBUG ===');
-            console.log('Window width:', window.innerWidth);
-            console.log('Sidebar element:', sidebar);
-            console.log('Before toggle - classes:', sidebar.className);
-            console.log('Before toggle - collapsed:', sidebar.classList.contains('collapsed'));
-            
-            if (window.innerWidth <= 768) {
-                // Mobile behavior - ULTRA FORCE LOGIC
-                const isCollapsed = sidebar.classList.contains('collapsed');
+            if (window.innerWidth <= 1024) {
+                // Mobile behavior - toggle collapsed class
+                sidebar.classList.toggle('collapsed');
+                if (mobileOverlay) mobileOverlay.classList.toggle('active');
+                if (mainContent) mainContent.classList.toggle('sidebar-open');
                 
-                if (isCollapsed) {
-                    // Show sidebar - SAME AS FORCE SHOW
-                    sidebar.classList.remove('collapsed');
-                    
-                    // Force all possible CSS properties - SAME AS FORCE SHOW
-                    sidebar.style.setProperty('transform', 'translateX(0)', 'important');
-                    sidebar.style.setProperty('visibility', 'visible', 'important');
-                    sidebar.style.setProperty('opacity', '1', 'important');
-                    sidebar.style.setProperty('display', 'block', 'important');
-                    sidebar.style.setProperty('position', 'fixed', 'important');
-                    sidebar.style.setProperty('top', '70px', 'important');
-                    sidebar.style.setProperty('left', '0', 'important');
-                    sidebar.style.setProperty('width', '260px', 'important');
-                    sidebar.style.setProperty('height', 'calc(100vh - 70px)', 'important');
-                    sidebar.style.setProperty('z-index', '9999', 'important');
-                    sidebar.style.setProperty('background', 'rgba(15, 23, 42, 0.95)', 'important');
-                    
-                    // Force overlay - SAME AS FORCE SHOW
-                    if (mobileOverlay) {
-                        mobileOverlay.classList.add('active');
-                        mobileOverlay.style.setProperty('display', 'block', 'important');
-                        mobileOverlay.style.setProperty('background', 'rgba(0, 0, 0, 0.5)', 'important');
-                    }
-                    if (mainContent) mainContent.classList.add('sidebar-open');
-                    
-                    console.log('Mobile sidebar SHOWN - SAME AS FORCE SHOW');
-                } else {
-                    // Hide sidebar - SAME AS FORCE SHOW
-                    sidebar.classList.add('collapsed');
-                    
-                    // Force all possible CSS properties - SAME AS FORCE SHOW
-                    sidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
-                    sidebar.style.setProperty('visibility', 'hidden', 'important');
-                    sidebar.style.setProperty('opacity', '0', 'important');
-                    sidebar.style.setProperty('display', 'block', 'important');
-                    
-                    // Force overlay - SAME AS FORCE SHOW
-                    if (mobileOverlay) {
-                        mobileOverlay.classList.remove('active');
-                        mobileOverlay.style.setProperty('display', 'none', 'important');
-                    }
-                    if (mainContent) mainContent.classList.remove('sidebar-open');
-                    
-                    console.log('Mobile sidebar HIDDEN - SAME AS FORCE SHOW');
-                }
-                
-                console.log('After toggle - classes:', sidebar.className);
-                console.log('After toggle - collapsed:', sidebar.classList.contains('collapsed'));
-                
-                // Check computed styles
-                const computedStyle = window.getComputedStyle(sidebar);
-                console.log('Computed transform:', computedStyle.transform);
-                console.log('Computed visibility:', computedStyle.visibility);
-                console.log('Computed opacity:', computedStyle.opacity);
-                console.log('Computed display:', computedStyle.display);
-                console.log('Computed position:', computedStyle.position);
-                console.log('Computed z-index:', computedStyle.zIndex);
+                // Debug log
+                console.log('Mobile sidebar toggled. Collapsed:', sidebar.classList.contains('collapsed'));
+                console.log('Sidebar classes:', sidebar.className);
+                console.log('Mobile overlay active:', mobileOverlay ? mobileOverlay.classList.contains('active') : 'No overlay');
             } else {
                 // Desktop behavior
                 sidebar.classList.toggle('collapsed');
-                console.log('Desktop sidebar toggled');
             }
         }
 
@@ -770,18 +205,9 @@
             const mainContent = document.querySelector('.main-content');
             
             sidebar.classList.add('collapsed');
-            if (mobileOverlay) mobileOverlay.classList.remove('active');
-            if (mainContent) mainContent.classList.remove('sidebar-open');
-            
-            // FORCE CSS with inline styles as backup
-            if (window.innerWidth <= 768) {
-                sidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
-                sidebar.style.setProperty('visibility', 'hidden', 'important');
-                sidebar.style.setProperty('opacity', '0', 'important');
-                sidebar.style.setProperty('display', 'block', 'important');
-            }
+            mobileOverlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-open');
         }
-
 
         // Notification functionality
         let notificationDropdown = null;
@@ -795,7 +221,7 @@
             const menuToggle = document.querySelector('.menu-toggle');
             const mobileOverlay = document.getElementById('mobileOverlay');
             
-            if (window.innerWidth <= 768 && 
+            if (window.innerWidth <= 1024 && 
                 sidebar && 
                 !sidebar.contains(event.target) && 
                 menuToggle && 
@@ -812,50 +238,20 @@
             const mobileOverlay = document.getElementById('mobileOverlay');
             const mainContent = document.querySelector('.main-content');
             
-            if (window.innerWidth > 768) {
+            if (window.innerWidth > 1024) {
                 // Desktop - show sidebar by default
-                if (sidebar) {
-                    sidebar.classList.remove('collapsed');
-                    sidebar.style.transform = '';
-                    sidebar.style.visibility = '';
-                    sidebar.style.opacity = '';
-                }
+                if (sidebar) sidebar.classList.remove('collapsed');
                 if (mobileOverlay) mobileOverlay.classList.remove('active');
                 if (mainContent) mainContent.classList.remove('sidebar-open');
-                } else {
-                    // Mobile - hide sidebar by default
-                    if (sidebar) {
-                        sidebar.classList.add('collapsed');
-                        sidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
-                        sidebar.style.setProperty('visibility', 'hidden', 'important');
-                        sidebar.style.setProperty('opacity', '0', 'important');
-                        sidebar.style.setProperty('display', 'block', 'important');
-                    }
+            } else {
+                // Mobile - hide sidebar by default
+                if (sidebar) sidebar.classList.add('collapsed');
                 if (mobileOverlay) mobileOverlay.classList.remove('active');
                 if (mainContent) mainContent.classList.remove('sidebar-open');
             }
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize sidebar state
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) {
-                if (window.innerWidth > 768) {
-                    // Desktop: sidebar terbuka by default
-                    sidebar.classList.remove('collapsed');
-                    sidebar.style.transform = '';
-                    sidebar.style.visibility = '';
-                    sidebar.style.opacity = '';
-                } else {
-                    // Mobile: sidebar tertutup by default
-                    sidebar.classList.add('collapsed');
-                    sidebar.style.setProperty('transform', 'translateX(-100%)', 'important');
-                    sidebar.style.setProperty('visibility', 'hidden', 'important');
-                    sidebar.style.setProperty('opacity', '0', 'important');
-                    sidebar.style.setProperty('display', 'block', 'important');
-                }
-            }
-            
             notificationDropdown = document.getElementById('notificationDropdown');
             notificationBadge = document.getElementById('notificationBadge');
             notificationList = document.getElementById('notificationList');
@@ -1074,14 +470,37 @@
             return date.toLocaleDateString('id-ID');
         }
 
-        // Profile dropdown removed - using direct buttons now
+        // Toggle profile dropdown
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            
+            // Close notification dropdown if open
+            notificationDropdown.classList.remove('active');
+            closeNotificationDropdown();
+            
+            // Toggle profile dropdown
+            dropdown.classList.toggle('active');
+            
+            // Add mobile class if on mobile
+            if (window.innerWidth <= 768) {
+                dropdown.classList.add('mobile-dropdown');
+            } else {
+                dropdown.classList.remove('mobile-dropdown');
+            }
+        }
 
-        // Close notification dropdown when clicking outside
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
             const notificationContainer = document.querySelector('.notification-container');
+            const profileContainer = document.querySelector('.profile-container');
             
             if (!notificationContainer.contains(event.target)) {
                 document.getElementById('notificationDropdown').classList.remove('active');
+            }
+            
+            if (!profileContainer.contains(event.target)) {
+                document.getElementById('profileDropdown').classList.remove('active');
             }
         });
 
@@ -1108,49 +527,6 @@
         // Initialize mobile behavior
         handleMobileDropdowns();
         window.addEventListener('resize', handleMobileDropdowns);
-
-        // Profile dropdown functionality
-        function toggleProfile() {
-            const profileDropdown = document.getElementById('profileDropdown');
-            const notificationDropdown = document.getElementById('notificationDropdown');
-            
-            // Close notification dropdown if open
-            if (notificationDropdown) {
-                notificationDropdown.style.display = 'none';
-            }
-            
-            // Toggle profile dropdown
-            if (profileDropdown.classList.contains('hidden')) {
-                profileDropdown.classList.remove('hidden');
-                profileDropdown.style.display = 'block';
-            } else {
-                profileDropdown.classList.add('hidden');
-                profileDropdown.style.display = 'none';
-            }
-        }
-
-        // Close profile dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const profileDropdown = document.getElementById('profileDropdown');
-            const profileButton = event.target.closest('.profile-dropdown-button');
-            const profileContainer = event.target.closest('.profile-dropdown-container');
-            
-            if (profileDropdown && !profileContainer) {
-                profileDropdown.classList.add('hidden');
-                profileDropdown.style.display = 'none';
-            }
-        });
-
-        // Close dropdown when pressing Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const profileDropdown = document.getElementById('profileDropdown');
-                if (profileDropdown && !profileDropdown.classList.contains('hidden')) {
-                    profileDropdown.classList.add('hidden');
-                    profileDropdown.style.display = 'none';
-                }
-            }
-        });
     </script>
     
     @yield('scripts')

@@ -25,7 +25,7 @@
                     <h4>Notifikasi</h4>
                     <div class="notification-actions">
                         <button class="mark-all-read-btn" onclick="markAllAsRead()">Tandai Semua</button>
-                        <a href="{{ route('notifications.user') }}" class="view-all-btn">Lihat Semua</a>
+                        <a href="{{ route('notifications.index') }}" class="view-all-btn">Lihat Semua</a>
                     </div>
                 </div>
                 <div class="notification-list" id="notificationList">
@@ -37,9 +37,9 @@
             </div>
         </div>
 
-        <!-- User Info and Settings -->
+        <!-- User Profile Dropdown -->
         <div class="user-profile-container">
-            <div class="user-profile">
+            <div class="user-profile" onclick="toggleProfileDropdown()">
                 <div class="user-avatar">
                     <img src="{{ Auth::user()->gambar ? asset('storage/' . Auth::user()->gambar) : asset('asset/icons/profile-women.svg') }}" 
                          alt="Profile" class="avatar-img">
@@ -48,15 +48,25 @@
                     <div class="user-name">{{ Auth::user()->name }}</div>
                     <div class="user-role">Siswa</div>
                 </div>
+                <i class="fas fa-chevron-down profile-dropdown-arrow"></i>
             </div>
-            <a href="{{ route('student.settings') }}" class="settings-button">
-                <i class="fas fa-cog"></i>
-                <span class="hidden sm:block">Pengaturan</span>
-            </a>
-            <a href="{{ route('logout') }}" class="logout-button">
-                <i class="fas fa-sign-out-alt"></i>
-                <span class="hidden sm:block">Logout</span>
-            </a>
+            
+            <!-- Profile Dropdown -->
+            <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                <a href="{{ route('student.profile') }}" class="profile-dropdown-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </a>
+                <a href="{{ route('notifications.index') }}" class="profile-dropdown-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifikasi</span>
+                </a>
+                <div class="profile-dropdown-divider"></div>
+                <a href="{{ route('logout') }}" class="profile-dropdown-item logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
         </div>
     </div>
 </header>

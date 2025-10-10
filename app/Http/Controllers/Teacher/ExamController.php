@@ -22,22 +22,55 @@ class ExamController extends Controller
     {
         $user = Auth::user();
         
-        // Guru memiliki akses penuh ke semua ujian
-        $exams = Ujian::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Ambil ujian berdasarkan kelas yang diajar oleh guru
+        // Jika teacher memiliki assignment, filter berdasarkan assignment
+        // Jika tidak, tampilkan semua ujian (untuk development/testing)
+        $examsQuery = Ujian::with(['kelasMapel.kelas', 'kelasMapel.mapel']);
+        
+        // Cek apakah teacher memiliki assignment
+        $hasAssignment = \App\Models\EditorAccess::where('user_id', $user->id)->exists();
+        
+        if ($hasAssignment) {
+            // Filter berdasarkan assignment teacher
+            $examsQuery->whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }
+        // Jika tidak ada assignment, tampilkan semua ujian (untuk testing)
+        
+        $exams = $examsQuery->orderBy('created_at', 'desc')->get();
 
         // Hitung statistik
         $totalExams = $exams->count();
         $activeExams = $exams->where('isHidden', 0)->count();
         $completedExams = $exams->where('due', '<', now())->count();
         
-        // Hitung total peserta (semua siswa)
-        $totalParticipants = \App\Models\User::where('roles_id', 4)->count();
+        // Hitung total peserta
+        if ($hasAssignment) {
+            $totalParticipants = Kelas::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->withCount(['users' => function($query) {
+                $query->where('roles_id', 4); // Role siswa
+            }])->get()->sum('users_count');
+        } else {
+            // Jika tidak ada assignment, hitung semua siswa
+            $totalParticipants = \App\Models\User::where('roles_id', 4)->count();
+        }
 
-        // Ambil semua kelas dan mata pelajaran
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
+        // Ambil data kelas dan mata pelajaran untuk form
+        if ($hasAssignment) {
+            $classes = Kelas::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->get();
+
+            $subjects = Mapel::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->get();
+        } else {
+            // Jika tidak ada assignment, ambil semua kelas dan mata pelajaran
+            $classes = Kelas::all();
+            $subjects = Mapel::all();
+        }
 
         return view('teacher.exam-management', [
             'title' => 'Manajemen Ujian',
@@ -60,8 +93,18 @@ class ExamController extends Controller
     {
         $user = Auth::user();
         
-        // Guru memiliki akses penuh ke semua ujian
         $query = Ujian::with(['kelasMapel.kelas', 'kelasMapel.mapel']);
+        
+        // Cek apakah teacher memiliki assignment
+        $hasAssignment = \App\Models\EditorAccess::where('user_id', $user->id)->exists();
+        
+        if ($hasAssignment) {
+            // Filter berdasarkan assignment teacher
+            $query->whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }
+        // Jika tidak ada assignment, tidak ada filter tambahan
 
         // Filter berdasarkan kelas
         if ($request->has('filter_class') && $request->filter_class) {
@@ -99,15 +142,47 @@ class ExamController extends Controller
 
         $exams = $query->orderBy('created_at', 'desc')->get();
 
-        // Hitung statistik (guru memiliki akses penuh)
-        $totalExams = Ujian::count();
-        $activeExams = Ujian::where('isHidden', 0)->count();
-        $completedExams = Ujian::where('due', '<', now())->count();
-        $totalParticipants = \App\Models\User::where('roles_id', 4)->count();
+        // Hitung statistik
+        if ($hasAssignment) {
+            $totalExams = Ujian::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->count();
+            
+            $activeExams = Ujian::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->where('isHidden', 0)->count();
+            
+            $completedExams = Ujian::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->where('due', '<', now())->count();
+            
+            $totalParticipants = Kelas::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->withCount(['users' => function($query) {
+                $query->where('roles_id', 4);
+            }])->get()->sum('users_count');
+        } else {
+            // Jika tidak ada assignment, hitung semua
+            $totalExams = Ujian::count();
+            $activeExams = Ujian::where('isHidden', 0)->count();
+            $completedExams = Ujian::where('due', '<', now())->count();
+            $totalParticipants = \App\Models\User::where('roles_id', 4)->count();
+        }
 
-        // Ambil semua kelas dan mata pelajaran (guru memiliki akses penuh)
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
+        // Ambil data kelas dan mata pelajaran untuk form
+        if ($hasAssignment) {
+            $classes = Kelas::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->get();
+
+            $subjects = Mapel::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->get();
+        } else {
+            // Jika tidak ada assignment, ambil semua
+            $classes = Kelas::all();
+            $subjects = Mapel::all();
+        }
 
         return view('teacher.exam-management', [
             'title' => 'Manajemen Ujian',

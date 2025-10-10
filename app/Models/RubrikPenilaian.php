@@ -10,17 +10,21 @@ class RubrikPenilaian extends Model
     use HasFactory;
 
     protected $table = 'rubrik_penilaian';
-
+    
     protected $fillable = [
-        'ujian_id',
-        'nama_kriteria',
-        'deskripsi',
+        'tugas_id',
+        'aspek',
         'bobot',
-        'nilai_maksimal',
+        'deskripsi'
     ];
 
-    public function ujian()
+    public function tugas()
     {
-        return $this->belongsTo(Ujian::class);
+        return $this->belongsTo(Tugas::class);
+    }
+
+    public function userTugasRubrik()
+    {
+        return $this->hasMany(UserTugasRubrik::class, 'rubrik_id');
     }
 }

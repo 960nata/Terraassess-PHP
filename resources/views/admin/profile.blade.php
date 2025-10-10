@@ -43,9 +43,9 @@
                                 <i class="fas fa-user-plus"></i>
                             </div>
                             <div class="notification-content">
-                                <div class="notification-title">Sistem Aktif</div>
-                                <div class="notification-message">Sistem TerraAssessment berjalan dengan baik</div>
-                                <div class="notification-time">Baru saja</div>
+                                <div class="notification-title">Siswa Baru Ditambahkan</div>
+                                <div class="notification-message">Siswa baru "John Doe" telah ditambahkan ke sistem</div>
+                                <div class="notification-time">2 menit yang lalu</div>
                             </div>
                         </div>
                         <div class="notification-item unread">
@@ -158,7 +158,7 @@
                     <i class="fas fa-exam"></i>
                     <span class="menu-item-text">Manajemen Ujian</span>
                 </a>
-                <a href="{{ route('notifications.user') }}" class="menu-item">
+                <a href="{{ route('notifications.index') }}" class="menu-item">
                     <i class="fas fa-bell"></i>
                     <span class="menu-item-text">Notifikasi</span>
                 </a>
@@ -189,8 +189,8 @@
                     <div class="profile-header">
                         <div class="profile-avatar-container">
                             <div class="profile-avatar">
-                                @if($user->gambar)
-                                    <img src="{{ asset('storage/' . $user->gambar) }}" alt="Profile Photo" class="profile-avatar-img">
+                                @if($user->profile_photo)
+                                    <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="profile-avatar-img">
                                 @else
                                     {{ substr($user->name ?? 'A', 0, 2) }}
                                 @endif
@@ -203,7 +203,7 @@
                         <div class="profile-info">
                             <h2 class="profile-name">{{ $user->name ?? 'Admin' }}</h2>
                             <p class="profile-role">Admin</p>
-                            <p class="profile-email">{{ $user->email ?? 'admin@terraassessment.com' }}</p>
+                            <p class="profile-email">{{ $user->email ?? 'admin@example.com' }}</p>
                         </div>
                     </div>
 

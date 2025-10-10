@@ -88,9 +88,9 @@
             <div class="bg-green-50 p-4 rounded-lg">
                 <h4 class="font-semibold text-green-900 mb-2">Recent Activity</h4>
                 <div class="space-y-2">
-                    <div class="text-sm text-green-700">Sistem aktif</div>
-                    <div class="text-sm text-green-700">Data real dari database</div>
-                    <div class="text-sm text-green-700">Sistem berjalan normal</div>
+                    <div class="text-sm text-green-700">User John Doe logged in</div>
+                    <div class="text-sm text-green-700">New order #1234 created</div>
+                    <div class="text-sm text-green-700">Payment processed for $99</div>
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         <tr>
                             <td class="px-4 py-2 text-sm text-gray-900">1</td>
-                            <td class="px-4 py-2 text-sm text-gray-900">Data Real</td>
+                            <td class="px-4 py-2 text-sm text-gray-900">John Doe</td>
                             <td class="px-4 py-2"><span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Active</span></td>
                             <td class="px-4 py-2"><button class="text-blue-600 hover:text-blue-800 text-sm">Edit</button></td>
                         </tr>

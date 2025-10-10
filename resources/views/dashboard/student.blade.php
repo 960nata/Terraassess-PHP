@@ -1,8 +1,26 @@
-@extends('layouts.unified-layout-new')
-
-@section('title', 'Terra Assessment - Student Dashboard')
-
-@section('additional-styles')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Assessment - Student Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: {
+                        'md': '768px',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
     <style>
         /* Notification Toast Styles */
         .notification-toast {
@@ -233,23 +251,158 @@
             }
         }
     </style>
-@endsection
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
 
-@section('content')
-    <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-graduation-cap"></i>
-            Student Dashboard
-        </h1>
-        <p class="page-description">Kelola sistem Terra Assessment dengan akses student</p>
-    </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="logo-text">Terra Assessment</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- Notification Dropdown -->
+            <div class="notification-container">
+                <button class="notification-btn" onclick="toggleNotificationDropdown()">
+                    <i class="ph-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="notification-header">
+                        <h4>Notifikasi</h4>
+                        <div class="notification-actions">
+                            <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
+                                <i class="ph-check-double"></i>
+                            </button>
+                            <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
+                                <i class="ph-list"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-loading">
+                            <i class="ph-spinner ph-spin"></i>
+                            <span>Memuat notifikasi...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-container">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
+                    <div class="user-avatar">{{ substr($user->name ?? 'S', 0, 2) }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ $user->name ?? 'Student' }}</div>
+                        <div class="user-role">Student</div>
+                    </div>
+                    <i class="fas fa-chevron-down dropdown-icon"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">{{ substr($user->name ?? 'S', 0, 2) }}</div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? 'Student' }}</div>
+                            <div class="profile-dropdown-role">Student</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="{{ route('student.profile') }}" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <a href="{{ route('student.settings') }}" class="profile-dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">Menu Utama</div>
+                <a href="{{ route('student.dashboard') }}" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+                <a href="{{ route('student.iot') }}" class="menu-item">
+                    <i class="fas fa-microchip"></i>
+                    <span class="menu-item-text">Penelitian IoT</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Pembelajaran</div>
+                <a href="{{ route('student.tugas') }}" class="menu-item">
+                    <i class="fas fa-book"></i>
+                    <span class="menu-item-text">Tugas Saya</span>
+                </a>
+                <a href="{{ route('student.ujian') }}" class="menu-item">
+                    <i class="fas fa-bullseye"></i>
+                    <span class="menu-item-text">Ujian Saya</span>
+                </a>
+                <a href="{{ route('student.materi') }}" class="menu-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-item-text">Materi Saya</span>
+                </a>
+                <a href="{{ route('student.class-management') }}" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-item-text">Kelas Saya</span>
+                </a>
+            </div>
+
+
+            <div class="menu-section">
+                <div class="menu-section-title">Pengaturan</div>
+                <a href="{{ route('student.settings') }}" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-item-text">Pengaturan</span>
+                </a>
+                <a href="{{ route('student.help') }}" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-item-text">Bantuan</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-graduation-cap"></i>
+                Student Dashboard
+            </h1>
+            <p class="page-description">Kelola sistem Terra Assessment dengan akses student</p>
+        </div>
 
         <div class="welcome-banner">
             <div class="welcome-icon">
-                <i class="fas fa-graduation-cap"></i>
+                <i class="fas fa-exclamation"></i>
             </div>
             <div class="welcome-content">
-                <h2 class="welcome-title">Selamat datang, {{ $user->name ?? 'Student' }}!</h2>
+                <h2 class="welcome-title">Selamat datang, Student!</h2>
                 <p class="welcome-description">Sebagai Student, Anda memiliki akses untuk mengelola sistem Terra Assessment.</p>
             </div>
         </div>
@@ -257,26 +410,26 @@
         <div class="dashboard-grid">
             <!-- Row 1 -->
 
-            <a href="{{ route('student.tasks') }}" class="card">
+            <a href="{{ route('student.tugas') }}" class="card">
                 <div class="card-icon blue">
-                    <i class="fas fa-tasks"></i>
+                    <i class="fas fa-book"></i>
                 </div>
                 <h3 class="card-title">Tugas Saya</h3>
                 <p class="card-description">Lihat dan kerjakan tugas yang diberikan</p>
             </a>
 
             <!-- Row 2 -->
-            <a href="{{ route('student.exams') }}" class="card">
+            <a href="{{ route('student.ujian') }}" class="card">
                 <div class="card-icon green">
-                    <i class="fas fa-clipboard-check"></i>
+                    <i class="fas fa-bullseye"></i>
                 </div>
                 <h3 class="card-title">Ujian Saya</h3>
                 <p class="card-description">Ikuti ujian yang telah dijadwalkan</p>
             </a>
 
-            <a href="{{ route('student.materials') }}" class="card">
+            <a href="{{ route('student.materi') }}" class="card">
                 <div class="card-icon purple">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-file-alt"></i>
                 </div>
                 <h3 class="card-title">Materi Saya</h3>
                 <p class="card-description">Akses materi pembelajaran kelas</p>
@@ -285,9 +438,9 @@
             <!-- Row 3 -->
             <a href="{{ route('student.iot') }}" class="card">
                 <div class="card-icon orange">
-                    <i class="fas fa-microchip"></i>
+                    <i class="fas fa-microscope"></i>
                 </div>
-                <h3 class="card-title">IoT Projects</h3>
+                <h3 class="card-title">Penelitian IoT</h3>
                 <p class="card-description">Lakukan penelitian menggunakan perangkat IoT</p>
             </a>
 
@@ -325,16 +478,17 @@
             <div class="info-section">
                 <h3 class="info-title">Tanggung Jawab</h3>
                 <ul class="info-list">
-                    <li>Mengerjakan tugas tepat waktu</li>
-                    <li>Mengikuti ujian sesuai jadwal</li>
-                    <li>Berpartisipasi dalam pembelajaran</li>
-                    <li>Menjaga keamanan akun</li>
+                    <li>Memastikan keamanan sistem</li>
+                    <li>Mengelola data pengguna</li>
+                    <li>Konfigurasi aplikasi</li>
+                    <li>Backup dan maintenance</li>
                 </ul>
             </div>
         </div>
-@endsection
+    </main>
 
-@section('scripts')
+    <script src="{{ asset('js/superadmin-dashboard.js') }}"></script>
+    
     <script>
         // Toggle sidebar for mobile - using the same logic as external JS
         function toggleSidebar() {
@@ -586,14 +740,36 @@
         }
 
         // Toggle profile dropdown
-        // Profile dropdown removed - using direct buttons now
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            
+            // Close notification dropdown if open
+            notificationDropdown.classList.remove('active');
+            closeNotificationDropdown();
+            
+            // Toggle profile dropdown
+            dropdown.classList.toggle('active');
+            
+            // Add mobile class if on mobile
+            if (window.innerWidth <= 768) {
+                dropdown.classList.add('mobile-dropdown');
+            } else {
+                dropdown.classList.remove('mobile-dropdown');
+            }
+        }
 
-        // Close notification dropdown when clicking outside
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
             const notificationContainer = document.querySelector('.notification-container');
+            const profileContainer = document.querySelector('.profile-container');
             
             if (!notificationContainer.contains(event.target)) {
                 document.getElementById('notificationDropdown').classList.remove('active');
+            }
+            
+            if (!profileContainer.contains(event.target)) {
+                document.getElementById('profileDropdown').classList.remove('active');
             }
         });
 
@@ -621,4 +797,5 @@
         handleMobileDropdowns();
         window.addEventListener('resize', handleMobileDropdowns);
     </script>
-@endsection
+</body>
+</html>

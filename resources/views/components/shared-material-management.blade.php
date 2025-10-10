@@ -5,11 +5,22 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-file-alt"></i>
-            Manajemen Materi
-        </h1>
-        <p class="page-description">Kelola materi pembelajaran</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-file-alt"></i>
+                Manajemen Materi
+            </h1>
+            <p class="page-subtitle">Kelola materi pembelajaran</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ 
+                $userRole === 'superadmin' ? route('superadmin.material-management.create') : 
+                ($userRole === 'admin' ? route('superadmin.material-management.create') : route('teacher.material-management.create'))
+            }}" class="btn-primary">
+                <i class="fas fa-plus"></i>
+                Tambah Materi
+            </a>
+        </div>
     </div>
 
     <!-- Statistics Cards -->
@@ -146,8 +157,10 @@
                             <td>{{ $index + 1 }}</td>
                             <td>
                                 <div class="material-thumbnail">
-                                    @if($material->thumbnail)
-                                        <img src="{{ asset('storage/' . $material->thumbnail) }}" alt="{{ $material->title }}">
+                                    @if(isset($material->thumbnail_path) && $material->thumbnail_path)
+                                        <img src="{{ asset('storage/' . $material->thumbnail_path) }}" alt="{{ $material->title ?? $material->name ?? 'Material' }}">
+                                    @elseif(isset($material->thumbnail_url) && $material->thumbnail_url)
+                                        <img src="{{ $material->thumbnail_url }}" alt="{{ $material->title ?? $material->name ?? 'Material' }}">
                                     @else
                                         <div class="thumbnail-placeholder">
                                             <i class="fas fa-file-alt"></i>
@@ -157,29 +170,30 @@
                             </td>
                             <td>
                                 <div class="material-info">
-                                    <div class="material-title">{{ $material->title }}</div>
-                                    <div class="material-description">{{ Str::limit($material->description, 50) }}</div>
+                                    <div class="material-title">{{ $material->title ?? $material->name ?? 'Untitled' }}</div>
+                                    <div class="material-description">{{ Str::limit($material->description ?? $material->deskripsi ?? '', 50) }}</div>
                                 </div>
                             </td>
                             <td>
-                                <span class="subject-badge">{{ $material->subject->name ?? 'N/A' }}</span>
+                                <span class="subject-badge">{{ $material->subject_name ?? (isset($material->subject) ? ($material->subject->nama_mapel ?? $material->subject->name) : 'N/A') }}</span>
                             </td>
                             <td>
-                                <span class="class-badge">{{ $material->class->name ?? 'N/A' }}</span>
+                                <span class="class-badge">{{ $material->class_name ?? (isset($material->class) ? ($material->class->nama_kelas ?? $material->class->name) : 'N/A') }}</span>
                             </td>
                             <td>
-                                <span class="type-badge type-{{ $material->type }}">
-                                    @switch($material->type)
+                                <span class="type-badge type-{{ $material->type ?? 'text' }}">
+                                    @switch($material->type ?? 'text')
                                         @case('pdf') PDF @break
                                         @case('video') Video @break
                                         @case('image') Gambar @break
                                         @case('document') Dokumen @break
-                                        @default {{ ucfirst($material->type) }}
+                                        @case('text') Teks @break
+                                        @default {{ ucfirst($material->type ?? 'text') }}
                                     @endswitch
                                 </span>
                             </td>
                             <td>
-                                <span class="file-size">{{ $material->formatted_file_size ?? '0 B' }}</span>
+                                <span class="file-size">{{ $material->formatted_file_size ?? $material->file_size ?? '0 B' }}</span>
                             </td>
                             <td>
                                 <span class="view-count">{{ $material->views ?? 0 }}</span>

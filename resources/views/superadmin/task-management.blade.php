@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Manajemen Tugas')
 
@@ -720,7 +720,7 @@
 
         <!-- Task Filters - Simplified -->
         <div class="task-filters">
-            <form action="{{ route('superadmin.task-management') }}" method="GET" class="filter-form">
+            <form action="{{ $user->roles_id == 3 ? route('teacher.tasks') : route('superadmin.task-management') }}" method="GET" class="filter-form">
                 <div class="filter-row">
                     <div class="form-group">
                         <select id="filter_class" name="filter_class">
@@ -915,21 +915,37 @@
         </div>
 
 <script>
-// Task creation functions
+// Task creation functions - dynamic routes based on user role
 function createMultipleChoiceTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 1) }}";
+    @if($user->roles_id == 3) {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create', 1) }}";
+    @else {{-- Super Admin or Admin --}}
+        window.location.href = "{{ route('superadmin.tugas.create', 1) }}";
+    @endif
 }
 
 function createEssayTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 2) }}";
+    @if($user->roles_id == 3) {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create', 2) }}";
+    @else {{-- Super Admin or Admin --}}
+        window.location.href = "{{ route('superadmin.tugas.create', 2) }}";
+    @endif
 }
 
 function createIndividualTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 3) }}";
+    @if($user->roles_id == 3) {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create', 3) }}";
+    @else {{-- Super Admin or Admin --}}
+        window.location.href = "{{ route('superadmin.tugas.create', 3) }}";
+    @endif
 }
 
 function createGroupTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 4) }}";
+    @if($user->roles_id == 3) {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create', 4) }}";
+    @else {{-- Super Admin or Admin --}}
+        window.location.href = "{{ route('superadmin.tugas.create', 4) }}";
+    @endif
 }
 
 // Task action functions

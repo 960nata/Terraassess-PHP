@@ -14,12 +14,17 @@ class UserTugas extends Model
         'user_id',
         'tugas_id',
         'status',
-        'nilai'
+        'nilai',
+        'komentar',
+        'dinilai_oleh',
+        'dinilai_pada',
+        'revisi_ke'
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'dinilai_pada' => 'datetime'
     ];
 
     // Relationships
@@ -31,6 +36,11 @@ class UserTugas extends Model
     public function tugas()
     {
         return $this->belongsTo(Tugas::class);
+    }
+
+    public function penilai()
+    {
+        return $this->belongsTo(User::class, 'dinilai_oleh');
     }
 
     // Accessors

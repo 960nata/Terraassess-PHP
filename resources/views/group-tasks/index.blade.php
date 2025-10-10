@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.unified-layout')
 
 @section('title', 'Tugas Kelompok')
 

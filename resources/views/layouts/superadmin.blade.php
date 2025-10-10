@@ -12,6 +12,7 @@
     <!-- Quill.js for Rich Text Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -25,90 +26,6 @@
     </script>
     <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <style>
-        /* Settings and Logout buttons */
-        .settings-button, .logout-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-        }
-        
-        .settings-button {
-            color: #6b7280;
-        }
-        
-        .settings-button:hover {
-            background-color: #f3f4f6;
-            color: #374151;
-        }
-        
-        .logout-button {
-            color: #dc2626;
-        }
-        
-        .logout-button:hover {
-            background-color: #fef2f2;
-            color: #b91c1c;
-        }
-        
-        .profile-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .user-avatar {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: white;
-            background-color: #8b5cf6;
-        }
-        
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #111827;
-        }
-        
-        .user-role {
-            font-size: 0.75rem;
-            color: #6b7280;
-        }
-        
-        @media (max-width: 640px) {
-            .settings-button span, .logout-button span {
-                display: none;
-            }
-        }
-    </style>
-    
     @yield('styles')
 </head>
 <body>
@@ -144,7 +61,7 @@
                             <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
                                 <i class="ph-check-double"></i>
                             </button>
-                            <a href="{{ route('notifications.user') }}" class="view-all-btn" title="Lihat Semua">
+                            <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
                                 <i class="ph-list"></i>
                             </a>
                         </div>
@@ -158,9 +75,9 @@
                 </div>
             </div>
 
-            <!-- User Info and Settings -->
+            <!-- Profile Dropdown -->
             <div class="profile-container">
-                <div class="user-profile">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
                     <div class="user-avatar">
                         @if($user->profile_photo)
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
@@ -172,15 +89,38 @@
                         <div class="user-name">{{ $user->name ?? 'Super Admin' }}</div>
                         <div class="user-role">Super Admin</div>
                     </div>
+                    <i class="fas fa-chevron-down dropdown-icon hidden sm:block"></i>
                 </div>
-                <a href="{{ route('superadmin.settings') }}" class="settings-button">
-                    <i class="fas fa-cog"></i>
-                    <span class="hidden sm:block">Pengaturan</span>
-                </a>
-                <a href="{{ route('logout.get') }}" class="logout-button">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="hidden sm:block">Logout</span>
-                </a>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            @if($user->profile_photo)
+                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
+                            @else
+                                {{ substr($user->name ?? 'SA', 0, 2) }}
+                            @endif
+                        </div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? 'Super Admin' }}</div>
+                            <div class="profile-dropdown-role">Super Admin</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="{{ route('superadmin.profile') }}" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <a href="{{ route('superadmin.settings') }}" class="profile-dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -197,18 +137,6 @@
                 <a href="{{ route('superadmin.push-notification') }}" class="menu-item {{ request()->routeIs('superadmin.push-notification') ? 'active' : '' }}">
                     <i class="fas fa-bell"></i>
                     <span class="menu-item-text">Push Notifikasi</span>
-                </a>
-                <a href="{{ route('superadmin.iot-management') }}" class="menu-item {{ request()->routeIs('superadmin.iot-management') ? 'active' : '' }}">
-                    <i class="fas fa-wifi"></i>
-                    <span class="menu-item-text">Manajemen IoT</span>
-                </a>
-                <a href="{{ route('iot.tugas') }}" class="menu-item {{ request()->routeIs('iot.tugas*') ? 'active' : '' }}">
-                    <i class="fas fa-server"></i>
-                    <span class="menu-item-text">Tugas IoT</span>
-                </a>
-                <a href="{{ route('iot.research-projects') }}" class="menu-item {{ request()->routeIs('iot.research-projects*') ? 'active' : '' }}">
-                    <i class="fas fa-wave-square"></i>
-                    <span class="menu-item-text">Penelitian IoT</span>
                 </a>
             </div>
 
@@ -238,13 +166,33 @@
                     <i class="fas fa-file-alt"></i>
                     <span class="menu-item-text">Manajemen Materi</span>
                 </a>
+                <a href="{{ route('superadmin.iot-management') }}" class="menu-item {{ request()->routeIs('superadmin.iot-management') ? 'active' : '' }}">
+                    <i class="fas fa-wifi"></i>
+                    <span class="menu-item-text">Manajemen IoT</span>
+                </a>
             </div>
 
             <div class="menu-section">
-                <div class="menu-section-title">Analitik</div>
-                <a href="{{ route('superadmin.reports') }}" class="menu-item {{ request()->routeIs('superadmin.reports') ? 'active' : '' }}">
+                <div class="menu-section-title">IoT & Penelitian</div>
+                <a href="{{ route('superadmin.iot-tasks') }}" class="menu-item {{ request()->routeIs('superadmin.iot-tasks*') ? 'active' : '' }}">
+                    <i class="fas fa-tasks"></i>
+                    <span class="menu-item-text">Tugas IoT</span>
+                </a>
+                <a href="{{ route('superadmin.iot-research') }}" class="menu-item {{ request()->routeIs('superadmin.iot-research*') ? 'active' : '' }}">
+                    <i class="fas fa-flask"></i>
+                    <span class="menu-item-text">Penelitian IoT</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Laporan & Analitik</div>
+                <a href="{{ route('superadmin.reports') }}" class="menu-item {{ request()->routeIs('superadmin.reports*') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span class="menu-item-text">Laporan</span>
+                </a>
+                <a href="{{ route('superadmin.analytics') }}" class="menu-item {{ request()->routeIs('superadmin.analytics*') ? 'active' : '' }}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-item-text">Analytics</span>
                 </a>
             </div>
 

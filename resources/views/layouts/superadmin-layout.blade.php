@@ -26,90 +26,6 @@
     </script>
     <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <style>
-        /* Settings and Logout buttons */
-        .settings-button, .logout-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-        }
-        
-        .settings-button {
-            color: #6b7280;
-        }
-        
-        .settings-button:hover {
-            background-color: #f3f4f6;
-            color: #374151;
-        }
-        
-        .logout-button {
-            color: #dc2626;
-        }
-        
-        .logout-button:hover {
-            background-color: #fef2f2;
-            color: #b91c1c;
-        }
-        
-        .profile-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .user-avatar {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: white;
-            background-color: #8b5cf6;
-        }
-        
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #111827;
-        }
-        
-        .user-role {
-            font-size: 0.75rem;
-            color: #6b7280;
-        }
-        
-        @media (max-width: 640px) {
-            .settings-button span, .logout-button span {
-                display: none;
-            }
-        }
-    </style>
-    
     @yield('styles')
 </head>
 <body>
@@ -145,7 +61,7 @@
                             <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
                                 <i class="fas fa-check-double"></i>
                             </button>
-                            <a href="{{ route('notifications.user') }}" class="view-all-btn" title="Lihat Semua">
+                            <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
                                 <i class="fas fa-list"></i>
                             </a>
                         </div>
@@ -159,9 +75,9 @@
                 </div>
             </div>
 
-            <!-- User Info and Settings -->
+            <!-- Profile Dropdown -->
             <div class="profile-container">
-                <div class="user-profile">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
                     <div class="user-avatar">
                         @if($user->profile_photo)
                             <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
@@ -185,15 +101,50 @@
                             @endif
                         </div>
                     </div>
+                    <i class="fas fa-chevron-down dropdown-icon hidden sm:block"></i>
                 </div>
-                <a href="{{ route('superadmin.settings') }}" class="settings-button">
-                    <i class="fas fa-cog"></i>
-                    <span class="hidden sm:block">Pengaturan</span>
-                </a>
-                <a href="{{ route('logout.get') }}" class="logout-button">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="hidden sm:block">Logout</span>
-                </a>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            @if($user->profile_photo)
+                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile Photo" class="w-full h-full rounded-full object-cover">
+                            @else
+                                {{ substr($user->name ?? 'SA', 0, 2) }}
+                            @endif
+                        </div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? 'User' }}</div>
+                            <div class="profile-dropdown-role">
+                                @if($user->roles_id == 1)
+                                    Super Admin
+                                @elseif($user->roles_id == 2)
+                                    Admin
+                                @elseif($user->roles_id == 3)
+                                    Guru
+                                @elseif($user->roles_id == 4)
+                                    Siswa
+                                @else
+                                    User
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="{{ route('superadmin.profile') }}" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <a href="{{ route('superadmin.settings') }}" class="profile-dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -201,69 +152,49 @@
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-menu">
-            <div class="menu-section">
-                <div class="menu-section-title">Menu Utama</div>
-                <a href="{{ route('superadmin.dashboard') }}" class="menu-item {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span class="menu-item-text">Dashboard</span>
-                </a>
-                <a href="{{ route('superadmin.push-notification') }}" class="menu-item {{ request()->routeIs('superadmin.push-notification') ? 'active' : '' }}">
-                    <i class="fas fa-bell"></i>
-                    <span class="menu-item-text">Push Notifikasi</span>
-                </a>
-                <a href="{{ route('superadmin.iot-management') }}" class="menu-item {{ request()->routeIs('superadmin.iot-management') ? 'active' : '' }}">
-                    <i class="fas fa-wifi"></i>
-                    <span class="menu-item-text">Manajemen IoT</span>
-                </a>
-                <a href="{{ route('iot.tugas') }}" class="menu-item {{ request()->routeIs('iot.tugas*') ? 'active' : '' }}">
-                    <i class="fas fa-server"></i>
-                    <span class="menu-item-text">Tugas IoT</span>
-                </a>
-                <a href="{{ route('iot.research-projects') }}" class="menu-item {{ request()->routeIs('iot.research-projects*') ? 'active' : '' }}">
-                    <i class="fas fa-wave-square"></i>
-                    <span class="menu-item-text">Penelitian IoT</span>
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-section-title">Manajemen</div>
-                @include('components.rbac-sidebar')
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-section-title">Analitik</div>
-                <a href="{{ route('superadmin.reports') }}" class="menu-item {{ request()->routeIs('superadmin.reports*') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line"></i>
-                    <span class="menu-item-text">Laporan</span>
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-section-title">Pengaturan</div>
-                <a href="{{ route('superadmin.settings') }}" class="menu-item {{ request()->routeIs('superadmin.settings') ? 'active' : '' }}">
-                    <i class="fas fa-cog"></i>
-                    <span class="menu-item-text">Pengaturan</span>
-                </a>
-                <a href="{{ route('superadmin.help') }}" class="menu-item {{ request()->routeIs('superadmin.help') ? 'active' : '' }}">
-                    <i class="fas fa-question-circle"></i>
-                    <span class="menu-item-text">Bantuan</span>
-                </a>
-            </div>
+            @include('layout.navbar.role-sidebar', ['roleId' => $user->roles_id ?? Auth()->user()->roles_id])
         </div>
     </nav>
-
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
 
     <!-- Main Content -->
     <main class="main-content">
         @yield('content')
     </main>
 
+    <script src="{{ asset('js/superadmin-dashboard.js') }}"></script>
     
     <script>
-        // Sidebar functions are now handled by external superadmin-dashboard.js
-        // This prevents conflicts and ensures consistent behavior
+        // Toggle sidebar for mobile - using the same logic as external JS
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (window.innerWidth <= 1024) {
+                // Mobile behavior - toggle collapsed class
+                sidebar.classList.toggle('collapsed');
+                if (mobileOverlay) mobileOverlay.classList.toggle('active');
+                if (mainContent) mainContent.classList.toggle('sidebar-open');
+                
+                // Debug log
+                console.log('Mobile sidebar toggled. Collapsed:', sidebar.classList.contains('collapsed'));
+                console.log('Sidebar classes:', sidebar.className);
+                console.log('Mobile overlay active:', mobileOverlay ? mobileOverlay.classList.contains('active') : 'No overlay');
+            } else {
+                // Desktop behavior
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.add('collapsed');
+            mobileOverlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-open');
+        }
 
         // Notification functionality
         let notificationDropdown = null;
@@ -550,14 +481,37 @@
             return date.toLocaleDateString('id-ID');
         }
 
-        // Profile dropdown removed - using direct buttons now
+        // Toggle profile dropdown
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            
+            // Close notification dropdown if open
+            notificationDropdown.classList.remove('active');
+            closeNotificationDropdown();
+            
+            // Toggle profile dropdown
+            dropdown.classList.toggle('active');
+            
+            // Add mobile class if on mobile
+            if (window.innerWidth <= 768) {
+                dropdown.classList.add('mobile-dropdown');
+            } else {
+                dropdown.classList.remove('mobile-dropdown');
+            }
+        }
 
-        // Close notification dropdown when clicking outside
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
             const notificationContainer = document.querySelector('.notification-container');
+            const profileContainer = document.querySelector('.profile-container');
             
             if (!notificationContainer.contains(event.target)) {
                 document.getElementById('notificationDropdown').classList.remove('active');
+            }
+            
+            if (!profileContainer.contains(event.target)) {
+                document.getElementById('profileDropdown').classList.remove('active');
             }
         });
 

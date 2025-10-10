@@ -5,11 +5,21 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-users"></i>
-            Manajemen Pengguna
-        </h1>
-        <p class="page-description">Kelola data pengguna sistem</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i>
+                Manajemen Pengguna
+            </h1>
+            <p class="page-subtitle">Kelola data pengguna sistem</p>
+        </div>
+        <div class="header-actions">
+            @include('components.granular-rbac-controls', [
+                'component' => 'user-management',
+                'createAction' => 'openCreateUserModal()',
+                'createText' => 'Tambah Pengguna',
+                'itemId' => null
+            ])
+        </div>
     </div>
 
     <!-- Statistics Cards -->

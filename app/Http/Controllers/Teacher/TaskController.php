@@ -22,47 +22,94 @@ use Illuminate\Support\Facades\Auth;
 class TaskController extends Controller
 {
     /**
-     * Dashboard pembuatan tugas
+     * Dashboard pembuatan tugas - menggunakan view superadmin dengan data terbatas untuk teacher
      */
     public function dashboard()
     {
         $user = Auth::user();
+        $userRole = $user->roles_id;
         
-        // Ambil tugas terbaru yang dibuat oleh guru ini dengan eager loading yang optimal
-        $recentTasks = Tugas::with([
-                'KelasMapel.Kelas.users' => function($query) {
-                    $query->where('roles_id', 3); // Hanya siswa
-                },
-                'TugasProgress' => function($query) {
-                    $query->where('status', 'submitted');
-                }
-            ])
-            ->whereHas('KelasMapel', function($query) use ($user) {
-                $query->whereHas('Kelas', function($q) use ($user) {
-                    $q->whereHas('users', function($userQuery) use ($user) {
-                        $userQuery->where('id', $user->id);
-                    });
-                });
-            })
+        // Get teacher's assigned classes and subjects
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
+            // Jika teacher tidak memiliki kelas yang ditugaskan, tampilkan data kosong
+            return view('superadmin.task-management', [
+                'title' => 'Manajemen Tugas',
+                'user' => $user,
+                'totalTasks' => 0,
+                'activeTasks' => 0,
+                'completedTasks' => 0,
+                'activeClasses' => 0,
+                'totalTugas' => 0,
+                'tugasPilihanGanda' => 0,
+                'tugasEssay' => 0,
+                'tugasMandiri' => 0,
+                'tugasKelompok' => 0,
+                'tugasTerbaru' => collect(),
+                'progressSiswa' => collect(),
+                'subjects' => collect(),
+                'classes' => collect(),
+                'tasks' => collect(),
+            ]);
+        }
+        
+        // Statistik tugas - hanya untuk kelas yang diajar teacher
+        $totalTugas = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', 0)->count();
+        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('due', '<', now())->count();
+        $activeClasses = Kelas::whereIn('id', $assignedData['kelas_ids'])->count();
+        
+        $tugasPilihanGanda = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 1)->count();
+        $tugasEssay = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 2)->count();
+        $tugasMandiri = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 3)->count();
+        $tugasKelompok = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 4)->count();
+        
+        // Tugas terbaru - hanya dari kelas yang diajar teacher
+        $tugasTerbaru = Tugas::with(['KelasMapel.Mapel', 'KelasMapel.Kelas'])
+            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
             ->orderBy('created_at', 'desc')
-            ->limit(6)
-            ->get()
-            ->map(function($task) {
-                // Hitung progress dari data yang sudah di-load
-                $totalStudents = $task->KelasMapel->Kelas->users->count();
-                $submittedCount = $task->TugasProgress->count();
-                
-                $task->total_students = $totalStudents;
-                $task->submitted_count = $submittedCount;
-                $task->progress_percentage = $totalStudents > 0 ? ($submittedCount / $totalStudents) * 100 : 0;
-                
-                return $task;
-            });
-
-        return view('teacher.task-dashboard', [
-            'title' => 'Dashboard Tugas',
+            ->limit(10)
+            ->get();
+        
+        // Progress siswa - hanya dari tugas yang diajar teacher
+        $progressSiswa = TugasProgress::with(['user', 'tugas'])
+            ->whereHas('tugas', function($query) use ($assignedData) {
+                $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+            })
+            ->where('status', 'submitted')
+            ->orderBy('submitted_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        // Data untuk form - hanya kelas dan mata pelajaran yang diajar teacher
+        $subjects = Mapel::whereIn('id', $assignedData['mapel_ids'])->get();
+        $classes = Kelas::whereIn('id', $assignedData['kelas_ids'])->get();
+        
+        // Ambil semua tugas untuk tabel - hanya dari kelas yang diajar teacher
+        $tasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
+            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Menggunakan view superadmin dengan data terbatas untuk teacher
+        return view('superadmin.task-management', [
+            'title' => 'Manajemen Tugas',
             'user' => $user,
-            'recentTasks' => $recentTasks
+            'totalTasks' => $totalTugas,
+            'activeTasks' => $activeTasks,
+            'completedTasks' => $completedTasks,
+            'activeClasses' => $activeClasses,
+            'totalTugas' => $totalTugas,
+            'tugasPilihanGanda' => $tugasPilihanGanda,
+            'tugasEssay' => $tugasEssay,
+            'tugasMandiri' => $tugasMandiri,
+            'tugasKelompok' => $tugasKelompok,
+            'tugasTerbaru' => $tugasTerbaru,
+            'progressSiswa' => $progressSiswa,
+            'subjects' => $subjects,
+            'classes' => $classes,
+            'tasks' => $tasks,
         ]);
     }
 
@@ -73,90 +120,165 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Ambil data kelas dan mata pelajaran yang diassign ke guru
-        $assignedData = $this->getAssignedData($user);
-        $classes = $assignedData['classes'];
-        $subjects = $assignedData['subjects'];
+        // Get teacher's assigned classes and subjects
+        $assignedData = $this->getTeacherAssignedData($request);
         
-        // Query untuk semua tugas dari kelas yang diassign
-        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
-            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
-
-        // Filter berdasarkan kelas
-        if ($request->has('filter_class') && $request->filter_class) {
-            $query->whereHas('KelasMapel', function($q) use ($request) {
-                $q->where('kelas_id', $request->filter_class);
-            });
+        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
+            return view('teacher.task-management-main', [
+                'title' => 'Manajemen Tugas',
+                'user' => $user,
+                'stats' => ['total' => 0, 'active' => 0, 'completed' => 0, 'multiple_choice' => 0, 'essay' => 0, 'individual' => 0, 'group' => 0],
+                'tasks' => collect(),
+                'classes' => collect(),
+                'subjects' => collect(),
+                'activeClasses' => 0,
+                'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
+            ]);
         }
-
-        // Filter berdasarkan mata pelajaran
-        if ($request->has('filter_subject') && $request->filter_subject) {
-            $query->whereHas('KelasMapel', function($q) use ($request) {
-                $q->where('mapel_id', $request->filter_subject);
-            });
-        }
-
-        // Filter berdasarkan status
-        if ($request->has('filter_status') && $request->filter_status) {
-            switch ($request->filter_status) {
-                case 'active':
-                    $query->where('isHidden', 0);
-                    break;
-                case 'draft':
-                    $query->where('isHidden', 1);
-                    break;
-                case 'completed':
-                    $query->where('isHidden', 0)
-                          ->where('due', '<', now());
-                    break;
-            }
-        }
-
-        // Filter berdasarkan tingkat kesulitan
-        if ($request->has('filter_difficulty') && $request->filter_difficulty) {
-            switch ($request->filter_difficulty) {
-                case 'easy':
-                    $query->where('tipe', 1);
-                    break;
-                case 'medium':
-                    $query->where('tipe', 2);
-                    break;
-                case 'hard':
-                    $query->where('tipe', 3);
-                    break;
-            }
-        }
-
-        // Ambil semua tugas untuk tabel
-        $tasks = $query->orderBy('created_at', 'desc')->get();
         
-        // Ambil tugas terbaru (limit 8)
-        $recentTasks = $tasks->take(8);
+        // Get all tasks for the teacher (for the table) from assigned classes only
+        $tasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
+            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->orderBy('created_at', 'desc')
+            ->get();
         
-        // Hitung statistik
-        $totalTasks = $tasks->count();
-        $activeTasks = $tasks->where('isHidden', 0)->count();
-        $completedTasks = $tasks->where('isHidden', 1)->count();
+        // Get additional data needed for the shared component - only assigned classes/subjects
+        $classes = $this->getTeacherAvailableClasses($request);
+        $subjects = $this->getTeacherAvailableSubjects($request);
+        
+        // Calculate stats from assigned classes only
+        $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        
+        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->where('isHidden', false)->count();
+        
+        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->where('isHidden', true)->count();
+        
         $activeClasses = $classes->count();
         
         $stats = [
             'total' => $totalTasks,
             'active' => $activeTasks,
             'completed' => $completedTasks,
-            'multiple_choice' => $tasks->where('tipe', 1)->count(),
-            'essay' => $tasks->where('tipe', 2)->count(),
-            'individual' => $tasks->where('tipe', 3)->count(),
-            'group' => $tasks->where('tipe', 4)->count(),
+            'multiple_choice' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 1)->count(),
+            'essay' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 2)->count(),
+            'individual' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 3)->count(),
+            'group' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 4)->count(),
         ];
 
         return view('teacher.task-management-main', [
             'title' => 'Manajemen Tugas',
             'user' => $user,
             'stats' => $stats,
-            'recentTasks' => $recentTasks,
             'tasks' => $tasks,
             'classes' => $classes,
             'subjects' => $subjects,
+            'activeClasses' => $activeClasses,
+            'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
+        ]);
+    }
+
+    /**
+     * Filter tasks
+     */
+    public function filter(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Get teacher's assigned classes and subjects
+        $assignedData = $this->getTeacherAssignedData($request);
+        
+        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
+            return view('teacher.task-management-main', [
+                'title' => 'Manajemen Tugas',
+                'user' => $user,
+                'stats' => ['total' => 0, 'active' => 0, 'completed' => 0, 'multiple_choice' => 0, 'essay' => 0, 'individual' => 0, 'group' => 0],
+                'tasks' => collect(),
+                'classes' => collect(),
+                'subjects' => collect(),
+                'activeClasses' => 0,
+                'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
+            ]);
+        }
+        
+        // Build query with filters
+        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
+            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        
+        // Apply filters
+        if ($request->filled('filter_class')) {
+            $query->whereHas('KelasMapel', function($q) use ($request) {
+                $q->where('kelas_id', $request->filter_class);
+            });
+        }
+        
+        if ($request->filled('filter_subject')) {
+            $query->whereHas('KelasMapel', function($q) use ($request) {
+                $q->where('mapel_id', $request->filter_subject);
+            });
+        }
+        
+        if ($request->filled('filter_status')) {
+            if ($request->filter_status === 'active') {
+                $query->where('isHidden', false);
+            } elseif ($request->filter_status === 'draft') {
+                $query->where('isHidden', true);
+            } elseif ($request->filter_status === 'completed') {
+                $query->where('due', '<', now());
+            }
+        }
+        
+        if ($request->filled('filter_difficulty')) {
+            $difficultyMap = ['easy' => 1, 'medium' => 2, 'hard' => 3];
+            if (isset($difficultyMap[$request->filter_difficulty])) {
+                $query->where('tipe', $difficultyMap[$request->filter_difficulty]);
+            }
+        }
+        
+        $tasks = $query->orderBy('created_at', 'desc')->get();
+        
+        // Get additional data needed for the shared component
+        $classes = $this->getTeacherAvailableClasses($request);
+        $subjects = $this->getTeacherAvailableSubjects($request);
+        
+        // Calculate stats from assigned classes only
+        $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        
+        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->where('isHidden', false)->count();
+        
+        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->where('isHidden', true)->count();
+        
+        $activeClasses = $classes->count();
+        
+        $stats = [
+            'total' => $totalTasks,
+            'active' => $activeTasks,
+            'completed' => $completedTasks,
+            'multiple_choice' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 1)->count(),
+            'essay' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 2)->count(),
+            'individual' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 3)->count(),
+            'group' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->where('tipe', 4)->count(),
+        ];
+
+        return view('teacher.task-management-main', [
+            'title' => 'Manajemen Tugas',
+            'user' => $user,
+            'stats' => $stats,
+            'tasks' => $tasks,
+            'classes' => $classes,
+            'subjects' => $subjects,
+            'activeClasses' => $activeClasses,
             'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
         ]);
     }
@@ -168,8 +290,12 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Guru memiliki akses penuh ke semua tugas
-        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel', 'TugasProgress']);
+        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel', 'TugasProgress'])
+            ->whereHas('KelasMapel', function($query) use ($user) {
+                $query->whereHas('EditorAccess', function($editorQuery) use ($user) {
+                    $editorQuery->where('user_id', $user->id);
+                });
+            });
 
         // Filter berdasarkan tipe
         if ($request->has('type') && $request->type) {
@@ -1137,35 +1263,43 @@ class TaskController extends Controller
     }
 
     /**
-     * Get assigned classes and subjects for teacher
+     * Get teacher's assigned data (classes and subjects)
      */
-    private function getAssignedData($user)
+    private function getTeacherAssignedData(Request $request)
     {
-        // Get classes assigned to this teacher
-        $classes = Kelas::whereHas('users', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->get();
-
-        // Get subjects assigned to this teacher
-        $subjects = Mapel::whereHas('KelasMapel', function($query) use ($user) {
-            $query->whereHas('Kelas', function($q) use ($user) {
-                $q->whereHas('users', function($userQuery) use ($user) {
-                    $userQuery->where('user_id', $user->id);
-                });
-            });
-        })->get();
-
-        // Get kelas_mapel_ids for this teacher
-        $kelasMapelIds = KelasMapel::whereHas('Kelas', function($query) use ($user) {
-            $query->whereHas('users', function($userQuery) use ($user) {
-                $userQuery->where('user_id', $user->id);
-            });
+        $user = Auth::user();
+        
+        // Get classes where teacher is assigned
+        $kelasMapelIds = KelasMapel::whereHas('Kelas.users', function($query) use ($user) {
+            $query->where('id', $user->id);
         })->pluck('id')->toArray();
-
+        
         return [
-            'classes' => $classes,
-            'subjects' => $subjects,
             'kelas_mapel_ids' => $kelasMapelIds
         ];
+    }
+
+    /**
+     * Get teacher's available classes
+     */
+    private function getTeacherAvailableClasses(Request $request)
+    {
+        $user = Auth::user();
+        
+        return Kelas::whereHas('users', function($query) use ($user) {
+            $query->where('id', $user->id);
+        })->get();
+    }
+
+    /**
+     * Get teacher's available subjects
+     */
+    private function getTeacherAvailableSubjects(Request $request)
+    {
+        $user = Auth::user();
+        
+        return Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
+            $query->where('id', $user->id);
+        })->get();
     }
 }

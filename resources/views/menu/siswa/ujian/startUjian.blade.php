@@ -63,7 +63,8 @@
                 <div class="border border-primary rounded-2 p-4 mb-4 col-12" id="soal-container">
                     <h1 class="text-primary fw-bold" id="soal-title">Soal 1</h1>
                     <hr>
-                    <p>Pertanyaan akan dimuat dari database...</p>
+                    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Aliquid atque quos inventore nesciunt
+                        voluptates ipsam molestias non quasi incidunt dolor!</p>
                 </div>
 
                 {{-- Jawaban --}}

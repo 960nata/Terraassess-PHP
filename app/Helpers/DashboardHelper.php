@@ -210,7 +210,8 @@ class DashboardHelper
                     ['name' => 'Penelitian IoT', 'route' => 'iot.research-projects', 'icon' => 'fas fa-wave-square']
                 ],
                 'analytics' => [
-                    ['name' => 'Laporan', 'route' => 'superadmin.reports', 'icon' => 'fas fa-chart-line']
+                    ['name' => 'Laporan', 'route' => 'superadmin.reports', 'icon' => 'fas fa-chart-line'],
+                    ['name' => 'Analitik', 'route' => 'superadmin.analytics', 'icon' => 'fas fa-chart-bar']
                 ],
                 'settings' => [
                     ['name' => 'Pengaturan', 'route' => 'superadmin.settings', 'icon' => 'fas fa-cog'],
@@ -236,7 +237,8 @@ class DashboardHelper
                     ['name' => 'Penelitian IoT', 'route' => 'iot.research-projects', 'icon' => 'fas fa-wave-square']
                 ],
                 'analytics' => [
-                    ['name' => 'Laporan', 'route' => 'admin.reports', 'icon' => 'fas fa-chart-line']
+                    ['name' => 'Laporan', 'route' => 'superadmin.reports', 'icon' => 'fas fa-chart-line'],
+                    ['name' => 'Analitik', 'route' => 'admin.analytics', 'icon' => 'fas fa-chart-bar']
                 ],
                 'settings' => [
                     ['name' => 'Pengaturan', 'route' => 'admin.settings', 'icon' => 'fas fa-cog'],
@@ -246,7 +248,7 @@ class DashboardHelper
             3 => [ // Teacher
                 'main' => [
                     ['name' => 'Dashboard', 'route' => 'teacher.dashboard', 'icon' => 'fas fa-tachometer-alt'],
-                    ['name' => 'Tugas Saya', 'route' => 'teacher.tasks', 'icon' => 'fas fa-book'],
+                    ['name' => 'Tugas Saya', 'route' => 'teacher.tasks.management', 'icon' => 'fas fa-book'],
                     ['name' => 'Ujian Saya', 'route' => 'teacher.exam-management', 'icon' => 'fas fa-bullseye'],
                     ['name' => 'Materi Saya', 'route' => 'teacher.materials', 'icon' => 'fas fa-file-alt']
                 ],
@@ -256,7 +258,8 @@ class DashboardHelper
                     ['name' => 'Sensor Data', 'route' => 'teacher.iot-sensor-data', 'icon' => 'fas fa-thermometer']
                 ],
                 'analytics' => [
-                    ['name' => 'Laporan', 'route' => 'teacher.reports', 'icon' => 'fas fa-chart-line']
+                    ['name' => 'Laporan', 'route' => 'teacher.reports', 'icon' => 'fas fa-chart-line'],
+                    ['name' => 'Analitik', 'route' => 'teacher.analytics', 'icon' => 'fas fa-chart-bar']
                 ],
                 'settings' => [
                     ['name' => 'Pengaturan', 'route' => 'teacher.settings', 'icon' => 'fas fa-cog'],

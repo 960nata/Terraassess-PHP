@@ -12,16 +12,15 @@ class ResearchProject extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
+        'project_name',
         'description',
         'kelas_id',
         'teacher_id',
-        'objectives',
-        'methodology',
-        'expected_outcomes',
         'status',
         'start_date',
-        'end_date'
+        'end_date',
+        'research_parameters',
+        'conclusion'
     ];
 
     protected $casts = [

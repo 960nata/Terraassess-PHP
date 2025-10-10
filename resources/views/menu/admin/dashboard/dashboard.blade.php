@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('container')
     {{-- Stats Overview --}}
@@ -121,7 +121,7 @@
                     <span class="font-medium">Kelola Kelas</span>
                 </a>
                 
-                <a href="{{ route('notifications.user') }}" class="flex items-center p-3 text-left text-gray-300 hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-300 hover:transform hover:scale-105">
+                <a href="{{ route('notifications.index') }}" class="flex items-center p-3 text-left text-gray-300 hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-300 hover:transform hover:scale-105">
                     <i class="ph-bell text-yellow-400 text-lg mr-3"></i>
                     <span class="font-medium">Notifikasi</span>
                 </a>
@@ -272,7 +272,7 @@
                     <p class="mobile-card-desc">Kirim notifikasi ke semua pengguna, kelas, atau pengguna spesifik</p>
                 </div>
                 <div class="mobile-card-action">
-                    <a href="{{ route('notifications.user') }}" class="mobile-card-link">
+                    <a href="{{ route('notifications.index') }}" class="mobile-card-link">
                         <i class="ph-arrow-right text-lg"></i>
                     </a>
                 </div>

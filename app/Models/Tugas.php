@@ -35,6 +35,11 @@ class Tugas extends Model
         return $this->hasMany(UserTugas::class);
     }
 
+    public function rubrik()
+    {
+        return $this->hasMany(RubrikPenilaian::class);
+    }
+
     // Accessors
     public function getStatusAttribute()
     {

@@ -93,7 +93,7 @@
             <i class="ph-plus"></i> Buat Tugas Baru
         </h3>
     
-    <form action="{{ $userRole === 'superadmin' ? route('superadmin.tugas.store') : route('teacher.task-management.create') }}" method="POST">
+    <form action="{{ $userRole === 'superadmin' ? route('superadmin.tugas.store') : route('teacher.tasks.store') }}" method="POST">
         @csrf
         
         <div class="form-row">
@@ -179,7 +179,7 @@
         <i class="fas fa-filter me-2"></i>Filter Tugas
     </h2>
     
-    <form action="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.task-management.filter') }}" method="GET">
+    <form action="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.tasks.filter') }}" method="GET">
         <div class="filter-row">
             <div class="form-group">
                 <label for="filter_class">Kelas</label>
@@ -231,7 +231,7 @@
                 <i class="fas fa-search"></i>
                 Terapkan Filter
             </button>
-            <a href="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.task-management') }}" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <a href="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.tasks.management') }}" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fas fa-times"></i>
                 Reset Filter
             </a>

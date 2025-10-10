@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
     <script>
         tailwind.config = {
             theme: {
@@ -492,7 +493,7 @@
                         <i class="fas fa-user"></i>
                         <span>Profil</span>
                     </a>
-                    <a href="{{ route('notifications.user') }}" class="profile-dropdown-item">
+                    <a href="{{ route('notifications.index') }}" class="profile-dropdown-item">
                         <i class="fas fa-bell"></i>
                         <span>Notifikasi</span>
                     </a>
@@ -547,7 +548,7 @@
                     <i class="fas fa-user"></i>
                     <span class="menu-item-text">Profile</span>
                 </a>
-                <a href="{{ route('notifications.user') }}" class="menu-item">
+                <a href="{{ route('notifications.index') }}" class="menu-item">
                     <i class="fas fa-bell"></i>
                     <span class="menu-item-text">Notifikasi</span>
                 </a>

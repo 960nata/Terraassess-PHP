@@ -92,6 +92,42 @@
         </div>
     </div>
 
+    <!-- Additional Sensor Data Row -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-flask fa-3x text-info mb-3"></i>
+                    <h1 class="display-4 text-info fw-bold" id="current-ph">--</h1>
+                    <h5 class="text-white">pH Tanah</h5>
+                    <p class="text-white-75 small">Tingkat keasaman</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                    <h1 class="display-4 text-success fw-bold" id="current-nutrient">--%</h1>
+                    <h5 class="text-white">Level Nutrisi</h5>
+                    <p class="text-white-75 small">Kandungan nutrisi</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-microchip fa-3x text-primary mb-3"></i>
+                    <h1 class="display-4 text-primary fw-bold" id="connection-method-display">--</h1>
+                    <h5 class="text-white">Metode Koneksi</h5>
+                    <p class="text-white-75 small">USB/Bluetooth</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recording Controls -->
     <div class="row mb-4">
         <div class="col-12">
@@ -310,20 +346,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        window.iotManager.startRecording(kelasId, location, notes);
+        // Start recording
+        window.iotManager.isRecording = true;
+        window.iotManager.recordingData = {
+            kelasId: kelasId,
+            location: location,
+            notes: notes,
+            startTime: new Date()
+        };
         
         startRecordingBtn.disabled = true;
         stopRecordingBtn.disabled = false;
         startRecordingBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Merekam...';
+        
+        console.log('Recording started:', window.iotManager.recordingData);
     });
 
     // Stop recording
     stopRecordingBtn.addEventListener('click', function() {
-        window.iotManager.stopRecording();
+        window.iotManager.isRecording = false;
+        window.iotManager.recordingData = null;
         
         startRecordingBtn.disabled = false;
         stopRecordingBtn.disabled = true;
         startRecordingBtn.innerHTML = '<i class="fas fa-play me-1"></i> Mulai Perekaman';
+        
+        console.log('Recording stopped');
     });
 
     // Update soil quality display
@@ -345,10 +393,146 @@ document.addEventListener('DOMContentLoaded', function() {
         qualityElement.textContent = quality;
     }
 
+    // Setup IoT Manager event handlers
+    window.iotManager.onDataReceived = function(data) {
+        console.log('Sensor data received:', data);
+        
+        // Update sensor display
+        updateSensorDisplay(data);
+        
+        // Update soil quality
+        updateSoilQuality(data.temperature, data.humidity, data.soil_moisture);
+        
+        // Update last update time
+        document.getElementById('last-update').textContent = 
+            'Terakhir update: ' + new Date().toLocaleTimeString();
+        
+        // Save data to server if recording is active
+        if (window.iotManager.isRecording) {
+            saveSensorDataToServer(data);
+        }
+    };
+    
+    window.iotManager.onConnectionChange = function(connected, device) {
+        const statusElement = document.getElementById('connection-status');
+        const deviceInfoElement = document.getElementById('device-info');
+        const connectionMethodDisplay = document.getElementById('connection-method-display');
+        
+        if (connected) {
+            statusElement.textContent = 'Terhubung';
+            statusElement.className = 'badge badge-success';
+            deviceInfoElement.textContent = 'Perangkat IoT terhubung via ' + 
+                (window.iotManager.currentConnection || 'USB/Bluetooth');
+            
+            // Update connection method display
+            if (connectionMethodDisplay) {
+                const method = window.iotManager.currentConnection || 'USB';
+                connectionMethodDisplay.textContent = method.toUpperCase();
+            }
+        } else {
+            statusElement.textContent = 'Terputus';
+            statusElement.className = 'badge badge-danger';
+            deviceInfoElement.textContent = 'Tidak ada perangkat terhubung';
+            
+            // Reset connection method display
+            if (connectionMethodDisplay) {
+                connectionMethodDisplay.textContent = '--';
+            }
+        }
+    };
+    
+    window.iotManager.onError = function(message, error) {
+        console.error('IoT Error:', message, error);
+        alert('Error IoT: ' + message);
+    };
+    
+    window.iotManager.onStatusUpdate = function(status) {
+        console.log('IoT Status:', status);
+        // You can add status display here if needed
+    };
+    
+    // Function to update sensor display
+    function updateSensorDisplay(data) {
+        // Update temperature
+        const tempElement = document.getElementById('current-temperature');
+        if (tempElement && data.temperature !== undefined) {
+            tempElement.textContent = data.temperature.toFixed(1) + '°C';
+        }
+        
+        // Update humidity
+        const humidityElement = document.getElementById('current-humidity');
+        if (humidityElement && data.humidity !== undefined) {
+            humidityElement.textContent = data.humidity.toFixed(1) + '%';
+        }
+        
+        // Update soil moisture (humus)
+        const moistureElement = document.getElementById('current-moisture');
+        if (moistureElement && data.soil_moisture !== undefined) {
+            moistureElement.textContent = data.soil_moisture.toFixed(1) + '%';
+        }
+        
+        // Update pH if available
+        const phElement = document.getElementById('current-ph');
+        if (phElement && data.ph_level !== undefined) {
+            phElement.textContent = data.ph_level.toFixed(1);
+        }
+        
+        // Update nutrient level if available
+        const nutrientElement = document.getElementById('current-nutrient');
+        if (nutrientElement && data.nutrient_level !== undefined) {
+            nutrientElement.textContent = data.nutrient_level.toFixed(1) + '%';
+        }
+    }
+    
+    // Function to save sensor data to server
+    async function saveSensorDataToServer(data) {
+        if (!window.iotManager.recordingData) {
+            return;
+        }
+        
+        try {
+            const payload = {
+                device_id: 'arduino_usb_' + Date.now(), // Generate unique device ID
+                temperature: data.temperature,
+                humidity: data.humidity,
+                soil_moisture: data.soil_moisture,
+                ph_level: data.ph_level || null,
+                nutrient_level: data.nutrient_level || null,
+                kelas_id: window.iotManager.recordingData.kelasId,
+                location: window.iotManager.recordingData.location,
+                notes: window.iotManager.recordingData.notes,
+                raw_data: data
+            };
+            
+            const response = await fetch('/api/iot/sensor-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('Sensor data saved successfully:', result.data);
+            } else {
+                console.error('Failed to save sensor data:', result.message);
+            }
+            
+        } catch (error) {
+            console.error('Error saving sensor data:', error);
+        }
+    }
+    
     // Override the updateSensorDisplay function to include soil quality
     const originalUpdateDisplay = window.iotManager.updateSensorDisplay;
     window.iotManager.updateSensorDisplay = function(data) {
-        originalUpdateDisplay.call(this, data);
+        if (originalUpdateDisplay) {
+            originalUpdateDisplay.call(this, data);
+        }
+        updateSensorDisplay(data);
         updateSoilQuality(data.temperature, data.humidity, data.soil_moisture);
     };
 });

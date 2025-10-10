@@ -35,7 +35,6 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\HandleCsrfError::class,
-            \App\Http\Middleware\TrackUserActivity::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
@@ -59,8 +58,6 @@ class Kernel extends HttpKernel
         'pengajar' => \App\Http\Middleware\Pengajar::class,
         'guru' => \App\Http\Middleware\Guru::class,
         'role' => \App\Http\Middleware\Role::class,
-        'role.bypass' => \App\Http\Middleware\RoleBypass::class,
-        'role.debug' => \App\Http\Middleware\DebugRole::class,
         'restrict.guru.create' => \App\Http\Middleware\RestrictGuruCreate::class,
         'teacher.access' => \App\Http\Middleware\TeacherAccessControl::class,
         'teacher.limited' => \App\Http\Middleware\TeacherLimitedAccess::class,

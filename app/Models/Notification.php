@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
@@ -15,7 +14,6 @@ class Notification extends Model
         'title',
         'body',
         'excerpt',
-        'message',
         'type',
         'is_read',
         'read_at',
@@ -25,21 +23,32 @@ class Notification extends Model
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
-        'data' => 'array',
     ];
 
-    /**
-     * Get the user that owns the notification.
-     */
-    public function user(): BelongsTo
+    // Relationships
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Mark notification as read.
-     */
-    public function markAsRead(): void
+    // Scopes
+    public function scopeUnread($query)
+    {
+        return $query->where('is_read', false);
+    }
+
+    public function scopeRead($query)
+    {
+        return $query->where('is_read', true);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    // Methods
+    public function markAsRead()
     {
         $this->update([
             'is_read' => true,
@@ -47,38 +56,43 @@ class Notification extends Model
         ]);
     }
 
-    /**
-     * Scope for unread notifications.
-     */
-    public function scopeUnread($query)
+    public function markAsUnread()
     {
-        return $query->where('is_read', false);
+        $this->update([
+            'is_read' => false,
+            'read_at' => null,
+        ]);
     }
 
-    /**
-     * Scope for read notifications.
-     */
-    public function scopeRead($query)
+    // Static methods
+    public static function createForUser($userId, $title, $body, $type = 'info', $excerpt = null, $data = null)
     {
-        return $query->where('is_read', true);
+        return self::create([
+            'user_id' => $userId,
+            'title' => $title,
+            'body' => $body,
+            'excerpt' => $excerpt,
+            'type' => $type,
+            'data' => $data,
+        ]);
     }
 
-    /**
-     * Scope for broadcast notifications (user_id is null).
-     */
-    public function scopeBroadcast($query)
+    public static function createForMultipleUsers($userIds, $title, $body, $type = 'info', $excerpt = null, $data = null)
     {
-        return $query->whereNull('user_id');
-    }
-
-    /**
-     * Scope for user-specific notifications.
-     */
-    public function scopeForUser($query, $userId)
-    {
-        return $query->where(function ($q) use ($userId) {
-            $q->where('user_id', $userId)
-              ->orWhereNull('user_id'); // Include broadcast notifications
-        });
+        $notifications = [];
+        foreach ($userIds as $userId) {
+            $notifications[] = [
+                'user_id' => $userId,
+                'title' => $title,
+                'body' => $body,
+                'excerpt' => $excerpt,
+                'type' => $type,
+                'data' => $data,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        
+        return self::insert($notifications);
     }
 }

@@ -36,14 +36,14 @@ class GroupTask extends Model
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    public function class(): BelongsTo
+    public function kelas(): BelongsTo
     {
-        return $this->belongsTo(Class::class, 'class_id');
+        return $this->belongsTo(Kelas::class, 'class_id');
     }
 
     public function subject(): BelongsTo
     {
-        return $this->belongsTo(Subject::class, 'subject_id');
+        return $this->belongsTo(Mapel::class, 'subject_id');
     }
 
     public function members(): HasMany

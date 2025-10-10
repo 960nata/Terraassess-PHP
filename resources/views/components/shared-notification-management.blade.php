@@ -9,13 +9,29 @@
 ])
 
 <div class="notification-management-container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-bell"></i>
-            Push Notifikasi
-        </h1>
-        <p class="page-description">Kelola dan kirim notifikasi ke pengguna</p>
+    <!-- Mobile-First Header -->
+    <div class="notification-header-mobile">
+        <div class="header-content">
+            <div class="header-left">
+                <button onclick="history.back()" class="back-btn-mobile">
+                    <i class="ph-arrow-left"></i>
+                </button>
+                <div class="header-text">
+                    <h1 class="header-title">Notifikasi</h1>
+                    <p class="header-subtitle">Kelola notifikasi dan pesan</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button onclick="refreshNotifications()" class="action-btn-mobile">
+                    <i class="ph-arrow-clockwise"></i>
+                </button>
+                @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
+                    <button onclick="openCreateModal()" class="action-btn-mobile primary">
+                        <i class="ph-plus"></i>
+                    </button>
+                @endif
+            </div>
+        </div>
     </div>
 
     <!-- Mobile Stats Cards -->
@@ -113,7 +129,7 @@
                                     'error' => 'ph-x-circle'
                                 ];
                             @endphp
-                            <i class="{{ $typeIcons[$notification->type] ?? 'ph-bell' }}"></i>
+                            <i class="ph {{ $typeIcons[$notification->type] ?? 'ph-bell' }}"></i>
                         </div>
                         <div class="notification-time-mobile">
                             {{ $notification->created_at->diffForHumans() }}
@@ -143,7 +159,7 @@
                             <i class="ph-eye"></i>
                             <span>Lihat</span>
                         </button>
-                        @if($userRole === 'superadmin' || $userRole === 'admin')
+                        @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
                             <button onclick="deleteNotification('{{ $notification->id }}')" class="action-btn-mobile small danger">
                                 <i class="ph-trash"></i>
                                 <span>Hapus</span>
@@ -159,7 +175,7 @@
                 </div>
                 <h3 class="empty-title">Belum Ada Notifikasi</h3>
                 <p class="empty-message">Belum ada notifikasi yang diterima.</p>
-                @if($userRole === 'superadmin' || $userRole === 'admin')
+                @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
                     <button onclick="openCreateModal()" class="empty-action-btn">
                         <i class="ph-plus"></i>
                         Buat Notifikasi Pertama
@@ -178,7 +194,7 @@
 </div>
 
 <!-- Create Notification Modal (Mobile) -->
-@if($userRole === 'superadmin' || $userRole === 'admin')
+@if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
 <div id="createNotificationModal" class="modal-mobile hidden">
     <div class="modal-backdrop" onclick="closeCreateModal()"></div>
     <div class="modal-content-mobile">
@@ -220,26 +236,43 @@
             <div class="form-group-mobile">
                 <label class="form-label-mobile">Penerima</label>
                 <select name="recipient_type" class="form-input-mobile" onchange="updateRecipients()" required>
-                    <option value="all">Semua Pengguna</option>
-                    <option value="students">Siswa Saja</option>
-                    <option value="teachers">Guru Saja</option>
-                    <option value="admins">Admin Saja</option>
-                    <option value="specific">Pilih Spesifik</option>
+                    @if($userRole === 'teacher')
+                        <option value="my_students">Siswa di Kelas Saya</option>
+                        <option value="specific_students">Pilih Siswa Spesifik</option>
+                    @else
+                        <option value="all">Semua Pengguna</option>
+                        <option value="students">Siswa Saja</option>
+                        <option value="teachers">Guru Saja</option>
+                        <option value="admins">Admin Saja</option>
+                        <option value="specific">Pilih Spesifik</option>
+                    @endif
                 </select>
             </div>
             
             <div id="specificRecipients" class="form-group-mobile hidden">
                 <label class="form-label-mobile">Pilih Penerima Spesifik</label>
                 <div class="recipients-list-mobile">
-                    @foreach($users ?? [] as $user)
-                        <label class="recipient-item-mobile">
-                            <input type="checkbox" name="specific_users[]" value="{{ $user->id }}" class="recipient-checkbox">
-                            <div class="recipient-info">
-                                <div class="recipient-name">{{ $user->name }}</div>
-                                <div class="recipient-email">{{ $user->email }}</div>
-                            </div>
-                        </label>
-                    @endforeach
+                    @if($userRole === 'teacher')
+                        @foreach($students ?? [] as $student)
+                            <label class="recipient-item-mobile">
+                                <input type="checkbox" name="specific_students[]" value="{{ $student->id }}" class="recipient-checkbox">
+                                <div class="recipient-info">
+                                    <div class="recipient-name">{{ $student->name }}</div>
+                                    <div class="recipient-email">{{ $student->kelas->nama_kelas ?? 'Kelas tidak tersedia' }}</div>
+                                </div>
+                            </label>
+                        @endforeach
+                    @else
+                        @foreach($users ?? [] as $user)
+                            <label class="recipient-item-mobile">
+                                <input type="checkbox" name="specific_users[]" value="{{ $user->id }}" class="recipient-checkbox">
+                                <div class="recipient-info">
+                                    <div class="recipient-name">{{ $user->name }}</div>
+                                    <div class="recipient-email">{{ $user->email }}</div>
+                                </div>
+                            </label>
+                        @endforeach
+                    @endif
                 </div>
             </div>
         </form>
@@ -288,116 +321,130 @@
 </div>
 
 <style>
-/* Enhanced Mobile-First Notification Styles */
+/* Mobile-First Notification Styles */
 .notification-management-container {
     padding: 0;
     background: #0f172a;
     min-height: 100vh;
-    animation: fadeIn 0.6s ease-out;
 }
 
-/* Ensure Phosphor Icons are visible */
-.ph, [class^="ph-"], [class*=" ph-"] {
-    display: inline-block !important;
-    font-style: normal !important;
-    font-variant: normal !important;
-    text-rendering: auto !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
+/* Mobile Header */
+.notification-header-mobile {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    padding: 16px;
+    border-bottom: 1px solid #475569;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Page Header Styles */
-.page-header {
-    margin-bottom: 2rem;
-}
-
-.page-title {
-    color: #ffffff;
-    font-size: 1.875rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+.header-content {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
 }
 
-.page-description {
-    color: #94a3b8;
-    font-size: 1rem;
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.back-btn-mobile {
+    width: 40px;
+    height: 40px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.back-btn-mobile:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateX(-2px);
+}
+
+.header-text {
+    flex: 1;
+}
+
+.header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
     margin: 0;
+    line-height: 1.2;
 }
-/* Stats Grid Styles */
 
-/* Stats Grid Mobile Styles */
+.header-subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+    margin-top: 2px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn-mobile {
+    width: 40px;
+    height: 40px;
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.action-btn-mobile.primary {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+.action-btn-mobile:hover {
+    background: rgba(148, 163, 184, 0.2);
+    transform: scale(1.05);
+}
+
+.action-btn-mobile.primary:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* Mobile Stats Grid */
 .stats-grid-mobile {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 12px;
+    padding: 16px;
 }
 
 .stat-card-mobile {
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
     border: 1px solid #475569;
-    border-radius: 16px;
-    padding: 20px 16px;
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    animation: slideInUp 0.6s ease-out;
-    animation-fill-mode: both;
-}
-
-.stat-card-mobile:nth-child(1) { animation-delay: 0.1s; }
-.stat-card-mobile:nth-child(2) { animation-delay: 0.2s; }
-.stat-card-mobile:nth-child(3) { animation-delay: 0.3s; }
-.stat-card-mobile:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    gap: 12px;
+    transition: all 0.3s ease;
 }
 
 .stat-card-mobile:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    border-color: rgba(59, 130, 246, 0.3);
-}
-
-.stat-card-mobile::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #3b82f6, #10b981, #f59e0b, #ef4444);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.stat-card-mobile:hover::before {
-    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .stat-icon {
@@ -410,12 +457,6 @@
     justify-content: center;
     color: #3b82f6;
     font-size: 18px;
-}
-
-.stat-icon i {
-    display: inline-block !important;
-    font-size: 18px !important;
-    color: inherit !important;
 }
 
 .stat-icon.success {
@@ -450,13 +491,9 @@
     margin-top: 2px;
 }
 
-/* Enhanced Mobile Filter Section */
+/* Mobile Filter Section */
 .filter-section-mobile {
-    padding: 0 16px 20px;
-    background: rgba(15, 23, 42, 0.5);
-    margin: 0 16px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(71, 85, 105, 0.3);
+    padding: 0 16px 16px;
 }
 
 .filter-row {
@@ -477,8 +514,6 @@
     transform: translateY(-50%);
     color: #64748b;
     font-size: 16px;
-    display: inline-block !important;
-    z-index: 10;
 }
 
 .search-input-mobile {
@@ -510,12 +545,6 @@
     color: #9ca3af;
     font-size: 16px;
     transition: all 0.3s ease;
-}
-
-.filter-toggle-btn i {
-    display: inline-block !important;
-    font-size: 16px !important;
-    color: inherit !important;
 }
 
 .filter-toggle-btn:hover {
@@ -624,38 +653,18 @@
     color: #d1d5db;
 }
 
-/* Enhanced Mobile Notifications List */
+/* Mobile Notifications List */
 .notifications-list-mobile {
-    padding: 0 16px 20px;
+    padding: 0 16px;
 }
 
 .notification-item-mobile {
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
     border: 1px solid #475569;
-    border-radius: 16px;
-    margin-bottom: 16px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
     overflow: hidden;
-    position: relative;
-    animation: slideInLeft 0.6s ease-out;
-    animation-fill-mode: both;
-}
-
-.notification-item-mobile:nth-child(1) { animation-delay: 0.1s; }
-.notification-item-mobile:nth-child(2) { animation-delay: 0.2s; }
-.notification-item-mobile:nth-child(3) { animation-delay: 0.3s; }
-.notification-item-mobile:nth-child(4) { animation-delay: 0.4s; }
-.notification-item-mobile:nth-child(5) { animation-delay: 0.5s; }
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
 }
 
 .notification-item-mobile.unread {
@@ -667,13 +676,12 @@
 }
 
 .notification-item-mobile:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .notification-content-mobile {
-    padding: 20px;
+    padding: 16px;
 }
 
 .notification-header-item {
@@ -692,12 +700,6 @@
     justify-content: center;
     font-size: 14px;
     color: white;
-}
-
-.notification-type-badge i {
-    display: inline-block !important;
-    font-size: 14px !important;
-    color: white !important;
 }
 
 .notification-type-badge.info {
@@ -748,12 +750,6 @@
     color: #94a3b8;
 }
 
-.notification-sender-mobile i {
-    display: inline-block !important;
-    font-size: 12px !important;
-    color: #94a3b8 !important;
-}
-
 .notification-actions-mobile {
     display: flex;
     gap: 8px;
@@ -771,20 +767,8 @@
     gap: 4px;
 }
 
-.action-btn-mobile.small i {
-    display: inline-block !important;
-    font-size: 12px !important;
-    color: inherit !important;
-}
-
 .action-btn-mobile.small span {
     font-size: 11px;
-}
-
-.action-btn-mobile.small span i {
-    display: inline-block !important;
-    font-size: 11px !important;
-    color: inherit !important;
 }
 
 .action-btn-mobile.danger {
@@ -816,12 +800,6 @@
     font-size: 32px;
 }
 
-.empty-icon i {
-    display: inline-block !important;
-    font-size: 32px !important;
-    color: #94a3b8 !important;
-}
-
 .empty-title {
     font-size: 18px;
     font-weight: 600;
@@ -848,12 +826,6 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-}
-
-.empty-action-btn i {
-    display: inline-block !important;
-    font-size: 14px !important;
-    color: white !important;
 }
 
 .empty-action-btn:hover {
@@ -930,37 +902,16 @@
     overflow-y: auto;
     position: relative;
     z-index: 1;
-    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideUp 0.3s ease;
 }
 
 @keyframes slideUp {
     from {
         transform: translateY(100%);
-        opacity: 0;
     }
     to {
         transform: translateY(0);
-        opacity: 1;
     }
-}
-
-/* Loading Animation */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.loading {
-    animation: pulse 2s infinite;
-}
-
-/* Smooth Transitions */
-* {
-    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .modal-header-mobile {
@@ -985,12 +936,6 @@
     gap: 8px;
 }
 
-.modal-title-mobile i {
-    display: inline-block !important;
-    font-size: 18px !important;
-    color: #3b82f6 !important;
-}
-
 .modal-close-btn {
     width: 32px;
     height: 32px;
@@ -1004,12 +949,6 @@
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.modal-close-btn i {
-    display: inline-block !important;
-    font-size: 16px !important;
-    color: inherit !important;
 }
 
 .modal-close-btn:hover {
@@ -1122,12 +1061,6 @@
     gap: 8px;
 }
 
-.modal-btn-mobile i {
-    display: inline-block !important;
-    font-size: 14px !important;
-    color: inherit !important;
-}
-
 .modal-btn-mobile.secondary {
     background: #374151;
     border: 1px solid #4b5563;
@@ -1149,49 +1082,14 @@
     background: #1d4ed8;
 }
 
-/* Enhanced Responsive Design */
-@media (min-width: 480px) {
-    .stats-grid-mobile {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        padding: 24px 20px;
-    }
-    
-    .stat-card-mobile {
-        padding: 24px 20px;
-    }
-    
-    .notification-content-mobile {
-        padding: 24px;
-    }
-}
-
+/* Responsive Design */
 @media (min-width: 768px) {
     .stats-grid-mobile {
         grid-template-columns: repeat(4, 1fr);
-        gap: 24px;
-        padding: 32px 24px;
-    }
-    
-    .stat-card-mobile {
-        padding: 28px 24px;
-    }
-    
-    .filter-section-mobile {
-        margin: 0 24px 24px;
-        padding: 24px;
-    }
-    
-    .notifications-list-mobile {
-        padding: 0 24px 24px;
-    }
-    
-    .notification-content-mobile {
-        padding: 28px;
     }
     
     .modal-content-mobile {
-        max-width: 600px;
+        max-width: 500px;
         border-radius: 20px;
         margin: 20px;
     }
@@ -1199,78 +1097,28 @@
     .modal-mobile {
         align-items: center;
     }
-    
-    .header-actions {
-        gap: 12px;
-    }
-    
-    .action-btn-mobile {
-        width: 48px;
-        height: 48px;
-        font-size: 18px;
-    }
 }
 
 @media (min-width: 1024px) {
     .notification-management-container {
-        padding: 32px;
-        max-width: 1400px;
-        margin: 0 auto;
+        padding: 24px;
     }
     
     .notification-header-mobile {
-        border-radius: 16px;
-        margin-bottom: 32px;
-        padding: 24px 32px;
+        border-radius: 12px;
+        margin-bottom: 24px;
     }
     
     .stats-grid-mobile {
-        margin-bottom: 32px;
-        padding: 32px;
+        margin-bottom: 24px;
     }
     
     .filter-section-mobile {
-        margin: 0 32px 32px;
-        padding: 32px;
+        margin-bottom: 24px;
     }
     
     .notifications-list-mobile {
-        padding: 0 32px 32px;
-    }
-    
-    .notification-item-mobile {
-        margin-bottom: 20px;
-    }
-    
-    .notification-content-mobile {
-        padding: 32px;
-    }
-    
-    .header-title {
-        font-size: 24px;
-    }
-    
-    .header-subtitle {
-        font-size: 16px;
-    }
-}
-
-@media (min-width: 1280px) {
-    .notification-management-container {
-        padding: 40px;
-    }
-    
-    .stats-grid-mobile {
-        padding: 40px;
-    }
-    
-    .filter-section-mobile {
-        margin: 0 40px 40px;
-        padding: 40px;
-    }
-    
-    .notifications-list-mobile {
-        padding: 0 40px 40px;
+        padding: 0;
     }
 }
 </style>
@@ -1409,7 +1257,7 @@ function viewNotification(notificationId) {
                 <div class="notification-detail-mobile">
                     <div class="detail-header">
                         <div class="detail-type-badge ${data.type}">
-                            <i class="${getTypeIcon(data.type)}"></i>
+                            <i class="ph ${getTypeIcon(data.type)}"></i>
                             ${data.type.charAt(0).toUpperCase() + data.type.slice(1)}
                         </div>
                         <div class="detail-time">${new Date(data.created_at).toLocaleString('id-ID')}</div>
@@ -1487,7 +1335,7 @@ function updateRecipients() {
     const recipientType = document.querySelector('select[name="recipient_type"]').value;
     const specificRecipients = document.getElementById('specificRecipients');
     
-    if (recipientType === 'specific') {
+    if (recipientType === 'specific' || recipientType === 'specific_students') {
         specificRecipients.classList.remove('hidden');
     } else {
         specificRecipients.classList.add('hidden');

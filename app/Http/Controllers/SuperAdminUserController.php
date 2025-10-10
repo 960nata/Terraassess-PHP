@@ -23,7 +23,7 @@ class SuperAdminUserController extends Controller
         $totalUsers = User::count();
         $totalStudents = User::where('roles_id', 4)->count();
         $totalTeachers = User::where('roles_id', 3)->count();
-        $activeUsers = $totalUsers; // Since all users are considered active by default
+        $activeUsers = User::where('status', 'active')->count();
         
         // Get all users with their classes
         $users = User::with('Kelas')->get();
@@ -31,37 +31,15 @@ class SuperAdminUserController extends Controller
         // Get classes for filter
         $classes = Kelas::all();
         
-        $stats = [
-            'totalUsers' => $totalUsers,
-            'activeUsers' => $activeUsers,
-            'totalTeachers' => $totalTeachers,
-            'totalStudents' => $totalStudents,
-            'totalSuperAdmins' => User::where('roles_id', 1)->count(),
-            'totalAdmins' => User::where('roles_id', 2)->count()
-        ];
-        
-        $recentActivities = [
-            [
-                'icon' => 'fas fa-user-plus',
-                'title' => 'New user registered',
-                'description' => 'John Doe has been added to the system',
-                'time' => '2 hours ago'
-            ],
-            [
-                'icon' => 'fas fa-user-edit',
-                'title' => 'User updated',
-                'description' => 'Jane Smith profile has been updated',
-                'time' => '4 hours ago'
-            ],
-        ];
-        
-        return view('user-management.unified-user-management', [
-            'title' => 'User Management',
+        return view('superadmin.user-management', [
+            'title' => 'Manajemen Pengguna',
             'user' => $user,
+            'totalUsers' => $totalUsers,
+            'totalStudents' => $totalStudents,
+            'totalTeachers' => $totalTeachers,
+            'activeUsers' => $activeUsers,
             'users' => $users,
             'classes' => $classes,
-            'stats' => $stats,
-            'recentActivities' => $recentActivities,
             'filters' => []
         ]);
     }
@@ -356,10 +334,9 @@ class SuperAdminUserController extends Controller
         try {
             $user = User::findOrFail($id);
             
-            // Note: Status column doesn't exist in users table
-            // $user->update([
-            //     'status' => 'active'
-            // ]);
+            $user->update([
+                'status' => 'active'
+            ]);
             
             return response()->json([
                 'success' => true,
@@ -385,7 +362,7 @@ class SuperAdminUserController extends Controller
         $totalUsers = User::count();
         $totalStudents = User::where('roles_id', 4)->count();
         $totalTeachers = User::where('roles_id', 3)->count();
-        $activeUsers = $totalUsers; // Since all users are considered active by default
+        $activeUsers = User::where('status', 'active')->count();
         
         // Build query
         $query = User::with('Kelas');
@@ -401,10 +378,9 @@ class SuperAdminUserController extends Controller
             $query->where('roles_id', $roleMap[$request->filter_role]);
         }
         
-        // Note: Status filter removed as users table doesn't have status column
-        // if ($request->filled('filter_status')) {
-        //     $query->where('status', $request->filter_status);
-        // }
+        if ($request->filled('filter_status')) {
+            $query->where('status', $request->filter_status);
+        }
         
         if ($request->filled('filter_class')) {
             $query->where('kelas_id', $request->filter_class);

@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Manajemen Ujian')
 
@@ -856,57 +856,24 @@ function createEssayExam() {
 
 // Exam action functions
 function editExam(examId) {
-    window.location.href = `{{ url('/superadmin/exam-management') }}/${examId}/edit`;
+    console.log('Edit exam:', examId);
+    // Implement edit functionality
 }
 
 function viewExam(examId) {
-    window.location.href = `{{ url('/superadmin/exam-management') }}/${examId}/view`;
+    console.log('View exam:', examId);
+    // Implement view functionality
 }
 
 function publishExam(examId) {
-    if (confirm('Apakah Anda yakin ingin mempublikasikan ujian ini?')) {
-        fetch(`{{ url('/superadmin/exam-management') }}/${examId}/publish`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Gagal mempublikasikan ujian: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat mempublikasikan ujian');
-        });
-    }
+    console.log('Publish exam:', examId);
+    // Implement publish functionality
 }
 
 function deleteExam(examId) {
     if (confirm('Apakah Anda yakin ingin menghapus ujian ini?')) {
-        fetch(`{{ url('/superadmin/exam-management') }}/${examId}/delete`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Gagal menghapus ujian');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat menghapus ujian');
-        });
+        console.log('Delete exam:', examId);
+        // Implement delete functionality
     }
 }
 </script>

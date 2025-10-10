@@ -1,21 +1,106 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Detail Materi')
 
-@section('styles')
+@section('content')
+<div class="page-header">
+    <div class="header-content">
+        <h1 class="page-title">
+            <i class="fas fa-book me-3"></i>
+            Detail Materi
+        </h1>
+        <p class="page-subtitle">Pelajari materi pembelajaran dengan detail</p>
+    </div>
+</div>
+
+<div class="materi-detail-container">
+    <div class="materi-detail-card">
+        <div class="materi-detail-header">
+            <div class="materi-info">
+                <h2 class="materi-title">{{ $materi->judul }}</h2>
+                <div class="materi-meta">
+                    <div class="materi-meta-item">
+                        <i class="fas fa-book"></i>
+                        <span>{{ $materi->kelasMapel->mapel->nama_mapel }}</span>
+                    </div>
+                    <div class="materi-meta-item">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>{{ $materi->kelasMapel->pengajar->first()->name ?? 'N/A' }}</span>
+                    </div>
+                    <div class="materi-meta-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ $materi->created_at->format('d M Y, H:i') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="materi-detail-content">
+            <div class="materi-description">
+                <h3>Deskripsi Materi</h3>
+                <p>{{ $materi->deskripsi }}</p>
+            </div>
+            
+            @if($materi->file_materi)
+            <div class="materi-files">
+                <h3>File Materi</h3>
+                <div class="file-list">
+                    <div class="file-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="file-name">{{ basename($materi->file_materi) }}</span>
+                        <a href="{{ asset('storage/' . $materi->file_materi) }}" target="_blank" class="file-download">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            @if($materi->link_materi)
+            <div class="materi-links">
+                <h3>Link Materi</h3>
+                <div class="link-list">
+                    <a href="{{ $materi->link_materi }}" target="_blank" class="materi-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        {{ $materi->link_materi }}
+                    </a>
+                </div>
+            </div>
+            @endif
+        </div>
+        
+        <div class="materi-detail-actions">
+            <a href="{{ route('student.materi') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Kembali ke Materi
+            </a>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('additional-styles')
 <style>
 .materi-detail-container {
-    background: #1e293b;
-    border-radius: 1rem;
     padding: 2rem;
-    margin-bottom: 2rem;
-    border: 1px solid #334155;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.materi-header {
+.materi-detail-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.materi-detail-header {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .materi-title {
@@ -31,136 +116,143 @@
     gap: 1.5rem;
 }
 
-.meta-item {
+.materi-meta-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #94a3b8;
+    color: #cbd5e1;
     font-size: 0.9rem;
 }
 
-.meta-item i {
-    color: #667eea;
+.materi-meta-item i {
+    color: #60a5fa;
     width: 16px;
 }
 
-.materi-content {
+.materi-detail-content {
     margin-bottom: 2rem;
 }
 
-.content-section {
-    margin-bottom: 2rem;
-}
-
-.section-title {
+.materi-detail-content h3 {
     color: #ffffff;
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #667eea;
-    display: inline-block;
+    margin-top: 1.5rem;
 }
 
-.content-text {
+.materi-detail-content h3:first-child {
+    margin-top: 0;
+}
+
+.materi-description p {
     color: #e2e8f0;
-    line-height: 1.7;
+    line-height: 1.6;
     font-size: 1rem;
 }
 
-.file-download-card {
-    background: #2a2a3e;
-    border: 1px solid #334155;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
+.materi-files, .materi-links {
+    margin-top: 1.5rem;
+}
+
+.file-list, .link-list {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 1rem;
 }
 
-.file-info {
+.file-item {
     display: flex;
     align-items: center;
     gap: 1rem;
-    flex: 1;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.file-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
+.file-item i {
+    color: #ef4444;
     font-size: 1.25rem;
 }
 
-.file-details {
+.file-name {
+    color: #e2e8f0;
     flex: 1;
 }
 
-.file-name {
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-}
-
-.file-meta {
-    color: #94a3b8;
-    font-size: 0.875rem;
-}
-
-.download-btn {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: #ffffff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
+.file-download {
+    color: #60a5fa;
     text-decoration: none;
-    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(96, 165, 250, 0.1);
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
-.download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-    color: #ffffff;
-    text-decoration: none;
+.file-download:hover {
+    background: rgba(96, 165, 250, 0.2);
+    color: #93c5fd;
 }
 
-.materi-actions {
+.materi-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.materi-link:hover {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.materi-detail-actions {
+    display: flex;
+    justify-content: flex-start;
     padding-top: 1.5rem;
-    border-top: 1px solid #334155;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.btn-secondary {
-    background: #334155;
-    color: #ffffff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
+.btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
     transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: rgba(107, 114, 128, 0.2);
+    color: #d1d5db;
+    border: 1px solid rgba(107, 114, 128, 0.3);
 }
 
 .btn-secondary:hover {
-    background: #475569;
-    color: #ffffff;
-    text-decoration: none;
+    background: rgba(107, 114, 128, 0.3);
+    color: #f3f4f6;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .materi-detail-container {
+        padding: 1rem;
+    }
+    
+    .materi-detail-card {
         padding: 1.5rem;
     }
     
@@ -170,102 +262,19 @@
     
     .materi-meta {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
     }
     
-    .file-download-card {
+    .file-item {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
+        gap: 0.75rem;
     }
     
-    .file-info {
-        margin-bottom: 1rem;
-    }
-    
-    .download-btn {
+    .file-download {
+        align-self: stretch;
         justify-content: center;
     }
 }
 </style>
 @endsection
-
-@section('content')
-<div class="page-header">
-    <h1 class="page-title">
-        <i class="fas fa-book"></i>
-        Detail Materi
-    </h1>
-    <p class="page-description">Pelajari materi pembelajaran dengan detail</p>
-</div>
-
-<div class="materi-detail-container">
-    <div class="materi-header">
-        <h2 class="materi-title">{{ $materi->name }}</h2>
-        <div class="materi-meta">
-            <div class="meta-item">
-                <i class="fas fa-book"></i>
-                <span>{{ $materi->kelasMapel->mapel->name }}</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>{{ $materi->kelasMapel->pengajar->first()->name ?? 'N/A' }}</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-calendar"></i>
-                <span>{{ $materi->created_at->format('d M Y, H:i') }}</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="materi-content">
-        @if($materi->deskripsi)
-        <div class="content-section">
-            <h3 class="section-title">Deskripsi Materi</h3>
-            <div class="content-text">
-                {{ $materi->deskripsi }}
-            </div>
-        </div>
-        @endif
-        
-        @if($materi->content)
-        <div class="content-section">
-            <h3 class="section-title">Konten Materi</h3>
-            <div class="content-text">
-                {!! $materi->content !!}
-            </div>
-        </div>
-        @endif
-        
-        @if($materi->file_materi)
-        <div class="content-section">
-            <h3 class="section-title">File Materi</h3>
-            <div class="file-download-card">
-                <div class="file-info">
-                    <div class="file-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="file-details">
-                        <div class="file-name">{{ basename($materi->file_materi) }}</div>
-                        <div class="file-meta">
-                            {{ $materi->getFileSize() ?? 'Unknown size' }} • {{ $materi->getFileExtension() ?? 'Unknown type' }}
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ asset('storage/' . $materi->file_materi) }}" target="_blank" class="download-btn">
-                    <i class="fas fa-download"></i>
-                    Download
-                </a>
-            </div>
-        </div>
-        @endif
-    </div>
-    
-    <div class="materi-actions">
-        <a href="{{ route('student.materi') }}" class="btn-secondary">
-            <i class="fas fa-arrow-left"></i>
-            Kembali ke Materi
-        </a>
-    </div>
-</div>
-@endsection
-

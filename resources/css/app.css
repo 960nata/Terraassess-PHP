@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
-/* Import Terra Unified Design System - Complete UI System */
-@import './terra-unified-system.css';
+/* Import Design System */
+@import './design-system.css';
+@import './responsive-utilities.css';
+@import './space-minimal.css';
 
 /* Custom styles for nebula background */
 .nebula-bg {

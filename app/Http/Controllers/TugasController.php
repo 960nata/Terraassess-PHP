@@ -23,6 +23,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\AnggotaTugasKelompok;
 use App\Models\TugasJawabanMultiple;
 use App\Models\TugasKelompokQuizJawaban;
+use App\Models\Notification;
+use App\Models\NilaiHistory;
+use Illuminate\Support\Str;
 
 class TugasController extends Controller
 {
@@ -95,26 +98,75 @@ class TugasController extends Controller
                     $nilai = 0;
                 }
 
-                // dd($exist);
+                // Data untuk update/create dengan feedback dan tracking
+                $data = [
+                    'status' => 'Telah dinilai',
+                    'nilai' => $nilai,
+                    'komentar' => $request->komentar[$i] ?? null,
+                    'dinilai_oleh' => auth()->id(),
+                    'dinilai_pada' => now(),
+                    'revisi_ke' => ($exist ? $exist->revisi_ke + 1 : 1)
+                ];
+
                 if ($exist) {
-                    $data = [
-                        'status' => 'Telah dinilai',
-                        'nilai' => $nilai,
-                    ];
+                    // Save history before updating
+                    if ($exist->nilai != $nilai) {
+                        NilaiHistory::create([
+                            'user_tugas_id' => $exist->id,
+                            'nilai_lama' => $exist->nilai,
+                            'nilai_baru' => $nilai,
+                            'komentar_lama' => $exist->komentar,
+                            'komentar_baru' => $request->komentar[$i] ?? null,
+                            'diubah_oleh' => auth()->id(),
+                            'alasan_revisi' => $request->alasan_revisi ?? 'Perbaikan nilai',
+                            'diubah_pada' => now(),
+                        ]);
+                    }
                     $exist->update($data);
                 } else {
-                    $data = [
-                        'tugas_id' => $id,
-                        'user_id' => $request->siswaId[$i],
-                        'status' => 'Telah dinilai',
-                        'nilai' => $nilai,
-                    ];
+                    $data['tugas_id'] = $id;
+                    $data['user_id'] = $request->siswaId[$i];
                     UserTugas::create($data);
                 }
             }
         }
 
+        // Send notifications to students
+        $this->sendGradingNotifications($request, $id);
+
         return redirect()->back()->with('success', 'Nilai Telah diPerbaharui');
+    }
+
+    /**
+     * Send notifications to students after grading
+     */
+    private function sendGradingNotifications($request, $tugasId)
+    {
+        $tugas = Tugas::find($tugasId);
+        if (!$tugas) return;
+
+        foreach ($request->siswaId as $index => $siswaId) {
+            if ($request->nilai[$index]) {
+                $nilai = $request->nilai[$index];
+                $komentar = $request->komentar[$index] ?? '';
+                
+                $title = 'Tugas Dinilai';
+                $message = "Tugas '{$tugas->name}' telah dinilai. Nilai: {$nilai}";
+                
+                if ($komentar) {
+                    $message .= "\n\nFeedback: " . Str::limit($komentar, 100);
+                }
+                
+                Notification::createForUser(
+                    $siswaId,
+                    $title,
+                    $message,
+                    'success',
+                    'tugas',
+                    $tugasId
+                );
+            }
+        }
     }
 
     /**
@@ -303,6 +355,9 @@ class TugasController extends Controller
             "tugas_kelompok_id" => $request->fromKelompok,
             "to_kelompok" => $request->toKelompok,
             "nilai" => $request->nilai,
+            "komentar" => $request->komentar ?? null,
+            "dinilai_oleh" => auth()->id(),
+            "dinilai_pada" => now(),
         ];
         KelompokNilai::create($data);
 
@@ -1074,5 +1129,19 @@ class TugasController extends Controller
         TugasQuiz::create($validatedData);
 
         return redirect()->route('viewTugas');
+    }
+
+    /**
+     * Show history of nilai revisions for a specific user task
+     */
+    public function showHistory($userTugasId)
+    {
+        $userTugas = UserTugas::with(['user', 'tugas', 'penilai'])->findOrFail($userTugasId);
+        $history = NilaiHistory::with('pengubah')
+            ->where('user_tugas_id', $userTugasId)
+            ->orderBy('diubah_pada', 'desc')
+            ->get();
+
+        return view('teacher.nilai-history', compact('userTugas', 'history'));
     }
 }

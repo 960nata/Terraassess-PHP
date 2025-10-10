@@ -1,29 +1,14 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Analitik Dashboard')
 
 @section('styles')
 <style>
-        .analytics-grid {
+.analytics-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
-        }
-
-        @media (max-width: 1200px) {
-            .analytics-grid {
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .analytics-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: repeat(6, 1fr);
-            }
         }
 
         .analytics-card {
@@ -410,42 +395,54 @@
             </form>
         </div>
 
-        <!-- Analytics Charts Grid 2x3 -->
+        <!-- Analytics Charts -->
         <div class="analytics-grid">
-            <!-- 1. Aktivitas Pengguna -->
+            <!-- User Activity Chart -->
             <div class="analytics-card">
                 <h3><i class="fas fa-users"></i>Aktivitas Pengguna</h3>
-                <div id="userActivityChart"></div>
+                <div class="chart-container">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
             </div>
 
-            <!-- 2. Penyelesaian Tugas -->
+            <!-- Task Completion Chart -->
             <div class="analytics-card">
                 <h3><i class="fas fa-tasks"></i>Penyelesaian Tugas</h3>
-                <div id="taskCompletionChart"></div>
+                <div class="chart-container">
+                    <canvas id="taskCompletionChart"></canvas>
+                </div>
             </div>
 
-            <!-- 3. Distribusi Performa -->
+            <!-- Performance Distribution -->
             <div class="analytics-card">
                 <h3><i class="fas fa-chart-pie"></i>Distribusi Performa</h3>
-                <div id="performanceChart"></div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
             </div>
 
-            <!-- 4. Progress Pembelajaran -->
+            <!-- Learning Progress -->
             <div class="analytics-card">
                 <h3><i class="fas fa-graduation-cap"></i>Progress Pembelajaran</h3>
-                <div id="learningProgressChart"></div>
+                <div class="chart-container">
+                    <canvas id="learningProgressChart"></canvas>
+                </div>
             </div>
 
-            <!-- 5. Performa Kelas -->
+            <!-- Class Performance -->
             <div class="analytics-card">
-                <h3><i class="fas fa-school"></i>Performa Kelas</h3>
-                <div id="classPerformanceChart"></div>
+                <h3><i class="fas fa-chalkboard"></i>Performa Kelas</h3>
+                <div class="chart-container">
+                    <canvas id="classPerformanceChart"></canvas>
+                </div>
             </div>
 
-            <!-- 6. Popularitas Mata Pelajaran -->
+            <!-- Subject Popularity -->
             <div class="analytics-card">
                 <h3><i class="fas fa-book"></i>Popularitas Mata Pelajaran</h3>
-                <div id="subjectPopularityChart"></div>
+                <div class="chart-container">
+                    <canvas id="subjectPopularityChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -457,10 +454,10 @@
             
             <div class="performer-item">
                 <div class="performer-info">
-                    <div class="performer-avatar">-</div>
+                    <div class="performer-avatar">JD</div>
                     <div class="performer-details">
-                        <h4>Data Tidak Tersedia</h4>
-                        <p>Belum ada data performa siswa</p>
+                        <h4>John Doe</h4>
+                        <p>Kelas 10A - Matematika</p>
                     </div>
                 </div>
                 <div class="performer-score">95%</div>
@@ -510,271 +507,4 @@
                 <div class="performer-score">85%</div>
             </div>
         </div>
-@endsection
-
-@section('scripts')
-<!-- ApexCharts CDN -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Chart theme configuration
-    const chartTheme = {
-        theme: {
-            mode: 'dark',
-            palette: 'palette1',
-            monochrome: {
-                enabled: false,
-                color: '#255aee',
-                shadeTo: 'light',
-                shadeIntensity: 0.65
-            }
-        },
-        chart: {
-            background: 'transparent',
-            toolbar: {
-                show: true,
-                tools: {
-                    download: true,
-                    selection: true,
-                    zoom: true,
-                    zoomin: true,
-                    zoomout: true,
-                    pan: true,
-                    reset: true
-                }
-            }
-        },
-        colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
-        grid: {
-            borderColor: '#334155',
-            strokeDashArray: 4
-        },
-        xaxis: {
-            labels: {
-                style: {
-                    colors: '#ffffff'
-                }
-            }
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    colors: '#ffffff'
-                }
-            }
-        },
-        legend: {
-            labels: {
-                colors: '#ffffff'
-            }
-        }
-    };
-
-    // 1. Aktivitas Pengguna Chart
-    const userActivityOptions = {
-        ...chartTheme,
-        series: [{
-            name: 'Login Harian',
-            data: @json($chartData['userActivity']['loginData'] ?? [])
-        }, {
-            name: 'Aktivitas Tugas',
-            data: @json($chartData['userActivity']['taskActivityData'] ?? [])
-        }],
-        chart: {
-            ...chartTheme.chart,
-            type: 'area',
-            height: 300
-        },
-        xaxis: {
-            ...chartTheme.xaxis,
-            categories: @json($chartData['userActivity']['labels'] ?? [])
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 2
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.7,
-                opacityTo: 0.3,
-                stops: [0, 90, 100]
-            }
-        }
-    };
-
-    const userActivityChart = new ApexCharts(document.querySelector("#userActivityChart"), userActivityOptions);
-    userActivityChart.render();
-
-    // 2. Penyelesaian Tugas Chart
-    const taskCompletionOptions = {
-        ...chartTheme,
-        series: [{
-            name: 'Tugas Selesai',
-            data: @json($chartData['taskCompletion']['data'] ?? [])
-        }],
-        chart: {
-            ...chartTheme.chart,
-            type: 'line',
-            height: 300
-        },
-        xaxis: {
-            ...chartTheme.xaxis,
-            categories: @json($chartData['taskCompletion']['labels'] ?? [])
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 3
-        },
-        markers: {
-            size: 4,
-            hover: {
-                size: 6
-            }
-        }
-    };
-
-    const taskCompletionChart = new ApexCharts(document.querySelector("#taskCompletionChart"), taskCompletionOptions);
-    taskCompletionChart.render();
-
-    // 3. Distribusi Performa Chart
-    const performanceOptions = {
-        ...chartTheme,
-        series: @json(array_values($chartData['performanceDistribution'] ?? [])),
-        chart: {
-            ...chartTheme.chart,
-            type: 'donut',
-            height: 300
-        },
-        labels: @json(array_keys($chartData['performanceDistribution'] ?? [])),
-        plotOptions: {
-            pie: {
-                donut: {
-                    size: '70%'
-                }
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function (val) {
-                return val + "%"
-            }
-        }
-    };
-
-    const performanceChart = new ApexCharts(document.querySelector("#performanceChart"), performanceOptions);
-    performanceChart.render();
-
-    // 4. Progress Pembelajaran Chart
-    const learningProgressOptions = {
-        ...chartTheme,
-        series: [@json($chartData['learningProgress'] ?? 75)],
-        chart: {
-            ...chartTheme.chart,
-            type: 'radialBar',
-            height: 300
-        },
-        plotOptions: {
-            radialBar: {
-                startAngle: -90,
-                endAngle: 90,
-                track: {
-                    background: '#334155',
-                    strokeWidth: '97%',
-                    margin: 5,
-                },
-                dataLabels: {
-                    name: {
-                        show: true,
-                        fontSize: '16px',
-                        fontWeight: 600,
-                        color: '#ffffff'
-                    },
-                    value: {
-                        show: true,
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        color: '#667eea',
-                        formatter: function (val) {
-                            return val + "%"
-                        }
-                    }
-                }
-            }
-        },
-        labels: ['Progress Pembelajaran']
-    };
-
-    const learningProgressChart = new ApexCharts(document.querySelector("#learningProgressChart"), learningProgressOptions);
-    learningProgressChart.render();
-
-    // 5. Performa Kelas Chart
-    const classPerformanceOptions = {
-        ...chartTheme,
-        series: [{
-            name: 'Rata-rata Nilai',
-            data: @json($chartData['classPerformance']['data'] ?? [])
-        }],
-        chart: {
-            ...chartTheme.chart,
-            type: 'bar',
-            height: 300
-        },
-        xaxis: {
-            ...chartTheme.xaxis,
-            categories: @json($chartData['classPerformance']['labels'] ?? [])
-        },
-        plotOptions: {
-            bar: {
-                borderRadius: 4,
-                horizontal: false,
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function (val) {
-                return val + "%"
-            }
-        }
-    };
-
-    const classPerformanceChart = new ApexCharts(document.querySelector("#classPerformanceChart"), classPerformanceOptions);
-    classPerformanceChart.render();
-
-    // 6. Popularitas Mata Pelajaran Chart
-    const subjectPopularityOptions = {
-        ...chartTheme,
-        series: [{
-            name: 'Jumlah Siswa',
-            data: @json($chartData['subjectPopularity']['data'] ?? [])
-        }],
-        chart: {
-            ...chartTheme.chart,
-            type: 'bar',
-            height: 300
-        },
-        xaxis: {
-            ...chartTheme.xaxis,
-            categories: @json($chartData['subjectPopularity']['labels'] ?? [])
-        },
-        plotOptions: {
-            bar: {
-                borderRadius: 4,
-                horizontal: true,
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function (val) {
-                return val + " siswa"
-            }
-        }
-    };
-
-    const subjectPopularityChart = new ApexCharts(document.querySelector("#subjectPopularityChart"), subjectPopularityOptions);
-    subjectPopularityChart.render();
-});
-</script>
 @endsection

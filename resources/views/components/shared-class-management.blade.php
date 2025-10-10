@@ -5,11 +5,19 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-chart-bar"></i>
-            Manajemen Kelas
-        </h1>
-        <p class="page-description">Kelola data kelas dan mata pelajaran</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-chart-bar"></i>
+                Manajemen Kelas
+            </h1>
+            <p class="page-subtitle">Kelola data kelas dan mata pelajaran</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="openCreateClassModal()">
+                <i class="fas fa-plus"></i>
+                Tambah Kelas
+            </button>
+        </div>
     </div>
 
     <!-- Statistics Cards -->

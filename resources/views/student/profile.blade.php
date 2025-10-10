@@ -1,10 +1,6 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Profile Siswa')
-
-@section('styles')
-<link href="{{ asset('asset/css/student-profile.css') }}" rel="stylesheet">
-@endsection
 
 @section('content')
 <div class="page-header">

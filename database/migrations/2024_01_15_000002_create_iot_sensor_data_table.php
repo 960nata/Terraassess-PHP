@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('device_id')->constrained('iot_devices')->onDelete('cascade');
             $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Guru yang melakukan pengukuran
+            $table->foreignId('research_project_id')->nullable()->constrained('research_projects')->onDelete('set null'); // Link to research project
             $table->decimal('temperature', 5, 2); // Suhu tanah dalam Celsius
             $table->decimal('humidity', 5, 2); // Kelembaban dalam persen
             $table->decimal('soil_moisture', 5, 2); // Kelembaban tanah dalam persen
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->index(['device_id', 'measured_at']);
             $table->index(['kelas_id', 'measured_at']);
             $table->index(['user_id', 'measured_at']);
+            $table->index(['research_project_id', 'measured_at']);
         });
     }
 

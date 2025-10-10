@@ -51,15 +51,7 @@ class Role
                 4 => 'student.dashboard'
             ];
             
-            $dashboardRoute = $dashboardRoutes[$userRoleId] ?? 'student.dashboard';
-            
-            // Log unauthorized access attempt
-            \Log::warning('Unauthorized access attempt', [
-                'user_id' => $user->id,
-                'user_role' => $userRoleId,
-                'required_roles' => $roles,
-                'url' => $request->url()
-            ]);
+            $dashboardRoute = $dashboardRoutes[$userRoleId] ?? 'dashboard';
             
             return redirect()->route($dashboardRoute)
                 ->with('error', 'Akses ditolak. Anda dialihkan ke dashboard Anda.');

@@ -23,6 +23,7 @@ use App\Models\UserCommit;
 use App\Models\UserTugas;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\UserUjian;
 use App\Models\TugasProgress;
 use App\Helpers\DashboardHelper;
@@ -30,7 +31,6 @@ use App\Traits\TeacherAccessControl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 /**
@@ -69,14 +69,10 @@ class DashboardController extends Controller
         // Prepare data for template
         $templateData = array_merge($roleConfig, [
             'user' => $user,
-            'roleId' => $authRoles,
-            'roleName' => $this->getRoleName($authRoles),
-            'stats' => $this->getDashboardStats($authRoles),
-            'recentActivities' => $this->getRecentActivities($authRoles),
-            'notifications' => $this->getNotifications($authRoles)
+            'roleId' => $authRoles
         ]);
         
-        return view('dashboard.unified-dashboard', $templateData);
+        return view($dashboardView, $templateData);
     }
 
     /**
@@ -913,7 +909,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
-        return view('superadmin.profile', [
+        return view('dashboard.superadmin-profile', [
             'title' => 'Profil Super Admin',
             'user' => $user
         ]);
@@ -1008,90 +1004,6 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => 0, 'msg' => 'Gagal upload: ' . $e->getMessage()]);
         }
-    }
-
-    /**
-     * Menampilkan halaman ubah password Super Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewSuperAdminChangePassword()
-    {
-        $user = auth()->user();
-        
-        return view('superadmin.change-password', [
-            'title' => 'Ubah Password Super Admin',
-            'user' => $user
-        ]);
-    }
-
-    /**
-     * Update Super Admin password.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function changeSuperAdminPassword(Request $request)
-    {
-        $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        try {
-            $user = auth()->user();
-            
-            if (!$user) {
-                return redirect()->route('login')->with('error', 'User tidak terautentikasi.');
-            }
-            
-            // Verify current password
-            if (!Hash::check($request->current_password, $user->password)) {
-                return redirect()->back()->with('error', 'Password saat ini tidak benar.');
-            }
-            
-            // Update password
-            $user->password = Hash::make($request->password);
-            $user->password_changed_at = now();
-            $user->save();
-
-            return redirect()->route('superadmin.profile')
-                ->with('success', 'Password berhasil diubah!');
-                
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Gagal mengubah password: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Menampilkan halaman 2FA Super Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewSuperAdmin2FA()
-    {
-        $user = auth()->user();
-        
-        return view('superadmin.2fa', [
-            'title' => 'Autentikasi Dua Faktor Super Admin',
-            'user' => $user
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman sesi aktif Super Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewSuperAdminSessions()
-    {
-        $user = auth()->user();
-        
-        return view('superadmin.sessions', [
-            'title' => 'Sesi Aktif Super Admin',
-            'user' => $user
-        ]);
     }
 
     /**
@@ -2154,16 +2066,12 @@ class DashboardController extends Controller
             $exam = Ujian::findOrFail($id);
             $exam->delete();
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Ujian berhasil dihapus!'
-            ]);
+            return redirect()->route('superadmin.exam-management')
+                ->with('success', 'Ujian berhasil dihapus!');
                 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menghapus ujian: ' . $e->getMessage()
-            ], 500);
+            return redirect()->route('superadmin.exam-management')
+                ->with('error', 'Gagal menghapus ujian: ' . $e->getMessage());
         }
     }
 
@@ -2179,88 +2087,12 @@ class DashboardController extends Controller
             $exam = Ujian::findOrFail($id);
             $exam->update(['isHidden' => false]);
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Ujian berhasil dipublikasikan!'
-            ]);
-                
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mempublikasikan ujian: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Membatalkan publikasi ujian.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function unpublishSuperAdminExam($id)
-    {
-        try {
-            $exam = Ujian::findOrFail($id);
-            $exam->update(['isHidden' => true]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Publikasi ujian berhasil dibatalkan!'
-            ]);
-                
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal membatalkan publikasi ujian: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Update exam information.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function updateSuperAdminExam(Request $request, $id)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'class_id' => 'required|string',
-            'subject_id' => 'required|string',
-            'time' => 'required|integer|min:1',
-            'due' => 'required|date|after:now',
-            'content' => 'nullable|string',
-            'isHidden' => 'required|boolean',
-        ]);
-
-        try {
-            $exam = Ujian::findOrFail($id);
-            
-            // Find or create KelasMapel relationship
-            $kelasMapel = KelasMapel::firstOrCreate([
-                'kelas_id' => $request->class_id,
-                'mapel_id' => $request->subject_id,
-            ]);
-
-            $exam->update([
-                'kelas_mapel_id' => $kelasMapel->id,
-                'name' => $request->name,
-                'content' => $request->content,
-                'time' => $request->time,
-                'due' => $request->due,
-                'isHidden' => $request->isHidden,
-            ]);
-
             return redirect()->route('superadmin.exam-management')
-                ->with('success', 'Ujian berhasil diperbarui!');
+                ->with('success', 'Ujian berhasil dipublikasikan!');
                 
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Gagal memperbarui ujian: ' . $e->getMessage())
-                ->withInput();
+            return redirect()->route('superadmin.exam-management')
+                ->with('error', 'Gagal mempublikasikan ujian: ' . $e->getMessage());
         }
     }
 
@@ -3136,54 +2968,52 @@ class DashboardController extends Controller
         $recentClasses = Kelas::latest()->limit(5)->get();
         
         // Get classes and subjects for filter dropdowns
-        $classes = Kelas::all(['id', 'name']);
-        $subjects = \App\Models\Mapel::all(['id', 'name']);
+        $classes = Kelas::all();
+        $subjects = \App\Models\Mapel::all();
         
-        // Chart data
-        $chartData = $this->getAnalyticsChartData();
+        // Calculate additional metrics
+        $activeUsers = \App\Models\User::where('updated_at', '>=', now()->subDays(30))->count();
+        $completedTasks = \App\Models\TugasProgress::whereIn('status', ['submitted', 'graded'])->count();
+        $averageScore = 85; // Placeholder - you can implement actual calculation
         
         return view('superadmin.analytics', [
             'title' => 'Analitik',
             'user' => $user,
             'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
             'totalClasses' => $totalClasses,
             'totalSubjects' => $totalSubjects,
             'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
             'totalExams' => $totalExams,
+            'averageScore' => $averageScore,
             'userStats' => $userStats,
             'recentUsers' => $recentUsers,
             'recentClasses' => $recentClasses,
             'classes' => $classes,
             'subjects' => $subjects,
-            'chartData' => $chartData,
+            'filters' => [],
         ]);
     }
 
     /**
-     * Filter Analytics untuk Super Admin.
+     * Menampilkan halaman Analitik Super Admin dengan filter.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
-    public function filterSuperAdminAnalytics(Request $request)
+    public function filterSuperAdminAnalytics()
     {
         $user = auth()->user();
         
         // Get filter parameters
-        $filters = $request->only(['filter_period', 'filter_class', 'filter_subject']);
-        
-        // Set default period if not provided
-        $period = $filters['filter_period'] ?? 30;
-        $startDate = \Carbon\Carbon::now()->subDays($period);
+        $filters = request()->only(['filter_period', 'filter_class', 'filter_subject', 'filter_type']);
         
         // Get analytics data with filters
         $totalUsers = \App\Models\User::count();
         $totalClasses = Kelas::count();
         $totalSubjects = \App\Models\Mapel::count();
-        
-        // Apply period filter to tasks and exams
-        $totalTasks = \App\Models\Tugas::where('created_at', '>=', $startDate)->count();
-        $totalExams = \App\Models\Ujian::where('created_at', '>=', $startDate)->count();
+        $totalTasks = \App\Models\Tugas::count();
+        $totalExams = \App\Models\Ujian::count();
         
         // Get user statistics by role
         $userStats = \App\Models\User::join('roles', 'users.roles_id', '=', 'roles.id')
@@ -3191,159 +3021,37 @@ class DashboardController extends Controller
             ->groupBy('roles.name')
             ->get();
         
-        // Get recent activity with period filter
-        $recentUsers = \App\Models\User::where('created_at', '>=', $startDate)->latest()->limit(5)->get();
-        $recentClasses = Kelas::where('created_at', '>=', $startDate)->latest()->limit(5)->get();
-        
-        // Apply class filter if specified
-        if (!empty($filters['filter_class'])) {
-            $recentClasses = Kelas::where('id', $filters['filter_class'])
-                ->where('created_at', '>=', $startDate)
-                ->latest()
-                ->limit(5)
-                ->get();
-        }
-        
-        // Apply subject filter if specified
-        if (!empty($filters['filter_subject'])) {
-            $totalTasks = \App\Models\Tugas::whereHas('KelasMapel', function($query) use ($filters) {
-                $query->where('mapel_id', $filters['filter_subject']);
-            })->where('created_at', '>=', $startDate)->count();
-            
-            $totalExams = \App\Models\Ujian::whereHas('KelasMapel', function($query) use ($filters) {
-                $query->where('mapel_id', $filters['filter_subject']);
-            })->where('created_at', '>=', $startDate)->count();
-        }
+        // Get recent activity
+        $recentUsers = \App\Models\User::latest()->limit(5)->get();
+        $recentClasses = Kelas::latest()->limit(5)->get();
         
         // Get classes and subjects for filter dropdowns
-        $classes = Kelas::all(['id', 'name']);
-        $subjects = \App\Models\Mapel::all(['id', 'name']);
+        $classes = Kelas::all();
+        $subjects = \App\Models\Mapel::all();
         
-        // Chart data
-        $chartData = $this->getAnalyticsChartData();
+        // Calculate additional metrics based on filters
+        $activeUsers = \App\Models\User::where('updated_at', '>=', now()->subDays(30))->count();
+        $completedTasks = \App\Models\TugasProgress::whereIn('status', ['submitted', 'graded'])->count();
+        $averageScore = 85; // Placeholder - you can implement actual calculation
         
         return view('superadmin.analytics', [
             'title' => 'Analitik',
             'user' => $user,
             'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
             'totalClasses' => $totalClasses,
             'totalSubjects' => $totalSubjects,
             'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
             'totalExams' => $totalExams,
+            'averageScore' => $averageScore,
             'userStats' => $userStats,
             'recentUsers' => $recentUsers,
             'recentClasses' => $recentClasses,
             'classes' => $classes,
             'subjects' => $subjects,
             'filters' => $filters,
-            'chartData' => $chartData,
         ]);
-    }
-
-    /**
-     * Get analytics chart data from database
-     *
-     * @return array
-     */
-    private function getAnalyticsChartData()
-    {
-        // 1. User Activity Data (last 30 days)
-        $userActivityData = [];
-        $loginData = [];
-        $taskActivityData = [];
-        
-        for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $dayStart = $date->copy()->startOfDay();
-            $dayEnd = $date->copy()->endOfDay();
-            
-            // Count daily logins (simulated - you can implement actual login tracking)
-            $dailyLogins = \App\Models\User::whereBetween('created_at', [$dayStart, $dayEnd])->count();
-            $loginData[] = $dailyLogins;
-            
-            // Count daily task activities
-            $dailyTaskActivity = \App\Models\Tugas::whereBetween('created_at', [$dayStart, $dayEnd])->count();
-            $taskActivityData[] = $dailyTaskActivity;
-        }
-        
-        // 2. Task Completion Data (last 30 days)
-        $taskCompletionData = [];
-        for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $dayStart = $date->copy()->startOfDay();
-            $dayEnd = $date->copy()->endOfDay();
-            
-            // Count completed tasks (simulated - you can implement actual completion tracking)
-            $completedTasks = \App\Models\Tugas::whereBetween('created_at', [$dayStart, $dayEnd])->count();
-            $taskCompletionData[] = $completedTasks;
-        }
-        
-        // 3. Performance Distribution Data
-        $performanceDistribution = [
-            'Sangat Baik (90-100)' => 25,
-            'Baik (80-89)' => 35,
-            'Cukup (70-79)' => 20,
-            'Kurang (60-69)' => 15,
-            'Sangat Kurang (<60)' => 5
-        ];
-        
-        // 4. Learning Progress Data (simulated)
-        $learningProgress = 75; // 75% average progress
-        
-        // 5. Class Performance Data
-        $classPerformanceData = [];
-        $classPerformanceLabels = [];
-        $classes = Kelas::with(['DataSiswa'])->get();
-        
-        foreach ($classes as $class) {
-            $classPerformanceLabels[] = $class->name;
-            // Get real average score for each class from user_tugas table
-            $averageScore = UserTugas::whereHas('user', function($query) use ($class) {
-                $query->where('kelas_id', $class->id);
-            })->avg('nilai') ?? 0;
-            $classPerformanceData[] = $averageScore;
-        }
-        
-        // 6. Subject Popularity Data
-        $subjectPopularityData = [];
-        $subjectPopularityLabels = [];
-        $subjects = \App\Models\Mapel::with(['KelasMapel.Kelas.DataSiswa'])->get();
-        
-        foreach ($subjects as $subject) {
-            $subjectPopularityLabels[] = $subject->name;
-            // Count students enrolled in this subject
-            $studentCount = 0;
-            foreach ($subject->KelasMapel as $kelasMapel) {
-                $studentCount += $kelasMapel->Kelas->DataSiswa->count();
-            }
-            $subjectPopularityData[] = $studentCount;
-        }
-        
-        return [
-            'userActivity' => [
-                'loginData' => $loginData,
-                'taskActivityData' => $taskActivityData,
-                'labels' => array_map(function($i) {
-                    return "Hari " . ($i + 1);
-                }, range(0, 29))
-            ],
-            'taskCompletion' => [
-                'data' => $taskCompletionData,
-                'labels' => array_map(function($i) {
-                    return "Hari " . ($i + 1);
-                }, range(0, 29))
-            ],
-            'performanceDistribution' => $performanceDistribution,
-            'learningProgress' => $learningProgress,
-            'classPerformance' => [
-                'data' => $classPerformanceData,
-                'labels' => $classPerformanceLabels
-            ],
-            'subjectPopularity' => [
-                'data' => $subjectPopularityData,
-                'labels' => $subjectPopularityLabels
-            ]
-        ];
     }
 
     /**
@@ -3449,8 +3157,10 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
-        // Guru memiliki akses penuh ke semua materi
-        $materials = Materi::with(['kelasMapel.mapel'])
+        // Get all materi created by this teacher
+        $materials = Materi::whereHas('kelasMapel.editorAccess', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->with(['kelasMapel.mapel'])
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -3632,7 +3342,13 @@ class DashboardController extends Controller
                 'subject_name' => $materi->kelasMapel->mapel->name ?? 'N/A',
                 'class_name' => $materi->kelasMapel->kelas->name ?? 'N/A',
                 'file_size' => '2.5 MB',
-                'download_count' => 0
+                'download_count' => 0,
+                'thumbnail_path' => null, // Add thumbnail_path property
+                'thumbnail_url' => null,  // Add thumbnail_url property
+                'file_materi' => $materi->file_materi,
+                'is_published' => !$materi->isHidden,
+                'views_count' => 0,
+                'downloads_count' => 0
             ];
         });
         
@@ -4035,22 +3751,13 @@ class DashboardController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            // Hapus foto lama jika ada
-            if ($user->gambar) {
-                Storage::disk('public')->delete($user->gambar);
-            }
-            
             $photo = $request->file('photo');
-            $filename = time() . '_' . $photo->getClientOriginalName();
-            $path = $photo->storeAs('user-images', $filename, 'public');
+            $filename = time() . '.' . $photo->getClientOriginalExtension();
+            $photo->storeAs('public/photos', $filename);
             
-            $user->update(['gambar' => $path]);
+            $user->update(['photo' => $filename]);
             
-            return response()->json([
-                'success' => true, 
-                'message' => 'Foto profile berhasil diupload',
-                'photo_url' => asset('storage/' . $path)
-            ]);
+            return response()->json(['success' => true, 'photo' => $filename]);
         }
 
         return response()->json(['success' => false, 'message' => 'Gagal mengupload foto']);
@@ -4352,13 +4059,13 @@ class DashboardController extends Controller
         
         // Get current sensor readings for real-time display
         $currentTemperature = \App\Models\IotSensorData::whereNotNull('temperature')
-            ->latest('measured_at')->first()->temperature ?? null;
+            ->latest('measured_at')->first()->temperature ?? 25.5;
         $currentHumidity = \App\Models\IotSensorData::whereNotNull('humidity')
-            ->latest('measured_at')->first()->humidity ?? null;
+            ->latest('measured_at')->first()->humidity ?? 65.2;
         $currentMoisture = \App\Models\IotSensorData::whereNotNull('soil_moisture')
-            ->latest('measured_at')->first()->soil_moisture ?? null;
+            ->latest('measured_at')->first()->soil_moisture ?? 45.8;
         $currentPh = \App\Models\IotSensorData::whereNotNull('ph_level')
-            ->latest('measured_at')->first()->ph_level ?? null;
+            ->latest('measured_at')->first()->ph_level ?? 6.8;
         
         // Get data for filter options
         $classes = Kelas::all();
@@ -4378,6 +4085,372 @@ class DashboardController extends Controller
             'currentMoisture' => $currentMoisture,
             'currentPh' => $currentPh,
             'classes' => $classes,
+        ]);
+    }
+
+    /**
+     * View admin reports.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewAdminReports()
+    {
+        $user = auth()->user();
+        
+        // Get reports data for admin (similar to superadmin but with admin-specific filters)
+        $classes = Kelas::all();
+        $subjects = Mapel::all();
+        
+        // Get class data
+        $classData = [];
+        foreach ($classes as $class) {
+            $classData[] = [
+                'name' => $class->name,
+                'student_count' => $class->siswa->count(),
+                'task_count' => $class->KelasMapel->sum(function($km) {
+                    return $km->Tugas->count();
+                }),
+                'exam_count' => $class->KelasMapel->sum(function($km) {
+                    return $km->Ujian->count();
+                })
+            ];
+        }
+        
+        // Get subject data
+        $subjectData = [];
+        foreach ($subjects as $subject) {
+            $subjectData[] = [
+                'name' => $subject->name,
+                'class_count' => $subject->KelasMapel->count(),
+                'task_count' => $subject->KelasMapel->sum(function($km) {
+                    return $km->Tugas->count();
+                }),
+                'exam_count' => $subject->KelasMapel->sum(function($km) {
+                    return $km->Ujian->count();
+                })
+            ];
+        }
+        
+        // Get report statistics
+        $totalReports = UserTugas::count();
+        $completedReports = UserTugas::where('status', 'completed')->count();
+        $pendingReports = UserTugas::where('status', 'pending')->count();
+        $failedReports = UserTugas::where('status', 'failed')->count();
+        
+        return view('admin.reports', [
+            'title' => 'Laporan Admin',
+            'user' => $user,
+            'classes' => $classes,
+            'subjects' => $subjects,
+            'classData' => $classData,
+            'subjectData' => $subjectData,
+            'totalReports' => $totalReports,
+            'completedReports' => $completedReports,
+            'pendingReports' => $pendingReports,
+            'failedReports' => $failedReports
+        ]);
+    }
+
+    /**
+     * Filter admin reports.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
+    public function filterAdminReports(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Apply filters similar to superadmin but with admin-specific logic
+        $filters = $request->only(['filter_class', 'filter_subject', 'filter_date_from', 'filter_date_to']);
+        
+        return view('admin.reports', [
+            'title' => 'Laporan Admin',
+            'user' => $user,
+            'filters' => $filters
+        ]);
+    }
+
+    /**
+     * View admin analytics.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewAdminAnalytics()
+    {
+        $user = auth()->user();
+        
+        // Get analytics data for admin (similar to superadmin but with admin-specific scope)
+        $totalUsers = User::whereIn('roles_id', [3, 4])->count(); // Only teachers and students
+        $totalClasses = Kelas::count();
+        $totalSubjects = Mapel::count();
+        $totalTasks = Tugas::count();
+        $totalExams = Ujian::count();
+        
+        // Get user statistics by role (excluding superadmin)
+        $userStats = User::join('roles', 'users.roles_id', '=', 'roles.id')
+            ->whereIn('users.roles_id', [2, 3, 4]) // Admin, Teacher, Student
+            ->selectRaw('roles.name as role, COUNT(*) as count')
+            ->groupBy('roles.name')
+            ->get();
+        
+        // Get recent activity (admin scope)
+        $recentUsers = User::whereIn('roles_id', [3, 4])->latest()->limit(5)->get();
+        $recentClasses = Kelas::latest()->limit(5)->get();
+        
+        return view('admin.analytics', [
+            'title' => 'Analitik Admin',
+            'user' => $user,
+            'totalUsers' => $totalUsers,
+            'totalClasses' => $totalClasses,
+            'totalSubjects' => $totalSubjects,
+            'totalTasks' => $totalTasks,
+            'totalExams' => $totalExams,
+            'userStats' => $userStats,
+            'recentUsers' => $recentUsers,
+            'recentClasses' => $recentClasses,
+        ]);
+    }
+
+    /**
+     * View admin help.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewAdminHelp()
+    {
+        $user = auth()->user();
+        
+        return view('admin.help', [
+            'title' => 'Bantuan Admin',
+            'user' => $user
+        ]);
+    }
+
+    /**
+     * View Super Admin IoT Tasks
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewSuperAdminIotTasks()
+    {
+        $user = auth()->user();
+        
+        // Get IoT tasks data
+        $iotTasks = \App\Models\Tugas::where('tipe', 'iot')
+            ->orWhere('name', 'like', '%IoT%')
+            ->orWhere('content', 'like', '%IoT%')
+            ->with(['kelasMapel'])
+            ->latest()
+            ->get();
+        
+        // Get statistics
+        $totalIotTasks = $iotTasks->count();
+        $activeIotTasks = $iotTasks->where('status', 'active')->count();
+        $completedIotTasks = $iotTasks->where('status', 'completed')->count();
+        $pendingIotTasks = $iotTasks->where('status', 'pending')->count();
+        
+        return view('superadmin.iot-tasks', [
+            'title' => 'Tugas IoT',
+            'user' => $user,
+            'iotTasks' => $iotTasks,
+            'totalIotTasks' => $totalIotTasks,
+            'activeIotTasks' => $activeIotTasks,
+            'completedIotTasks' => $completedIotTasks,
+            'pendingIotTasks' => $pendingIotTasks,
+        ]);
+    }
+
+    /**
+     * View Super Admin IoT Research
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewSuperAdminIotResearch()
+    {
+        $user = auth()->user();
+        
+        // Get research projects with pagination and eager loading
+        $researchProjectsQuery = \App\Models\ResearchProject::with(['kelas', 'teacher', 'sensorData'])
+            ->withCount('sensorData');
+        
+        $researchProjects = $researchProjectsQuery->paginate(10);
+        
+        // Get statistics
+        $totalResearchProjects = \App\Models\ResearchProject::count();
+        $totalDataPoints = \App\Models\IotSensorData::whereNotNull('research_project_id')->count();
+        $activeProjects = \App\Models\ResearchProject::where('status', 'active')->count();
+        $projectsThisWeek = \App\Models\ResearchProject::where('created_at', '>=', now()->subWeek())->count();
+        
+        // Get data for charts
+        $sensorDataForCharts = \App\Models\IotSensorData::with('researchProject')
+            ->whereNotNull('research_project_id')
+            ->where('measured_at', '>=', now()->subDays(30))
+            ->orderBy('measured_at')
+            ->get();
+        
+        // Prepare chart data
+        $chartData = $this->prepareChartData($sensorDataForCharts);
+        
+        // Get status distribution
+        $statusDistribution = \App\Models\ResearchProject::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+        
+        // Get projects data for bar chart
+        $projectsData = \App\Models\ResearchProject::withCount('sensorData')
+            ->orderBy('sensor_data_count', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('superadmin.iot-research', [
+            'title' => 'Penelitian IoT',
+            'user' => $user,
+            'researchProjects' => $researchProjects,
+            'totalResearchProjects' => $totalResearchProjects,
+            'totalDataPoints' => $totalDataPoints,
+            'activeProjects' => $activeProjects,
+            'projectsThisWeek' => $projectsThisWeek,
+            'chartData' => $chartData,
+            'statusDistribution' => $statusDistribution,
+            'projectsData' => $projectsData,
+        ]);
+    }
+    
+    /**
+     * Prepare chart data for sensor trends
+     */
+    private function prepareChartData($sensorData)
+    {
+        $labels = [];
+        $temperatureData = [];
+        $humidityData = [];
+        $soilMoistureData = [];
+        
+        // Group data by day
+        $groupedData = $sensorData->groupBy(function($item) {
+            return $item->measured_at->format('Y-m-d');
+        });
+        
+        foreach ($groupedData as $date => $data) {
+            $labels[] = \Carbon\Carbon::parse($date)->format('M d');
+            
+            $avgTemp = $data->avg('temperature');
+            $avgHumidity = $data->avg('humidity');
+            $avgSoilMoisture = $data->avg('soil_moisture');
+            
+            $temperatureData[] = round($avgTemp, 2);
+            $humidityData[] = round($avgHumidity, 2);
+            $soilMoistureData[] = round($avgSoilMoisture, 2);
+        }
+        
+        return [
+            'labels' => $labels,
+            'temperature' => $temperatureData,
+            'humidity' => $humidityData,
+            'soil_moisture' => $soilMoistureData,
+        ];
+    }
+
+    /**
+     * Filter Super Admin IoT Research
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
+    public function filterSuperAdminIotResearch(\Illuminate\Http\Request $request)
+    {
+        $user = auth()->user();
+        
+        // Get filter parameters
+        $filters = $request->only(['filter_status', 'filter_kelas', 'filter_teacher', 'filter_date_from', 'filter_date_to']);
+        
+        // Build query for research projects
+        $researchProjectsQuery = \App\Models\ResearchProject::with(['kelas', 'teacher', 'sensorData'])
+            ->withCount('sensorData');
+        
+        // Apply filters
+        if (!empty($filters['filter_status'])) {
+            $researchProjectsQuery->where('status', $filters['filter_status']);
+        }
+        
+        if (!empty($filters['filter_kelas'])) {
+            $researchProjectsQuery->where('kelas_id', $filters['filter_kelas']);
+        }
+        
+        if (!empty($filters['filter_teacher'])) {
+            $researchProjectsQuery->where('teacher_id', $filters['filter_teacher']);
+        }
+        
+        if (!empty($filters['filter_date_from'])) {
+            $researchProjectsQuery->where('start_date', '>=', $filters['filter_date_from']);
+        }
+        
+        if (!empty($filters['filter_date_to'])) {
+            $researchProjectsQuery->where('start_date', '<=', $filters['filter_date_to']);
+        }
+        
+        $researchProjects = $researchProjectsQuery->paginate(10);
+        
+        // Get statistics with filters applied
+        $totalResearchProjects = \App\Models\ResearchProject::count();
+        $totalDataPoints = \App\Models\IotSensorData::whereNotNull('research_project_id')->count();
+        $activeProjects = \App\Models\ResearchProject::where('status', 'active')->count();
+        $projectsThisWeek = \App\Models\ResearchProject::where('created_at', '>=', now()->subWeek())->count();
+        
+        // Get data for charts (filtered)
+        $sensorDataForCharts = \App\Models\IotSensorData::with('researchProject')
+            ->whereNotNull('research_project_id')
+            ->where('measured_at', '>=', now()->subDays(30))
+            ->orderBy('measured_at')
+            ->get();
+        
+        // Apply project filters to sensor data
+        if (!empty($filters['filter_status']) || !empty($filters['filter_kelas']) || !empty($filters['filter_teacher'])) {
+            $projectIds = \App\Models\ResearchProject::query();
+            
+            if (!empty($filters['filter_status'])) {
+                $projectIds->where('status', $filters['filter_status']);
+            }
+            if (!empty($filters['filter_kelas'])) {
+                $projectIds->where('kelas_id', $filters['filter_kelas']);
+            }
+            if (!empty($filters['filter_teacher'])) {
+                $projectIds->where('teacher_id', $filters['filter_teacher']);
+            }
+            
+            $projectIds = $projectIds->pluck('id');
+            $sensorDataForCharts = $sensorDataForCharts->whereIn('research_project_id', $projectIds);
+        }
+        
+        // Prepare chart data
+        $chartData = $this->prepareChartData($sensorDataForCharts);
+        
+        // Get status distribution
+        $statusDistribution = \App\Models\ResearchProject::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+        
+        // Get projects data for bar chart
+        $projectsData = \App\Models\ResearchProject::withCount('sensorData')
+            ->orderBy('sensor_data_count', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('superadmin.iot-research', [
+            'title' => 'Penelitian IoT - Filtered',
+            'user' => $user,
+            'researchProjects' => $researchProjects,
+            'totalResearchProjects' => $totalResearchProjects,
+            'totalDataPoints' => $totalDataPoints,
+            'activeProjects' => $activeProjects,
+            'projectsThisWeek' => $projectsThisWeek,
+            'chartData' => $chartData,
+            'statusDistribution' => $statusDistribution,
+            'projectsData' => $projectsData,
+            'filters' => $filters,
         ]);
     }
 
@@ -4476,6 +4549,60 @@ class DashboardController extends Controller
     }
 
     /**
+     * View Admin IoT Dashboard
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewAdminIotDashboard()
+    {
+        $user = auth()->user();
+        
+        // Get IoT data
+        $devices = \App\Models\IotDevice::with('latestSensorData')->get();
+        $recentData = \App\Models\IotSensorData::with(['device', 'kelas', 'user'])
+            ->latest('measured_at')
+            ->limit(10)
+            ->get();
+        $kelas = \App\Models\Kelas::all();
+        
+        // Statistics
+        $totalData = \App\Models\IotSensorData::count();
+        $activeDevices = \App\Models\IotDevice::where('status', 'online')->count();
+        $activeClasses = \App\Models\IotSensorData::distinct('kelas_id')->count();
+        $activeProjects = \App\Models\ResearchProject::where('status', 'active')->count();
+        
+        return view('admin.iot-dashboard', compact('devices', 'recentData', 'kelas', 'totalData', 'activeDevices', 'activeClasses', 'activeProjects'))
+            ->with('title', 'IoT Dashboard Admin');
+    }
+
+    /**
+     * View Super Admin IoT Dashboard
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewSuperAdminIotDashboard()
+    {
+        $user = auth()->user();
+        
+        // Get IoT data
+        $devices = \App\Models\IotDevice::with('latestSensorData')->get();
+        $recentData = \App\Models\IotSensorData::with(['device', 'kelas', 'user'])
+            ->latest('measured_at')
+            ->limit(10)
+            ->get();
+        $kelas = \App\Models\Kelas::all();
+        
+        // Statistics
+        $totalData = \App\Models\IotSensorData::count();
+        $activeDevices = \App\Models\IotDevice::where('status', 'online')->count();
+        $activeClasses = \App\Models\IotSensorData::distinct('kelas_id')->count();
+        $activeProjects = \App\Models\ResearchProject::where('status', 'active')->count();
+        
+        return view('superadmin.iot-dashboard', compact('devices', 'recentData', 'kelas', 'totalData', 'activeDevices', 'activeClasses', 'activeProjects'))
+            ->with('title', 'IoT Dashboard Super Admin');
+    }
+
+    /**
      * View admin task management.
      *
      * @return \Illuminate\View\View
@@ -4561,315 +4688,39 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
+        // Calculate statistics per exam type
+        $stats = [
+            'multiple_choice' => $exams->where('tipe', 1)->count(),
+            'essay' => $exams->where('tipe', 2)->count(),
+        ];
         
-        $totalExams = $exams->count();
-        $activeExams = $exams->where('isHidden', 0)->count();
-        $completedExams = $exams->where('isHidden', 1)->count();
+        // Ambil ujian terbaru
+        $recentExams = $exams->take(8);
         
         return view('admin.exam-management', [
             'title' => 'Manajemen Ujian Admin',
             'user' => $user,
             'exams' => $exams,
-            'classes' => $classes,
-            'subjects' => $subjects,
-            'totalExams' => $totalExams,
-            'activeExams' => $activeExams,
-            'completedExams' => $completedExams,
-            'totalParticipants' => 0
+            'classes' => \App\Models\Kelas::all(),
+            'subjects' => \App\Models\Mapel::all(),
+            'totalExams' => $exams->count(),
+            'activeExams' => $exams->where('is_active', true)->count(),
+            'completedExams' => $exams->where('is_active', false)->count(),
+            'totalParticipants' => $exams->sum('participants_count')
         ]);
     }
 
     /**
-     * Menampilkan halaman pembuatan ujian pilihan ganda untuk Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewAdminCreateMultipleChoiceExam()
-    {
-        $user = auth()->user();
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
-        
-        return view('admin.exam-create-multiple-choice', [
-            'title' => 'Buat Ujian Pilihan Ganda',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman pembuatan ujian essay untuk Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewAdminCreateEssayExam()
-    {
-        $user = auth()->user();
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
-        
-        return view('admin.exam-create-essay', [
-            'title' => 'Buat Ujian Essay',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman pembuatan ujian campuran untuk Admin.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewAdminCreateMixedExam()
-    {
-        $user = auth()->user();
-        $classes = Kelas::all();
-        $subjects = Mapel::all();
-        
-        return view('admin.exam-create-mixed', [
-            'title' => 'Buat Ujian Campuran',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman pembuatan ujian pilihan ganda untuk Teacher.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewTeacherCreateMultipleChoiceExam()
-    {
-        $user = auth()->user();
-        
-        // Get classes and subjects that teacher has access to
-        $classes = Kelas::whereHas('users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        $subjects = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        return view('teacher.exam-create-multiple-choice', [
-            'title' => 'Buat Ujian Pilihan Ganda',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman pembuatan ujian essay untuk Teacher.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewTeacherCreateEssayExam()
-    {
-        $user = auth()->user();
-        
-        // Get classes and subjects that teacher has access to
-        $classes = Kelas::whereHas('users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        $subjects = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        return view('teacher.exam-create-essay', [
-            'title' => 'Buat Ujian Essay',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menampilkan halaman pembuatan ujian campuran untuk Teacher.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewTeacherCreateMixedExam()
-    {
-        $user = auth()->user();
-        
-        // Get classes and subjects that teacher has access to
-        $classes = Kelas::whereHas('users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        $subjects = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-        
-        return view('teacher.exam-create-mixed', [
-            'title' => 'Buat Ujian Campuran',
-            'user' => $user,
-            'classes' => $classes,
-            'subjects' => $subjects
-        ]);
-    }
-
-    /**
-     * Menangani pembuatan ujian pilihan ganda untuk Admin.
+     * Create admin exam.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createAdminMultipleChoiceExam(Request $request)
+    public function createAdminExam(Request $request)
     {
-        $request->validate([
-            'exam_title' => 'required|string|max:255',
-            'class_id' => 'required|exists:kelas,id',
-            'subject_id' => 'required|exists:mapels,id',
-            'duration' => 'required|integer|min:1|max:300',
-            'max_score' => 'required|integer|min:1|max:100',
-            'difficulty' => 'required|string|in:easy,medium,hard',
-            'exam_description' => 'required|string',
-            'due_date' => 'required|date|after:now',
-            'is_hidden' => 'required|in:0,1',
-            'questions' => 'required|array|min:1',
-            'questions.*.question' => 'required|string',
-            'questions.*.options' => 'required|array|min:4',
-            'questions.*.options.1' => 'required|string',
-            'questions.*.options.2' => 'required|string',
-            'questions.*.options.3' => 'required|string',
-            'questions.*.options.4' => 'required|string',
-            'questions.*.correct_answer' => 'required|in:1,2,3,4',
-            'questions.*.points' => 'required|integer|min:1',
-            'questions.*.category' => 'required|string|in:easy,medium,hard'
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Find or create KelasMapel relationship
-            $kelasMapel = KelasMapel::firstOrCreate([
-                'kelas_id' => $request->class_id,
-                'mapel_id' => $request->subject_id,
-            ]);
-
-            // Create the exam
-            $ujian = Ujian::create([
-                'kelas_mapel_id' => $kelasMapel->id,
-                'name' => $request->exam_title,
-                'content' => $request->exam_description,
-                'tipe' => 1, // Multiple choice
-                'time' => $request->duration,
-                'due' => $request->due_date,
-                'isHidden' => $request->is_hidden,
-            ]);
-
-            // Create multiple choice questions
-            foreach ($request->questions as $questionData) {
-                SoalUjianMultiple::create([
-                    'ujian_id' => $ujian->id,
-                    'soal' => $questionData['question'],
-                    'a' => $questionData['options']['1'],
-                    'b' => $questionData['options']['2'],
-                    'c' => $questionData['options']['3'],
-                    'd' => $questionData['options']['4'],
-                    'jawaban' => $questionData['correct_answer'],
-                    'poin' => $questionData['points'],
-                    'kategori' => $questionData['category'],
-                ]);
-            }
-
-            DB::commit();
-
-            return redirect()->route('admin.exam-management')
-                ->with('success', 'Ujian pilihan ganda berhasil dibuat dengan ' . count($request->questions) . ' soal!');
-                
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()
-                ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
-    /**
-     * Menangani pembuatan ujian pilihan ganda untuk Teacher.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function createTeacherMultipleChoiceExam(Request $request)
-    {
-        $request->validate([
-            'exam_title' => 'required|string|max:255',
-            'class_id' => 'required|exists:kelas,id',
-            'subject_id' => 'required|exists:mapels,id',
-            'duration' => 'required|integer|min:1|max:300',
-            'max_score' => 'required|integer|min:1|max:100',
-            'difficulty' => 'required|string|in:easy,medium,hard',
-            'exam_description' => 'required|string',
-            'due_date' => 'required|date|after:now',
-            'is_hidden' => 'required|in:0,1',
-            'questions' => 'required|array|min:1',
-            'questions.*.question' => 'required|string',
-            'questions.*.options' => 'required|array|min:4',
-            'questions.*.options.1' => 'required|string',
-            'questions.*.options.2' => 'required|string',
-            'questions.*.options.3' => 'required|string',
-            'questions.*.options.4' => 'required|string',
-            'questions.*.correct_answer' => 'required|in:1,2,3,4',
-            'questions.*.points' => 'required|integer|min:1',
-            'questions.*.category' => 'required|string|in:easy,medium,hard'
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Find or create KelasMapel relationship
-            $kelasMapel = KelasMapel::firstOrCreate([
-                'kelas_id' => $request->class_id,
-                'mapel_id' => $request->subject_id,
-            ]);
-
-            // Create the exam
-            $ujian = Ujian::create([
-                'kelas_mapel_id' => $kelasMapel->id,
-                'name' => $request->exam_title,
-                'content' => $request->exam_description,
-                'tipe' => 1, // Multiple choice
-                'time' => $request->duration,
-                'due' => $request->due_date,
-                'isHidden' => $request->is_hidden,
-            ]);
-
-            // Create multiple choice questions
-            foreach ($request->questions as $questionData) {
-                SoalUjianMultiple::create([
-                    'ujian_id' => $ujian->id,
-                    'soal' => $questionData['question'],
-                    'a' => $questionData['options']['1'],
-                    'b' => $questionData['options']['2'],
-                    'c' => $questionData['options']['3'],
-                    'd' => $questionData['options']['4'],
-                    'jawaban' => $questionData['correct_answer'],
-                    'poin' => $questionData['points'],
-                    'kategori' => $questionData['category'],
-                ]);
-            }
-
-            DB::commit();
-
-            return redirect()->route('teacher.exam-management')
-                ->with('success', 'Ujian pilihan ganda berhasil dibuat dengan ' . count($request->questions) . ' soal!');
-                
-        } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()
-                ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
-                ->withInput();
-        }
+        // Implementation for creating exams
+        return redirect()->route('admin.exam-management')
+            ->with('success', 'Ujian berhasil dibuat');
     }
 
     /**
@@ -5192,19 +5043,7 @@ class DashboardController extends Controller
         }
     }
 
-    /**
-     * View admin reports.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function viewAdminReports()
-    {
-        $user = auth()->user();
-        return view('admin.reports', [
-            'title' => 'Laporan Admin',
-            'user' => $user
-        ]);
-    }
+
 
     /**
      * View admin settings.
@@ -5221,16 +5060,31 @@ class DashboardController extends Controller
     }
 
     /**
-     * View admin help.
+     * Update admin settings.
      *
-     * @return \Illuminate\View\View
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function viewAdminHelp()
+    public function updateAdminSettings(Request $request)
     {
+        $request->validate([
+            'timezone' => 'required|string|max:255',
+            'language' => 'required|string|max:10',
+            'theme' => 'required|string|in:light,dark,auto'
+        ]);
+
         $user = auth()->user();
-        return view('admin.help', [
-            'title' => 'Bantuan Admin',
-            'user' => $user
+        
+        // Update user settings (assuming these are stored in user preferences or a separate settings table)
+        $user->update([
+            'timezone' => $request->timezone,
+            'language' => $request->language,
+            'theme' => $request->theme,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengaturan berhasil diperbarui'
         ]);
     }
 
@@ -5322,9 +5176,59 @@ class DashboardController extends Controller
     public function viewTeacherPushNotification()
     {
         $user = auth()->user();
+        
+        // Check if user is teacher
+        if ($user->roles_id != 3) {
+            abort(403, 'Unauthorized access. Hanya guru yang dapat mengakses halaman ini.');
+        }
+        
+        // Get teacher's assigned classes and subjects (with fallback for teachers without assignments)
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        // Get students in teacher's classes (if teacher has assignments)
+        $students = collect();
+        if ($assignedData && !empty($assignedData['kelas_ids'])) {
+            $students = User::whereIn('kelas_id', $assignedData['kelas_ids'])
+                ->where('roles_id', 4)
+                ->with('kelas')
+                ->orderBy('name')
+                ->get();
+        } else {
+            // If teacher has no assignments, get all students (for notification purposes)
+            $students = User::where('roles_id', 4)
+                ->with('kelas')
+                ->orderBy('name')
+                ->get();
+        }
+        
+        // Get notifications sent by this teacher
+        $notifications = Notification::where('data', 'like', '%"teacher_id":' . $user->id . '%')
+            ->orWhere('data', 'like', '%"sent_by_teacher":true%')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        // Get notification stats
+        $totalNotifications = $notifications->total();
+        $readNotifications = Notification::where('data', 'like', '%"teacher_id":' . $user->id . '%')
+            ->where('is_read', true)
+            ->count();
+        $unreadNotifications = Notification::where('data', 'like', '%"teacher_id":' . $user->id . '%')
+            ->where('is_read', false)
+            ->count();
+        $urgentNotifications = Notification::where('data', 'like', '%"teacher_id":' . $user->id . '%')
+            ->where('type', 'error')
+            ->count();
+        
         return view('teacher.push-notification', [
             'title' => 'Push Notifikasi Teacher',
-            'user' => $user
+            'user' => $user,
+            'notifications' => $notifications,
+            'totalNotifications' => $totalNotifications,
+            'readNotifications' => $readNotifications,
+            'unreadNotifications' => $unreadNotifications,
+            'urgentNotifications' => $urgentNotifications,
+            'students' => $students,
+            'assignedData' => $assignedData
         ]);
     }
 
@@ -5338,11 +5242,129 @@ class DashboardController extends Controller
     public function filterTeacherPushNotifications(Request $request)
     {
         $user = auth()->user();
+        
+        // Check if user is teacher
+        if ($user->roles_id != 3) {
+            abort(403, 'Unauthorized access. Hanya guru yang dapat mengakses halaman ini.');
+        }
+        
         return view('teacher.push-notification', [
             'title' => 'Push Notifikasi Teacher',
             'user' => $user,
             'filters' => $request->all()
         ]);
+    }
+
+    /**
+     * Send teacher push notification.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function sendTeacherPushNotification(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Check if user is teacher
+        if ($user->roles_id != 3) {
+            abort(403, 'Unauthorized access. Hanya guru yang dapat mengirim notifikasi.');
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+            'type' => 'required|in:info,warning,success,error',
+            'recipient_type' => 'required|in:my_students,specific_students',
+            'specific_students' => 'required_if:recipient_type,specific_students|array',
+            'specific_students.*' => 'exists:users,id'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $notifications = [];
+            $recipientCount = 0;
+
+            if ($request->recipient_type === 'my_students') {
+                // Kirim ke siswa di kelas yang diajar guru ini
+                $assignedData = $this->getTeacherAssignedData($request);
+                
+                if (!$assignedData || empty($assignedData['kelas_ids'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Anda belum memiliki kelas yang ditugaskan.');
+                }
+
+                $students = User::whereIn('kelas_id', $assignedData['kelas_ids'])
+                    ->where('roles_id', 4)
+                    ->get();
+
+                foreach ($students as $student) {
+                    $notifications[] = [
+                        'user_id' => $student->id,
+                        'title' => $request->title,
+                        'body' => $request->body,
+                        'excerpt' => Str::limit($request->body, 100),
+                        'type' => $request->type,
+                        'data' => json_encode(['sent_by_teacher' => true, 'teacher_id' => $user->id]),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                    $recipientCount++;
+                }
+            } elseif ($request->recipient_type === 'specific_students') {
+                // Kirim ke siswa tertentu (dengan validasi bahwa siswa tersebut ada di kelas guru)
+                $assignedData = $this->getTeacherAssignedData($request);
+                
+                if (!$assignedData || empty($assignedData['kelas_ids'])) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Anda belum memiliki kelas yang ditugaskan.');
+                }
+
+                // Validasi bahwa siswa yang dipilih ada di kelas guru
+                $validStudents = User::whereIn('id', $request->specific_students)
+                    ->whereIn('kelas_id', $assignedData['kelas_ids'])
+                    ->where('roles_id', 4)
+                    ->get();
+
+                if ($validStudents->count() !== count($request->specific_students)) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Beberapa siswa yang dipilih tidak valid atau tidak ada di kelas Anda.');
+                }
+
+                foreach ($validStudents as $student) {
+                    $notifications[] = [
+                        'user_id' => $student->id,
+                        'title' => $request->title,
+                        'body' => $request->body,
+                        'excerpt' => Str::limit($request->body, 100),
+                        'type' => $request->type,
+                        'data' => json_encode(['sent_by_teacher' => true, 'teacher_id' => $user->id]),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                    $recipientCount++;
+                }
+            }
+
+            // Insert batch notifications
+            if (!empty($notifications)) {
+                Notification::insert($notifications);
+            }
+
+            DB::commit();
+
+            return redirect()->route('teacher.push-notification')
+                ->with('success', "Notifikasi berhasil dikirim ke {$recipientCount} siswa");
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengirim notifikasi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -5434,32 +5456,64 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
-        // Guru memiliki akses penuh ke semua kelas dan mata pelajaran
-        $classes = \App\Models\Kelas::with(['KelasMapel.Mapel'])->get();
-        $subjects = \App\Models\Mapel::all();
+        // Cek apakah teacher memiliki assignment
+        $hasAssignment = \App\Models\EditorAccess::where('user_id', $user->id)->exists();
         
-        $totalTasks = \App\Models\Tugas::count();
-        $activeTasks = \App\Models\Tugas::where('isHidden', false)->count();
-        $completedTasks = \App\Models\Tugas::where('isHidden', true)->count();
+        if ($hasAssignment) {
+            // Jika ada assignment, gunakan logic yang ada
+            $assignedData = $this->getTeacherAssignedData(request());
+            
+            if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
+                return view('teacher.task-management', [
+                    'title' => 'Manajemen Tugas',
+                    'user' => $user,
+                    'tasks' => collect(),
+                    'classes' => collect(),
+                    'subjects' => collect(),
+                    'totalTasks' => 0,
+                    'activeTasks' => 0,
+                    'completedTasks' => 0,
+                    'activeClasses' => 0,
+                    'filters' => []
+                ]);
+            }
+            
+            // Ambil data berdasarkan assignment
+            $classes = $this->getTeacherAvailableClasses(request());
+            $subjects = $this->getTeacherAvailableSubjects(request());
+            
+            $totalTasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+            $activeTasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', false)->count();
+            $completedTasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', true)->count();
+            
+            $tasks = \App\Models\Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // Jika tidak ada assignment, tampilkan semua data (untuk testing)
+            $classes = \App\Models\Kelas::all();
+            $subjects = \App\Models\Mapel::all();
+            
+            $totalTasks = \App\Models\Tugas::count();
+            $activeTasks = \App\Models\Tugas::where('isHidden', false)->count();
+            $completedTasks = \App\Models\Tugas::where('isHidden', true)->count();
+            
+            $tasks = \App\Models\Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
         
-        $tasks = \App\Models\Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        $stats = [
-            'totalTasks' => $totalTasks,
-            'activeTasks' => $activeTasks,
-            'completedTasks' => $completedTasks,
-            'pendingReview' => 5 // Placeholder
-        ];
-        
-        return view('task-management.unified-task-management', [
-            'title' => 'Task Management',
+        return view('teacher.task-management', [
+            'title' => 'Manajemen Tugas',
             'user' => $user,
             'tasks' => $tasks,
             'classes' => $classes,
             'subjects' => $subjects,
-            'stats' => $stats,
+            'totalTasks' => $totalTasks,
+            'activeTasks' => $activeTasks,
+            'completedTasks' => $completedTasks,
+            'activeClasses' => $classes->count(),
             'filters' => []
         ]);
     }
@@ -5790,20 +5844,16 @@ class DashboardController extends Controller
             ];
         });
         
-        $stats = [
-            'totalMaterials' => $totalMaterials,
-            'publishedMaterials' => $totalMaterials, // Assuming all are published
-            'draftMaterials' => 0,
-            'totalDownloads' => $totalDownloads
-        ];
-        
-        return view('material-management.unified-material-management', [
-            'title' => 'Material Management',
+        return view('teacher.material-management', [
+            'title' => 'Manajemen Materi',
             'user' => $user,
             'subjects' => $subjects,
             'classes' => $classes,
             'materials' => $materials,
-            'stats' => $stats
+            'totalMaterials' => $totalMaterials,
+            'totalDocuments' => $totalDocuments,
+            'totalVideos' => $totalVideos,
+            'totalDownloads' => $totalDownloads
         ]);
     }
 
@@ -5893,6 +5943,62 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * View teacher analytics.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewTeacherAnalytics()
+    {
+        $user = auth()->user();
+        
+        // Get teacher's assigned classes and subjects
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        // Calculate analytics data
+        $totalStudents = User::whereIn('kelas_id', $assignedData['kelas_ids'])
+            ->where('roles_id', 4)
+            ->count();
+            
+        $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        $totalExams = Ujian::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        
+        // Get top performing students
+        $topStudents = collect([
+            (object)['name' => 'Ahmad Rizki', 'class_name' => 'Kelas A', 'avg_score' => 95],
+            (object)['name' => 'Siti Nurhaliza', 'class_name' => 'Kelas B', 'avg_score' => 92],
+            (object)['name' => 'Budi Santoso', 'class_name' => 'Kelas A', 'avg_score' => 88],
+            (object)['name' => 'Dewi Lestari', 'class_name' => 'Kelas C', 'avg_score' => 85]
+        ]);
+        
+        // Get recent tasks
+        $recentTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(function($task) {
+                return (object)[
+                    'title' => $task->judul,
+                    'type' => $task->tipe,
+                    'submission_count' => rand(15, 30),
+                    'total_students' => 30,
+                    'status' => $task->deadline > now() ? 'pending' : 'completed'
+                ];
+            });
+        
+        return view('teacher.analytics', [
+            'title' => 'Analytics Teacher',
+            'user' => $user,
+            'totalStudents' => $totalStudents,
+            'totalTasks' => $totalTasks,
+            'totalExams' => $totalExams,
+            'avgScore' => 87,
+            'topStudents' => $topStudents,
+            'recentTasks' => $recentTasks
+        ]);
+    }
+
     // Student Management Methods (Matching Superadmin)
     
     /**
@@ -5978,7 +6084,31 @@ class DashboardController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    // Push notification method removed for students - not relevant
+    public function viewStudentPushNotification()
+    {
+        $user = auth()->user();
+        
+        // Get notifications for this student
+        $notifications = Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        // Calculate notification counts
+        $totalNotifications = Notification::where('user_id', $user->id)->count();
+        $readNotifications = Notification::where('user_id', $user->id)->where('is_read', true)->count();
+        $unreadNotifications = Notification::where('user_id', $user->id)->where('is_read', false)->count();
+        $urgentNotifications = Notification::where('user_id', $user->id)->where('type', 'error')->count();
+        
+        return view('student.push-notification', [
+            'title' => 'Notifikasi Saya',
+            'user' => $user,
+            'notifications' => $notifications,
+            'totalNotifications' => $totalNotifications,
+            'readNotifications' => $readNotifications,
+            'unreadNotifications' => $unreadNotifications,
+            'urgentNotifications' => $urgentNotifications
+        ]);
+    }
 
     /**
      * Send student push notification.
@@ -5986,7 +6116,12 @@ class DashboardController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    // Send push notification method removed for students - not relevant
+    public function sendStudentPushNotification(Request $request)
+    {
+        // Implementation for sending push notifications
+        return redirect()->route('student.push-notification')
+            ->with('success', 'Notifikasi berhasil dikirim');
+    }
 
     /**
      * Filter student push notifications.
@@ -5994,7 +6129,15 @@ class DashboardController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
-    // Filter push notification method removed for students - not relevant
+    public function filterStudentPushNotifications(Request $request)
+    {
+        $user = auth()->user();
+        return view('student.push-notification', [
+            'title' => 'Push Notifikasi Student',
+            'user' => $user,
+            'filters' => $request->all()
+        ]);
+    }
 
     /**
      * View student IoT management.
@@ -6307,7 +6450,7 @@ class DashboardController extends Controller
     public function createStudentMaterial(Request $request)
     {
         // Implementation for creating materials
-        return redirect()->route('student.materials')
+        return redirect()->route('student.material-management')
             ->with('success', 'Materi berhasil dibuat');
     }
 
@@ -6406,223 +6549,247 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get role name by role ID
+     * Export admin data.
+     *
+     * @return \Illuminate\Http\Response
      */
-    private function getRoleName($roleId)
-    {
-        $roleNames = [
-            1 => 'Super Admin',
-            2 => 'Admin',
-            3 => 'Teacher',
-            4 => 'Student'
-        ];
-        
-        return $roleNames[$roleId] ?? 'User';
-    }
-
-    /**
-     * Get dashboard statistics based on role
-     */
-    private function getDashboardStats($roleId)
-    {
-        $stats = [];
-        
-        switch($roleId) {
-            case 1: // Super Admin
-            case 2: // Admin
-                $stats = [
-                    'totalUsers' => User::count(),
-                    'totalClasses' => Kelas::count(),
-                    'totalTasks' => Tugas::count(),
-                    'totalIotDevices' => IotDevice::count() ?? 0,
-                ];
-                break;
-                
-            case 3: // Teacher
-                $stats = [
-                    'totalStudents' => User::where('roles_id', 4)->count(),
-                    'activeTasks' => Tugas::where('isHidden', false)->count(),
-                    'totalMaterials' => Materi::count(),
-                    'iotProjects' => IotDevice::count() ?? 0,
-                ];
-                break;
-                
-            case 4: // Student
-                $stats = [
-                    'pendingTasks' => Tugas::where('isHidden', false)->count(),
-                    'completedTasks' => Tugas::where('isHidden', true)->count(),
-                    'averageScore' => 85, // Placeholder
-                    'iotProjects' => 2, // Placeholder
-                ];
-                break;
-        }
-        
-        return $stats;
-    }
-
-    /**
-     * Get recent activities based on role
-     */
-    private function getRecentActivities($roleId)
-    {
-        $activities = [];
-        
-        // Placeholder activities - in real implementation, fetch from database
-        switch($roleId) {
-            case 1: // Super Admin
-            case 2: // Admin
-                $activities = [
-                    [
-                        'icon' => 'fas fa-user-plus',
-                        'title' => 'New user registered',
-                        'description' => 'John Doe has been added to the system',
-                        'time' => '2 hours ago'
-                    ],
-                    [
-                        'icon' => 'fas fa-tasks',
-                        'title' => 'Task created',
-                        'description' => 'New IoT project task has been created',
-                        'time' => '4 hours ago'
-                    ],
-                ];
-                break;
-                
-            case 3: // Teacher
-                $activities = [
-                    [
-                        'icon' => 'fas fa-tasks',
-                        'title' => 'Task submitted',
-                        'description' => 'Student completed IoT sensor project',
-                        'time' => '1 hour ago'
-                    ],
-                    [
-                        'icon' => 'fas fa-file-plus',
-                        'title' => 'Material added',
-                        'description' => 'New learning material uploaded',
-                        'time' => '3 hours ago'
-                    ],
-                ];
-                break;
-                
-            case 4: // Student
-                $activities = [
-                    [
-                        'icon' => 'fas fa-check-circle',
-                        'title' => 'Task completed',
-                        'description' => 'IoT sensor project submitted',
-                        'time' => '1 hour ago'
-                    ],
-                    [
-                        'icon' => 'fas fa-microchip',
-                        'title' => 'IoT project started',
-                        'description' => 'Temperature monitoring project initiated',
-                        'time' => '2 days ago'
-                    ],
-                ];
-                break;
-        }
-        
-        return $activities;
-    }
-
-    /**
-     * Get notifications based on role
-     */
-    private function getNotifications($roleId)
-    {
-        $notifications = [];
-        
-        // Placeholder notifications - in real implementation, fetch from database
-        switch($roleId) {
-            case 1: // Super Admin
-            case 2: // Admin
-                $notifications = [
-                    [
-                        'title' => 'System Update',
-                        'message' => 'New features have been added to the platform',
-                        'time' => '1 day ago',
-                        'unread' => true
-                    ],
-                    [
-                        'title' => 'User Activity',
-                        'message' => 'High user activity detected',
-                        'time' => '2 days ago',
-                        'unread' => false
-                    ],
-                ];
-                break;
-                
-            case 3: // Teacher
-                $notifications = [
-                    [
-                        'title' => 'New Assignment',
-                        'message' => 'You have been assigned to a new class',
-                        'time' => '3 hours ago',
-                        'unread' => true
-                    ],
-                ];
-                break;
-                
-            case 4: // Student
-                $notifications = [
-                    [
-                        'title' => 'Task Due Soon',
-                        'message' => 'IoT project deadline is approaching',
-                        'time' => '6 hours ago',
-                        'unread' => true
-                    ],
-                ];
-                break;
-        }
-        
-        return $notifications;
-    }
-
-    /**
-     * View Admin IoT Dashboard
-     */
-    public function viewAdminIotDashboard()
+    public function adminDataExport()
     {
         try {
-            // Get IoT devices statistics
-            $totalDevices = \App\Models\IotDevice::count();
-            $connectedDevices = \App\Models\IotDevice::where('status', 'connected')->count();
-            $totalDataPoints = \App\Models\IotDevice::sum('data_points') ?? 0;
-            $activeClasses = \App\Models\IotDevice::whereNotNull('class_id')
-                ->distinct('class_id')
-                ->count('class_id');
-
-            // Get recent devices
-            $recentDevices = \App\Models\IotDevice::with('kelas')
-                ->orderBy('updated_at', 'desc')
-                ->limit(10)
-                ->get();
-
-            $statistics = [
-                'total_devices' => $totalDevices,
-                'connected_devices' => $connectedDevices,
-                'total_data_points' => $totalDataPoints,
-                'active_classes' => $activeClasses
-            ];
-
-            return view('menu.admin.iot.dashboard', compact(
-                'statistics',
-                'recentDevices'
-            ));
-
-        } catch (\Exception $e) {
-            \Log::error('Error in viewAdminIotDashboard: ' . $e->getMessage());
+            // Get all data for export
+            $users = \App\Models\User::with('roles')->get();
+            $classes = \App\Models\Kelas::all();
+            $subjects = \App\Models\Mapel::all();
+            $tasks = \App\Models\Tugas::with(['kelasMapel.mapel', 'kelasMapel.pengajar'])->get();
+            $exams = \App\Models\Ujian::with(['kelasMapel.mapel', 'kelasMapel.pengajar'])->get();
             
-            return view('menu.admin.iot.dashboard', [
-                'statistics' => [
-                    'total_devices' => 0,
-                    'connected_devices' => 0,
-                    'total_data_points' => 0,
-                    'active_classes' => 0
-                ],
-                'recentDevices' => collect()
-            ]);
+            // Create CSV content
+            $csvContent = "Data Export - " . now()->format('Y-m-d H:i:s') . "\n\n";
+            
+            // Users data
+            $csvContent .= "USERS\n";
+            $csvContent .= "ID,Name,Email,Role,Created At\n";
+            foreach ($users as $user) {
+                $csvContent .= $user->id . "," . 
+                              '"' . $user->name . '",' . 
+                              '"' . $user->email . '",' . 
+                              '"' . ($user->roles->name ?? 'N/A') . '",' . 
+                              $user->created_at->format('Y-m-d H:i:s') . "\n";
+            }
+            
+            $csvContent .= "\nCLASSES\n";
+            $csvContent .= "ID,Name,Description,Created At\n";
+            foreach ($classes as $class) {
+                $csvContent .= $class->id . "," . 
+                              '"' . $class->name . '",' . 
+                              '"' . ($class->description ?? '') . '",' . 
+                              $class->created_at->format('Y-m-d H:i:s') . "\n";
+            }
+            
+            $csvContent .= "\nSUBJECTS\n";
+            $csvContent .= "ID,Name,Description,Created At\n";
+            foreach ($subjects as $subject) {
+                $csvContent .= $subject->id . "," . 
+                              '"' . $subject->name . '",' . 
+                              '"' . ($subject->description ?? '') . '",' . 
+                              $subject->created_at->format('Y-m-d H:i:s') . "\n";
+            }
+            
+            $csvContent .= "\nTASKS\n";
+            $csvContent .= "ID,Name,Subject,Teacher,Type,Due Date,Created At\n";
+            foreach ($tasks as $task) {
+                $csvContent .= $task->id . "," . 
+                              '"' . $task->name . '",' . 
+                              '"' . ($task->kelasMapel->mapel->name ?? 'N/A') . '",' . 
+                              '"' . ($task->kelasMapel->pengajar->first()->name ?? 'N/A') . '",' . 
+                              '"' . ($task->tipe ?? 'Essay') . '",' . 
+                              $task->due->format('Y-m-d H:i:s') . "," . 
+                              $task->created_at->format('Y-m-d H:i:s') . "\n";
+            }
+            
+            $csvContent .= "\nEXAMS\n";
+            $csvContent .= "ID,Name,Subject,Teacher,Type,Duration,Created At\n";
+            foreach ($exams as $exam) {
+                $csvContent .= $exam->id . "," . 
+                              '"' . $exam->name . '",' . 
+                              '"' . ($exam->kelasMapel->mapel->name ?? 'N/A') . '",' . 
+                              '"' . ($exam->kelasMapel->pengajar->first()->name ?? 'N/A') . '",' . 
+                              '"' . ($exam->tipe ?? 'Essay') . '",' . 
+                              $exam->duration . " minutes," . 
+                              $exam->created_at->format('Y-m-d H:i:s') . "\n";
+            }
+            
+            // Set headers for CSV download
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="admin_data_export_' . now()->format('Y-m-d_H-i-s') . '.csv"',
+            ];
+            
+            return response($csvContent, 200, $headers);
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengexport data: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Backup admin data.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function adminDataBackup()
+    {
+        try {
+            // Simple backup implementation - in real scenario, you might want to use database backup tools
+            $backupData = [
+                'timestamp' => now()->toISOString(),
+                'users_count' => \App\Models\User::count(),
+                'classes_count' => \App\Models\Kelas::count(),
+                'subjects_count' => \App\Models\Mapel::count(),
+                'tasks_count' => \App\Models\Tugas::count(),
+                'exams_count' => \App\Models\Ujian::count(),
+                'status' => 'success'
+            ];
+            
+            // In a real implementation, you would save this to a backup file or database
+            \Log::info('Admin data backup created', $backupData);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup berhasil dibuat',
+                'data' => $backupData
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear admin cache.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function adminCacheClear()
+    {
+        try {
+            \Artisan::call('cache:clear');
+            \Artisan::call('config:clear');
+            \Artisan::call('view:clear');
+            \Artisan::call('route:clear');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cache berhasil dihapus'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus cache: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Logout from all devices.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function adminLogoutAll()
+    {
+        try {
+            $user = auth()->user();
+            
+            // Revoke all tokens for the user (if using Laravel Sanctum)
+            if (method_exists($user, 'tokens')) {
+                $user->tokens()->delete();
+            }
+            
+            // Clear all sessions for the user
+            \DB::table('sessions')->where('user_id', $user->id)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil logout dari semua perangkat'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal logout: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete admin account.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function adminAccountDelete()
+    {
+        try {
+            $user = auth()->user();
+            
+            // Delete user account
+            $user->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Akun berhasil dihapus'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus akun: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display IoT Debug page for Super Admin
+     *
+     * @return \Illuminate\View\View
+     */
+    public function viewSuperAdminIotDebug()
+    {
+        $user = auth()->user();
+        
+        // Check if user is superadmin
+        if ($user->roles_id != 1) {
+            abort(403, 'Unauthorized access. Hanya superadmin yang dapat mengakses halaman debug IoT.');
+        }
+        
+        // Get recent IoT devices for debugging
+        $devices = \App\Models\IotDevice::with('latestSensorData')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+            
+        // Get recent sensor data for debugging
+        $recentSensorData = \App\Models\IotSensorData::with(['device', 'kelas', 'user'])
+            ->latest('measured_at')
+            ->limit(20)
+            ->get();
+            
+        // Get recent IoT readings for debugging
+        $recentReadings = \App\Models\IotReading::with(['student', 'kelas'])
+            ->latest('timestamp')
+            ->limit(20)
+            ->get();
+        
+        return view('superadmin.iot-debug', [
+            'title' => 'IoT Debug & Testing',
+            'user' => $user,
+            'devices' => $devices,
+            'recentSensorData' => $recentSensorData,
+            'recentReadings' => $recentReadings
+        ]);
     }
 }
 

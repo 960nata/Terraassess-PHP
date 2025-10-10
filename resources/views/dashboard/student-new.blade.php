@@ -1,69 +1,86 @@
-@extends('layouts.unified-layout-consistent')
+@extends('layout.template.dashboard-template')
 
-@section('title', 'Terra Assessment - Student Dashboard')
-@section('page-title', 'Student Dashboard')
-@section('page-description', 'Akses pembelajaran dan penelitian IoT')
+@section('dashboard-cards')
+    <a href="{{ route('student.tasks') }}" class="card">
+        <div class="card-icon blue">
+            <i class="fas fa-book"></i>
+        </div>
+        <h3 class="card-title">Tugas Saya</h3>
+        <p class="card-description">Lihat dan kerjakan tugas yang diberikan</p>
+    </a>
 
-@section('content')
-<div class="space-y-6">
-    <!-- Welcome Section -->
-    <x-unified-welcome-section 
-        :userName="Auth::user()->name"
-        roleName="Siswa"
-        roleIcon="fas fa-graduation-cap"
-        roleColor="blue"
-        description="Akses pembelajaran dan penelitian IoT"
-    />
+    <a href="{{ route('student.exams') }}" class="card">
+        <div class="card-icon green">
+            <i class="fas fa-bullseye"></i>
+        </div>
+        <h3 class="card-title">Ujian Saya</h3>
+        <p class="card-description">Ikuti ujian yang telah dijadwalkan</p>
+    </a>
 
-    <!-- Dashboard Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <x-unified-dashboard-card
-            title="Tugas Saya"
-            description="Lihat dan kerjakan tugas yang diberikan"
-            icon="fas fa-tasks"
-            iconColor="blue"
-            :href="route('student.tugas')"
-        />
+    <a href="{{ route('student.materials') }}" class="card">
+        <div class="card-icon purple">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <h3 class="card-title">Materi Saya</h3>
+        <p class="card-description">Akses materi pembelajaran kelas</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Ujian Saya"
-            description="Ikuti ujian yang telah dijadwalkan"
-            icon="fas fa-clipboard-check"
-            iconColor="green"
-            :href="route('student.ujian')"
-        />
+    <a href="{{ route('student.iot-research') }}" class="card">
+        <div class="card-icon orange">
+            <i class="fas fa-microscope"></i>
+        </div>
+        <h3 class="card-title">Penelitian IoT</h3>
+        <p class="card-description">Lakukan penelitian menggunakan perangkat IoT</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Materi Saya"
-            description="Akses materi pembelajaran kelas"
-            icon="fas fa-file-alt"
-            iconColor="purple"
-            :href="route('student.materi')"
-        />
+    <a href="{{ route('student.class-management') }}" class="card">
+        <div class="card-icon teal">
+            <i class="fas fa-users"></i>
+        </div>
+        <h3 class="card-title">Kelas Saya</h3>
+        <p class="card-description">Lihat informasi kelas dan teman sekelas</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Penelitian IoT"
-            description="Lakukan penelitian menggunakan perangkat IoT"
-            icon="fas fa-microscope"
-            iconColor="orange"
-            :href="route('student.iot')"
-        />
+    <a href="{{ route('student.profile') }}" class="card">
+        <div class="card-icon red">
+            <i class="fas fa-user"></i>
+        </div>
+        <h3 class="card-title">Profile Saya</h3>
+        <p class="card-description">Kelola informasi profil dan pengaturan akun</p>
+    </a>
 
-        <x-unified-dashboard-card
-            title="Nilai Saya"
-            description="Lihat nilai tugas dan ujian"
-            icon="fas fa-chart-line"
-            iconColor="indigo"
-            :href="route('student.reports')"
-        />
-
-        <x-unified-dashboard-card
-            title="Pengaturan"
-            description="Konfigurasi profil dan preferensi"
-            icon="fas fa-cog"
-            iconColor="gray"
-            :href="route('student.settings')"
-        />
-    </div>
-</div>
+    <a href="{{ route('notifications.index') }}" class="card">
+        <div class="card-icon yellow">
+            <i class="fas fa-bell"></i>
+        </div>
+        <h3 class="card-title">Notifikasi</h3>
+        <p class="card-description">Lihat notifikasi dan pengumuman terbaru</p>
+    </a>
 @endsection
+
+@php
+    $roleTitle = 'Siswa';
+    $roleIcon = 'fas fa-graduation-cap';
+    $roleInitial = 'S';
+    $roleDescription = 'Akses pembelajaran dan penelitian IoT';
+    $welcomeMessage = 'Sebagai Siswa, Anda dapat mengakses materi pembelajaran, mengerjakan tugas, dan melakukan penelitian IoT.';
+    $permissionsTitle = 'Hak Akses Siswa';
+    $permissions = [
+        'Mengakses materi pembelajaran',
+        'Mengerjakan tugas dan ujian',
+        'Melakukan penelitian IoT',
+        'Melihat nilai dan progress'
+    ];
+    $responsibilitiesTitle = 'Tanggung Jawab';
+    $responsibilities = [
+        'Mengerjakan tugas tepat waktu',
+        'Mengikuti ujian sesuai jadwal',
+        'Melakukan penelitian IoT',
+        'Mengikuti pembelajaran dengan baik'
+    ];
+    $profileRoute = route('student.profile');
+    $settingsRoute = route('student.settings');
+    $role = 'student';
+    $roleId = 4;
+    $roleColor = 'orange';
+@endphp

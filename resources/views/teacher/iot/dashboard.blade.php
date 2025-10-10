@@ -1,356 +1,458 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'IoT Dashboard - Terra Assessment')
 
+@section('styles')
+<style>
+.iot-filters {
+    background-color: #1e293b;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #334155;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #2a2a3e;
+    border: 2px solid #333;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #333;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #334155;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #475569;
+}
+
+.btn-success {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.iot-table {
+    background-color: #1e293b;
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid #334155;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+}
+
+.table th {
+    background-color: #2a2a3e;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table td {
+    color: #cbd5e1;
+}
+
+.table tbody tr:hover {
+    background-color: #2a2a3e;
+}
+
+.mobile-cards {
+    display: none;
+}
+
+.device-card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.device-card:hover {
+    background-color: #2a2a3e;
+    border-color: #475569;
+}
+
+.device-title {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.device-description {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-online {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+.status-offline {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.device-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .desktop-table {
+        display: none;
+    }
+    
+    .mobile-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+}
+</style>
+@endsection
+
 @section('content')
-    <style>
-        .iot-card {
-            background: rgba(15, 15, 35, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            border-radius: 16px;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-wifi"></i>
+        IoT Dashboard
+    </h1>
+    <p class="page-description">Monitoring device IoT dan data sensor real-time</p>
+</div>
 
-        .iot-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(138, 43, 226, 0.4);
-            box-shadow: 
-                0 12px 40px rgba(138, 43, 226, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .sensor-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #8a2be2;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-        }
-
-        .sensor-label {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-top: 0.5rem;
-        }
-
-        .sensor-unit {
-            font-size: 1.2rem;
-            color: #8a2be2;
-            font-weight: 600;
-        }
-
-        .status-online {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-offline {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .class-card {
-            background: rgba(15, 15, 35, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .class-card:hover {
-            background: rgba(15, 15, 35, 0.8);
-            border-color: rgba(138, 43, 226, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .data-timeline {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .timeline-item {
-            background: rgba(15, 15, 35, 0.4);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.1);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .timeline-item:hover {
-            background: rgba(15, 15, 35, 0.6);
-            border-color: rgba(138, 43, 226, 0.3);
-        }
-
-        .chart-container {
-            background: rgba(15, 15, 35, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            height: 300px;
-        }
-    </style>
-
-    <div class="galaxy-container">
-        <!-- Galaxy Header -->
-        <div class="galaxy-header">
-            <div class="flex items-center justify-between p-6">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('dashboard') }}" class="galaxy-nav-item">
-                        <i class="ph-arrow-left galaxy-nav-icon"></i>
-                        <span class="galaxy-nav-text">Kembali</span>
-                    </a>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">IoT Dashboard</h1>
-                        <p class="text-gray-400">Monitoring Data Sensor Kelas Anda</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-white font-medium">{{ $user->name }}</p>
-                        <p class="text-gray-400 text-sm">Guru</p>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="galaxy-button secondary">
-                            <i class="ph-sign-out"></i>
-                            Logout
-                        </button>
-                    </form>
-                </div>
+<!-- Stats Overview -->
+<div class="exam-type-cards">
+    <div class="exam-type-card">
+        <div class="exam-card-header">
+            <div class="exam-card-icon">
+                <i class="fas fa-microchip"></i>
+            </div>
+            <div class="exam-card-stats">
+                <span class="exam-count">{{ $totalDevices }}</span>
+                <span class="exam-label">Device</span>
             </div>
         </div>
-
-        <div class="main-content">
-            <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="iot-card p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-400 text-sm">Total Device</p>
-                            <p class="text-3xl font-bold text-white">{{ $totalDevices }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                            <i class="ph-device-mobile text-purple-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="iot-card p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-400 text-sm">Device Online</p>
-                            <p class="text-3xl font-bold text-white">{{ $onlineDevices }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                            <i class="ph-wifi-high text-emerald-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="iot-card p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-400 text-sm">Total Data</p>
-                            <p class="text-3xl font-bold text-white">{{ $totalReadings }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                            <i class="ph-database text-blue-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="iot-card p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-400 text-sm">Data Hari Ini</p>
-                            <p class="text-3xl font-bold text-white">{{ $todayReadings }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-violet-500/20 rounded-xl flex items-center justify-center">
-                            <i class="ph-chart-line text-violet-400 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Kelas yang Diampu -->
-                <div class="lg:col-span-1">
-                    <div class="iot-card p-6">
-                        <h3 class="text-lg font-bold text-white mb-4">Kelas yang Diampu</h3>
-                        <div class="space-y-3">
-                            @forelse($assignedKelas as $kelasId => $kelasMapel)
-                                @php $kelas = $kelasMapel->first()->kelas; @endphp
-                                <a href="{{ route('teacher.iot.class', $kelasId) }}" class="class-card block">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h4 class="font-semibold text-white">{{ $kelas->name }}</h4>
-                                            <p class="text-sm text-gray-400">
-                                                {{ $kelasMapel->count() }} Mata Pelajaran
-                                            </p>
-                                        </div>
-                                        <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                                            <i class="ph-buildings text-purple-400"></i>
-                                        </div>
-                                    </div>
-                                </a>
-                            @empty
-                                <div class="text-center py-8 text-gray-400">
-                                    <i class="ph-buildings text-4xl mb-2 block"></i>
-                                    <p>Belum ada kelas yang diampu</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Real-time Sensor Data -->
-                <div class="lg:col-span-2">
-                    <div class="iot-card p-6">
-                        <h3 class="text-lg font-bold text-white mb-4">Data Sensor Real-time</h3>
-                        
-                        @if($recentData->count() > 0)
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                <div class="text-center">
-                                    <div class="sensor-value">{{ $recentData->first()->temperature ?? '--' }}</div>
-                                    <div class="sensor-unit">°C</div>
-                                    <div class="sensor-label">Suhu</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="sensor-value">{{ $recentData->first()->humidity ?? '--' }}</div>
-                                    <div class="sensor-unit">%</div>
-                                    <div class="sensor-label">Kelembaban</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="sensor-value">{{ $recentData->first()->soil_moisture ?? '--' }}</div>
-                                    <div class="sensor-unit">%</div>
-                                    <div class="sensor-label">Kelembaban Tanah</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="sensor-value">{{ $recentData->first()->ph_level ?? '--' }}</div>
-                                    <div class="sensor-unit">pH</div>
-                                    <div class="sensor-label">pH Tanah</div>
-                                </div>
-                            </div>
-
-                            <!-- Data Timeline -->
-                            <div class="data-timeline">
-                                <h4 class="text-white font-semibold mb-3">Data Terbaru</h4>
-                                @foreach($recentData->take(5) as $data)
-                                <div class="timeline-item">
-                                    <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                                        <i class="ph-thermometer text-purple-400"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between">
-                                            <h5 class="text-white font-medium">{{ $data->device->name ?? 'Unknown Device' }}</h5>
-                                            <span class="text-xs text-gray-400">{{ $data->measured_at->diffForHumans() }}</span>
-                                        </div>
-                                        <div class="flex items-center space-x-4 mt-1">
-                                            <span class="text-sm text-gray-400">{{ $data->kelas->name }}</span>
-                                            <span class="text-sm text-purple-400">{{ $data->temperature }}°C</span>
-                                            <span class="text-sm text-blue-400">{{ $data->humidity }}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-12 text-gray-400">
-                                <i class="ph-thermometer text-6xl mb-4 block"></i>
-                                <h4 class="text-xl font-semibold mb-2">Belum Ada Data Sensor</h4>
-                                <p>Data sensor akan muncul di sini setelah device IoT mengirim data</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Device Status -->
-            @if($devices->count() > 0)
-            <div class="iot-card p-6 mt-6">
-                <h3 class="text-lg font-bold text-white mb-4">Status Device</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($devices as $device)
-                    <div class="class-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-semibold text-white">{{ $device->name }}</h4>
-                            <span class="status-badge {{ $device->isOnline() ? 'status-online' : 'status-offline' }}">
-                                {{ $device->isOnline() ? 'Online' : 'Offline' }}
-                            </span>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Device ID:</span>
-                                <span class="text-white">{{ $device->device_id }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Type:</span>
-                                <span class="text-white">{{ $device->device_type ?? 'Unknown' }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Last Seen:</span>
-                                <span class="text-white">{{ $device->last_seen ? $device->last_seen->diffForHumans() : 'Never' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
+        <div class="exam-card-content">
+            <h3 class="exam-type-title">Total Device</h3>
+            <p class="exam-type-description">Device IoT terdaftar di kelas Anda</p>
         </div>
     </div>
 
-@endsection
+    <div class="exam-type-card essay">
+        <div class="exam-card-header">
+            <div class="exam-card-icon">
+                <i class="fas fa-wifi"></i>
+            </div>
+            <div class="exam-card-stats">
+                <span class="exam-count">{{ $onlineDevices }}</span>
+                <span class="exam-label">Online</span>
+            </div>
+        </div>
+        <div class="exam-card-content">
+            <h3 class="exam-type-title">Device Online</h3>
+            <p class="exam-type-description">Device yang aktif saat ini</p>
+        </div>
+    </div>
+</div>
 
-@section('scripts')
+<!-- Device List Table -->
+<div class="iot-table">
+    <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
+        <i class="fas fa-list me-2"></i>Daftar Device & Kelas
+    </h2>
+    
+    <!-- Desktop Table -->
+    <div class="table-responsive desktop-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Kelas</th>
+                    <th>Mata Pelajaran</th>
+                    <th>Total Data</th>
+                    <th>Data Hari Ini</th>
+                    <th>Device</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($assignedKelas as $kelasId => $kelasMapel)
+                    @php 
+                        $kelas = $kelasMapel->first()->kelas;
+                        $totalDataKelas = \App\Models\IotSensorData::where('kelas_id', $kelasId)->count();
+                        $todayDataKelas = \App\Models\IotSensorData::where('kelas_id', $kelasId)->whereDate('measured_at', today())->count();
+                    @endphp
+                    <tr>
+                        <td>
+                            <div class="device-title">{{ $kelas->name }}</div>
+                        </td>
+                        <td>
+                            <div class="device-description">
+                                {{ $kelasMapel->pluck('mapel.name')->unique()->implode(', ') }}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="color: #667eea; font-weight: 600;">{{ $totalDataKelas }}</span>
+                        </td>
+                        <td>
+                            <span style="color: #10b981; font-weight: 600;">{{ $todayDataKelas }}</span>
+                        </td>
+                        <td>
+                            @php
+                                $devicesCount = $devices->filter(function($device) use ($kelasId) {
+                                    return $device->sensorData->where('kelas_id', $kelasId)->count() > 0;
+                                })->count();
+                            @endphp
+                            <span class="status-badge status-{{ $devicesCount > 0 ? 'online' : 'offline' }}">
+                                {{ $devicesCount }} Device
+                            </span>
+                        </td>
+                        <td>
+                            <div class="device-actions">
+                                <a href="{{ route('teacher.iot.class', $kelasId) }}" class="btn-success">
+                                    <i class="fas fa-eye"></i> Lihat Data
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #94a3b8;">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            Belum ada kelas yang ditugaskan
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="mobile-cards">
+        @forelse($assignedKelas as $kelasId => $kelasMapel)
+            @php 
+                $kelas = $kelasMapel->first()->kelas;
+                $totalDataKelas = \App\Models\IotSensorData::where('kelas_id', $kelasId)->count();
+                $todayDataKelas = \App\Models\IotSensorData::where('kelas_id', $kelasId)->whereDate('measured_at', today())->count();
+                $devicesCount = $devices->filter(function($device) use ($kelasId) {
+                    return $device->sensorData->where('kelas_id', $kelasId)->count() > 0;
+                })->count();
+            @endphp
+            <div class="device-card">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <h3 class="device-title">{{ $kelas->name }}</h3>
+                    <span class="status-badge status-{{ $devicesCount > 0 ? 'online' : 'offline' }}">
+                        {{ $devicesCount }} Device
+                    </span>
+                </div>
+                
+                <p class="device-description">{{ $kelasMapel->pluck('mapel.name')->unique()->implode(', ') }}</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0;">
+                    <div>
+                        <div style="color: #94a3b8; font-size: 0.75rem;">Total Data</div>
+                        <div style="color: #667eea; font-weight: 600; font-size: 1.25rem;">{{ $totalDataKelas }}</div>
+                    </div>
+                    <div>
+                        <div style="color: #94a3b8; font-size: 0.75rem;">Data Hari Ini</div>
+                        <div style="color: #10b981; font-weight: 600; font-size: 1.25rem;">{{ $todayDataKelas }}</div>
+                    </div>
+                </div>
+                
+                <div class="device-actions" style="margin-top: 1rem;">
+                    <a href="{{ route('teacher.iot.class', $kelasId) }}" class="btn-success" style="flex: 1; text-align: center; text-decoration: none;">
+                        <i class="fas fa-eye"></i> Lihat Data
+                    </a>
+                </div>
+            </div>
+        @empty
+            <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 1rem; display: block;"></i>
+                <h3 style="color: #ffffff; margin-bottom: 0.5rem;">Belum Ada Kelas</h3>
+                <p>Kelas yang ditugaskan akan muncul di sini</p>
+            </div>
+        @endforelse
+    </div>
+</div>
+
+<!-- Recent Sensor Data -->
+@if($recentData->count() > 0)
+<div class="iot-table" style="margin-top: 2rem;">
+    <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
+        <i class="fas fa-clock me-2"></i>Data Sensor Terbaru
+    </h2>
+    
+    <div class="table-responsive desktop-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Kelas</th>
+                    <th>Suhu</th>
+                    <th>Kelembaban</th>
+                    <th>Kelembaban Tanah</th>
+                    <th>pH</th>
+                    <th>Waktu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($recentData->take(5) as $data)
+                <tr>
+                    <td>
+                        <div class="device-title">{{ $data->device->name ?? 'Unknown' }}</div>
+                        <div class="device-description">{{ $data->device->device_id ?? 'N/A' }}</div>
+                    </td>
+                    <td>{{ $data->kelas->name ?? 'N/A' }}</td>
+                    <td><span style="color: #667eea; font-weight: 600;">{{ $data->temperature }}°C</span></td>
+                    <td><span style="color: #3b82f6; font-weight: 600;">{{ $data->humidity }}%</span></td>
+                    <td><span style="color: #10b981; font-weight: 600;">{{ $data->soil_moisture }}%</span></td>
+                    <td><span style="color: #8b5cf6; font-weight: 600;">{{ $data->ph_level }}</span></td>
+                    <td>
+                        <div style="font-size: 0.875rem;">{{ $data->measured_at->diffForHumans() }}</div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Cards for Recent Data -->
+    <div class="mobile-cards">
+        @foreach($recentData->take(5) as $data)
+        <div class="device-card">
+            <div style="margin-bottom: 0.75rem;">
+                <div class="device-title">{{ $data->device->name ?? 'Unknown' }}</div>
+                <div class="device-description">{{ $data->kelas->name ?? 'N/A' }} • {{ $data->measured_at->diffForHumans() }}</div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Suhu</div>
+                    <div style="color: #667eea; font-weight: 600;">{{ $data->temperature }}°C</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Kelembaban</div>
+                    <div style="color: #3b82f6; font-weight: 600;">{{ $data->humidity }}%</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Kel. Tanah</div>
+                    <div style="color: #10b981; font-weight: 600;">{{ $data->soil_moisture }}%</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">pH</div>
+                    <div style="color: #8b5cf6; font-weight: 600;">{{ $data->ph_level }}</div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 <script>
-        // Auto refresh data every 30 seconds
-        setInterval(function() {
-            fetch('{{ route("teacher.iot.realtime") }}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update sensor values
-                        const latestData = data.data[0];
-                        if (latestData) {
-                            document.querySelector('.sensor-value').textContent = latestData.temperature || '--';
-                        }
-                    }
-                })
-                .catch(error => console.error('Error fetching real-time data:', error));
-        }, 30000);
-
-        // Add hover effects
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.class-card, .timeline-item');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-        });
-    </script>
+// Auto refresh every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
 @endsection

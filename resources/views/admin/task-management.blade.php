@@ -720,7 +720,7 @@
 
         <!-- Task Filters - Simplified -->
         <div class="task-filters">
-            <form action="{{ route('task-management') }}" method="GET" class="filter-form">
+            <form action="{{ route('admin.task-management.filter') }}" method="GET" class="filter-form">
                 <div class="filter-row">
                     <div class="form-group">
                         <select id="filter_class" name="filter_class">
@@ -816,18 +816,18 @@
                                     <td>{{ $task->due ? \Carbon\Carbon::parse($task->due)->format('d M Y H:i') : 'N/A' }}</td>
                                     <td>
                                         <div class="task-actions">
-                                            <button class="btn-secondary" onclick="editTask({{ $task->id }})">
+                                            <button class="btn-secondary" onclick="editTask('{{ $task->id }}')">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <button class="btn-success" onclick="viewSubmissions({{ $task->id }})">
+                                            <button class="btn-success" onclick="viewSubmissions('{{ $task->id }}')">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </button>
                                             @if($task->isHidden == 1)
-                                                <button class="btn-warning" onclick="publishTask({{ $task->id }})">
+                                                <button class="btn-warning" onclick="publishTask('{{ $task->id }}')">
                                                     <i class="fas fa-paper-plane"></i> Publikasi
                                                 </button>
                                             @endif
-                                            <button class="btn-danger" onclick="deleteTask({{ $task->id }})">
+                                            <button class="btn-danger" onclick="deleteTask('{{ $task->id }}')">
                                                 <i class="fas fa-trash"></i> Hapus
                                             </button>
                                         </div>
@@ -885,18 +885,18 @@
                             </div>
                             
                             <div class="task-card-actions">
-                                <button class="btn-secondary" onclick="editTask({{ $task->id }})">
+                                <button class="btn-secondary" onclick="editTask('{{ $task->id }}')">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
-                                <button class="btn-success" onclick="viewSubmissions({{ $task->id }})">
+                                <button class="btn-success" onclick="viewSubmissions('{{ $task->id }}')">
                                     <i class="fas fa-eye"></i> Lihat
                                 </button>
                                 @if($task->isHidden == 1)
-                                    <button class="btn-warning" onclick="publishTask({{ $task->id }})">
+                                    <button class="btn-warning" onclick="publishTask('{{ $task->id }}')">
                                         <i class="fas fa-paper-plane"></i> Publikasi
                                     </button>
                                 @endif
-                                <button class="btn-danger" onclick="deleteTask({{ $task->id }})">
+                                <button class="btn-danger" onclick="deleteTask('{{ $task->id }}')">
                                     <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </div>
@@ -917,19 +917,19 @@
 <script>
 // Task creation functions
 function createMultipleChoiceTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 1) }}";
+    window.location.href = "{{ route('admin.tugas.create', 1) }}";
 }
 
 function createEssayTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 2) }}";
+    window.location.href = "{{ route('admin.tugas.create', 2) }}";
 }
 
 function createIndividualTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 3) }}";
+    window.location.href = "{{ route('admin.tugas.create', 3) }}";
 }
 
 function createGroupTask() {
-    window.location.href = "{{ route('superadmin.tugas.create', 4) }}";
+    window.location.href = "{{ route('admin.tugas.create', 4) }}";
 }
 
 // Task action functions

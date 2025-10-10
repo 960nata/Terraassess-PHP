@@ -14,10 +14,17 @@ class KelompokNilai extends Model
         "tugas_kelompok_id",
         "to_kelompok",
         "nilai",
+        "komentar",
+        "dinilai_oleh",
+        "dinilai_pada",
     ];
 
     protected $guarded = [
         "id"
+    ];
+
+    protected $casts = [
+        'dinilai_pada' => 'datetime'
     ];
 
     public function TugasKelompok()
@@ -28,5 +35,11 @@ class KelompokNilai extends Model
     {
         return $this->belongsTo(TugasKelompokQuiz::class);
     }
+
+    public function penilai()
+    {
+        return $this->belongsTo(User::class, 'dinilai_oleh');
+    }
+    
     use HasFactory;
 }

@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import axios from 'axios'
 import './bootstrap'
-import './terra-ui.js'
 
 // Import components
 import App from './components/App.vue'

@@ -25,17 +25,34 @@ class TeacherAccessControl
             return $next($request);
         }
 
-        // Guru memiliki akses penuh ke semua kelas dan mata pelajaran
-        // Tidak perlu membatasi berdasarkan assignment
-        $allKelasMapel = \App\Models\KelasMapel::all()->pluck('id')->toArray();
-        $allKelas = \App\Models\Kelas::all()->pluck('id')->toArray();
-        $allMapel = \App\Models\Mapel::all()->pluck('id')->toArray();
+        // Get teacher's assigned classes and subjects
+        $assignedKelasMapel = EditorAccess::where('user_id', $user->id)
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+            ->get()
+            ->pluck('kelas_mapel_id')
+            ->toArray();
 
-        // Add all classes and subjects to request for use in controllers
+        // If teacher has no assignments, redirect to access denied
+        if (empty($assignedKelasMapel)) {
+            return redirect()->route('access-denied')
+                ->with('error', 'Anda belum memiliki akses ke kelas atau mata pelajaran apapun. Silakan hubungi administrator.');
+        }
+
+        // Add teacher's assigned classes to request for use in controllers
         $request->merge([
-            'teacher_assigned_kelas_mapel' => $allKelasMapel,
-            'teacher_assigned_kelas' => $allKelas,
-            'teacher_assigned_mapel' => $allMapel
+            'teacher_assigned_kelas_mapel' => $assignedKelasMapel,
+            'teacher_assigned_kelas' => EditorAccess::where('user_id', $user->id)
+                ->with('kelasMapel.kelas')
+                ->get()
+                ->pluck('kelasMapel.kelas_id')
+                ->unique()
+                ->toArray(),
+            'teacher_assigned_mapel' => EditorAccess::where('user_id', $user->id)
+                ->with('kelasMapel.mapel')
+                ->get()
+                ->pluck('kelasMapel.mapel_id')
+                ->unique()
+                ->toArray()
         ]);
 
         return $next($request);

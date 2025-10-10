@@ -16,7 +16,11 @@
         overlay.classList.remove('show');
     }
 
-    // Profile dropdown removed - using direct buttons now
+    // Profile dropdown functionality
+    function toggleProfileDropdown() {
+        const dropdown = document.getElementById('profileDropdown');
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
 
     // Notification functionality
     function toggleNotifications() {

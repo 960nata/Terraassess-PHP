@@ -148,7 +148,7 @@
                     </div>
                     <div class="flex-1">
                         <h4 class="text-white font-medium">Assignment Submitted</h4>
-                        <p class="text-white/60 text-sm">Sistem IoT siap digunakan</p>
+                        <p class="text-white/60 text-sm">John Doe completed "IoT Sensor Analysis" assignment</p>
                         <p class="text-white/40 text-xs mt-1">2 minutes ago</p>
                     </div>
                 </div>

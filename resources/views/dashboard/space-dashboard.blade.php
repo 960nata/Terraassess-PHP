@@ -53,7 +53,7 @@
                         </div>
                         <div class="flex-1">
                             <div class="text-white font-medium">New student registered</div>
-                            <div class="text-sm text-gray-400">Sistem IoT siap digunakan</div>
+                            <div class="text-sm text-gray-400">John Doe joined IoT Basics course</div>
                         </div>
                         <div class="text-xs text-gray-500">2 min ago</div>
                     </div>

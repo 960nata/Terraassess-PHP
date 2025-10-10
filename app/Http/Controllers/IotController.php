@@ -22,8 +22,9 @@ class IotController extends Controller
             ->latest('measured_at')
             ->limit(10)
             ->get();
+        $kelas = Kelas::all();
         
-        return view('menu.pengajar.iot.dashboard', compact('devices', 'recentData'))
+        return view('menu.pengajar.iot.dashboard', compact('devices', 'recentData', 'kelas'))
             ->with('title', 'IoT Dashboard');
     }
 
@@ -101,15 +102,6 @@ class IotController extends Controller
             return view('menu.pengajar.iot.research-projects', compact('projects', 'kelas'))
                 ->with('title', 'Research Projects IoT');
         }
-    }
-
-    /**
-     * Show analytics dashboard
-     */
-    public function analytics()
-    {
-        return view('menu.pengajar.iot.analytics')
-            ->with('title', 'IoT Analytics');
     }
 
     /**
@@ -322,229 +314,46 @@ class IotController extends Controller
     }
 
     /**
-     * Get all IoT devices with statistics
+     * Display Admin IoT Dashboard
      */
-    public function getDevices()
+    public function adminDashboard()
     {
-        try {
-            $devices = IotDevice::with('kelas')->get();
-            
-            $statistics = [
-                'total_devices' => $devices->count(),
-                'connected_devices' => $devices->where('status', 'connected')->count(),
-                'total_data_points' => $devices->sum('data_points'),
-                'active_classes' => $devices->whereNotNull('class_id')->unique('class_id')->count()
-            ];
-
-            return response()->json([
-                'success' => true,
-                'devices' => $devices,
-                'statistics' => $statistics
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error getting devices: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal memuat data perangkat'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get analytics data for IoT dashboard
-     */
-    public function getAnalytics()
-    {
-        try {
-            // Get data for last 30 days
-            $startDate = now()->subDays(30);
-            
-            $analytics = [
-                'temperature_avg' => IotSensorData::where('measured_at', '>=', $startDate)->avg('temperature'),
-                'humidity_avg' => IotSensorData::where('measured_at', '>=', $startDate)->avg('humidity'),
-                'soil_moisture_avg' => IotSensorData::where('measured_at', '>=', $startDate)->avg('soil_moisture'),
-                'ph_level_avg' => IotSensorData::where('measured_at', '>=', $startDate)->avg('ph_level'),
-                'nutrient_level_avg' => IotSensorData::where('measured_at', '>=', $startDate)->avg('nutrient_level'),
-                'total_readings' => IotSensorData::where('measured_at', '>=', $startDate)->count(),
-                'active_devices' => IotDevice::where('status', 'connected')->count(),
-                'data_trends' => $this->getDataTrends($startDate)
-            ];
-
-            return response()->json([
-                'success' => true,
-                'analytics' => $analytics
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error getting analytics: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal memuat data analisis'
-            ], 500);
-        }
-    }
-
-    /**
-     * Export IoT data to CSV/Excel
-     */
-    public function exportData(Request $request)
-    {
-        try {
-            $format = $request->get('format', 'csv');
-            $startDate = $request->get('start_date', now()->subDays(30));
-            $endDate = $request->get('end_date', now());
-            $deviceId = $request->get('device_id');
-
-            $query = IotSensorData::with(['device', 'kelas', 'user'])
-                ->whereBetween('measured_at', [$startDate, $endDate]);
-
-            if ($deviceId) {
-                $query->where('device_id', $deviceId);
-            }
-
-            $data = $query->orderBy('measured_at')->get();
-
-            if ($format === 'excel') {
-                return $this->exportToExcel($data);
-            } else {
-                return $this->exportToCsv($data);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error exporting data: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal export data'
-            ], 500);
-        }
-    }
-
-    /**
-     * Send IoT notifications
-     */
-    public function sendNotification(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'type' => 'required|string|in:alert,warning,info',
-                'message' => 'required|string|max:500',
-                'device_id' => 'nullable|string',
-                'user_id' => 'nullable|integer'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            // Store notification in database
-            $notification = \App\Models\Notification::create([
-                'user_id' => $request->user_id ?? auth()->id(),
-                'type' => $request->type,
-                'title' => 'IoT Alert',
-                'message' => $request->message,
-                'data' => [
-                    'device_id' => $request->device_id,
-                    'timestamp' => now()
-                ]
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Notifikasi berhasil dikirim',
-                'notification' => $notification
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error sending notification: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengirim notifikasi'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get data trends for analytics
-     */
-    private function getDataTrends($startDate)
-    {
-        $trends = [];
+        $devices = IotDevice::with('latestSensorData')->get();
+        $recentData = IotSensorData::with(['device', 'kelas', 'user'])
+            ->latest('measured_at')
+            ->limit(10)
+            ->get();
+        $kelas = Kelas::all();
         
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
-            $dayData = IotSensorData::whereDate('measured_at', $date)->get();
-            
-            $trends[] = [
-                'date' => $date,
-                'temperature_avg' => $dayData->avg('temperature'),
-                'humidity_avg' => $dayData->avg('humidity'),
-                'soil_moisture_avg' => $dayData->avg('soil_moisture'),
-                'readings_count' => $dayData->count()
-            ];
-        }
+        // Statistics
+        $totalData = IotSensorData::count();
+        $activeDevices = IotDevice::where('status', 'online')->count();
+        $activeClasses = IotSensorData::distinct('kelas_id')->count();
+        $activeProjects = ResearchProject::where('status', 'active')->count();
         
-        return $trends;
+        return view('admin.iot-dashboard', compact('devices', 'recentData', 'kelas', 'totalData', 'activeDevices', 'activeClasses', 'activeProjects'))
+            ->with('title', 'IoT Dashboard Admin');
     }
 
     /**
-     * Export data to CSV
+     * Display Super Admin IoT Dashboard
      */
-    private function exportToCsv($data)
+    public function superAdminDashboard()
     {
-        $filename = 'iot_data_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $devices = IotDevice::with('latestSensorData')->get();
+        $recentData = IotSensorData::with(['device', 'kelas', 'user'])
+            ->latest('measured_at')
+            ->limit(10)
+            ->get();
+        $kelas = Kelas::all();
         
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
-
-        $callback = function() use ($data) {
-            $file = fopen('php://output', 'w');
-            
-            // CSV headers
-            fputcsv($file, [
-                'Tanggal',
-                'Perangkat',
-                'Kelas',
-                'Suhu (°C)',
-                'Kelembaban (%)',
-                'Kelembaban Tanah (%)',
-                'pH Level',
-                'Level Nutrisi (%)',
-                'Lokasi',
-                'Catatan'
-            ]);
-
-            // CSV data
-            foreach ($data as $row) {
-                fputcsv($file, [
-                    $row->measured_at->format('Y-m-d H:i:s'),
-                    $row->device->name ?? '-',
-                    $row->kelas->name ?? '-',
-                    $row->temperature,
-                    $row->humidity,
-                    $row->soil_moisture,
-                    $row->ph_level,
-                    $row->nutrient_level,
-                    $row->location ?? '-',
-                    $row->notes ?? '-'
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    /**
-     * Export data to Excel
-     */
-    private function exportToExcel($data)
-    {
-        // This would require Laravel Excel package
-        // For now, return CSV format
-        return $this->exportToCsv($data);
+        // Statistics
+        $totalData = IotSensorData::count();
+        $activeDevices = IotDevice::where('status', 'online')->count();
+        $activeClasses = IotSensorData::distinct('kelas_id')->count();
+        $activeProjects = ResearchProject::where('status', 'active')->count();
+        
+        return view('superadmin.iot-dashboard', compact('devices', 'recentData', 'kelas', 'totalData', 'activeDevices', 'activeClasses', 'activeProjects'))
+            ->with('title', 'IoT Dashboard Super Admin');
     }
 }

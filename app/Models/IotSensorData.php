@@ -14,6 +14,7 @@ class IotSensorData extends Model
         'device_id',
         'kelas_id',
         'user_id',
+        'research_project_id',
         'temperature',
         'humidity',
         'soil_moisture',

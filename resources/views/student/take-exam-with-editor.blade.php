@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Kerjakan Ujian')
 
@@ -82,23 +82,32 @@
 
     <!-- Questions Container -->
     <div class="questions-container" id="questionsContainer">
-        @for($i = 1; $i <= 5; $i++)
-        <div class="question-wrapper" data-question="{{ $i }}">
-            @include('components.student-answer-editor', [
-                'questionId' => $i,
-                'questionNumber' => $i,
-                'questionType' => $i <= 3 ? 'essay' : 'multiple_choice',
-                'questionContent' => '<p>Ini adalah contoh soal ' . $i . '. Silakan jawab dengan teliti.</p>',
-                'points' => 20,
-                'options' => [
-                    '<p>Pilihan A</p>',
-                    '<p>Pilihan B</p>',
-                    '<p>Pilihan C</p>',
-                    '<p>Pilihan D</p>'
-                ]
-            ])
-        </div>
-        @endfor
+        @if(isset($exam) && isset($exam->questions) && $exam->questions->count() > 0)
+            @foreach($exam->questions as $index => $question)
+            <div class="question-wrapper" data-question="{{ $question->id }}">
+                @include('components.student-answer-editor', [
+                    'questionId' => $question->id,
+                    'questionNumber' => $index + 1,
+                    'questionType' => $question->type ?? 'essay',
+                    'questionContent' => $question->content ?? '<p>Soal tidak tersedia</p>',
+                    'points' => $question->points ?? 20,
+                    'options' => $question->options ?? []
+                ])
+            </div>
+            @endforeach
+        @else
+            <div class="no-questions-message">
+                <div class="no-questions-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Tidak Ada Soal</h3>
+                <p>Ujian ini belum memiliki soal yang dapat dikerjakan. Silakan hubungi guru atau administrator.</p>
+                <button type="button" class="btn btn-primary" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                    Kembali
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Navigation -->
@@ -595,6 +604,46 @@
 .fab:hover {
     background: #2563eb;
     transform: scale(1.1);
+}
+
+/* No Questions Message */
+.no-questions-message {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    margin: 2rem 0;
+}
+
+.no-questions-icon {
+    font-size: 4rem;
+    color: #f59e0b;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+}
+
+.no-questions-message h3 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.no-questions-message p {
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.no-questions-message .btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 /* Modal Styles */

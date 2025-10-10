@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Buat Ujian Essay')
 
@@ -377,6 +377,25 @@
 
             .question-editor .ql-editor {
                 min-height: 100px;
+            }
+            
+            /* Mobile Quill toolbar optimization */
+            .question-editor .ql-toolbar {
+                padding: 8px;
+            }
+            
+            .question-editor .ql-toolbar .ql-formats {
+                margin-right: 8px;
+            }
+            
+            .question-editor .ql-toolbar button {
+                width: 24px;
+                height: 24px;
+                padding: 2px;
+            }
+            
+            .question-editor .ql-toolbar .ql-formats:not(:last-child) {
+                margin-right: 4px;
             }
         }
 
@@ -856,10 +875,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Initialize Quill editor
+            const isMobile = window.innerWidth <= 768;
             const quill = new Quill('#' + editorId, {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
+                    toolbar: isMobile ? [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ] : [
                         [{ 'header': [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
                         [{ 'color': [] }, { 'background': [] }],
@@ -881,6 +906,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 placeholder: 'Masukkan pertanyaan essay...'
             });
+            
+            // Apply dark theme
+            setTimeout(() => {
+                const toolbar = document.querySelector(`#${editorId} .ql-toolbar`);
+                const container = document.querySelector(`#${editorId} .ql-container`);
+                if (toolbar) {
+                    toolbar.style.background = '#1e293b';
+                    toolbar.style.borderColor = '#333';
+                }
+                if (container) {
+                    container.style.background = '#2a2a3e';
+                    container.style.borderColor = '#333';
+                }
+            }, 100);
             
             // Add image upload handler
             const toolbar = quill.getModule('toolbar');

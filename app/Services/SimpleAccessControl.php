@@ -27,7 +27,6 @@ class SimpleAccessControl
             'user-management' => [1, 2], // Superadmin, Admin only
             'class-management' => [1, 2], // Superadmin, Admin only
             'subject-management' => [1, 2], // Superadmin, Admin only
-            'teacher-assignments' => [1, 2], // Superadmin, Admin only
             'reports' => [1, 2, 3], // Superadmin, Admin, Teacher
             'analytics' => [1, 2], // Superadmin, Admin only
             'push-notification' => [1, 2, 3], // Superadmin, Admin, Teacher
@@ -103,7 +102,7 @@ class SimpleAccessControl
         $menus = [
             'dashboard', 'task-management', 'exam-management', 'material-management',
             'iot-management', 'user-management', 'class-management', 'subject-management',
-            'teacher-assignments', 'reports', 'analytics', 'push-notification'
+            'reports', 'analytics', 'push-notification'
         ];
 
         return array_filter($menus, function($menu) {

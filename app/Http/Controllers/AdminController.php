@@ -534,31 +534,10 @@ class AdminController extends Controller
         // Admin hanya bisa melihat dan mengelola guru dan siswa
         $users = User::whereIn('roles_id', [3, 4])->with('Role')->get();
         
-        $stats = [
-            'totalUsers' => $users->count(),
-            'activeUsers' => $users->where('status', 'active')->count(),
-            'totalTeachers' => $users->where('roles_id', 3)->count(),
-            'totalStudents' => $users->where('roles_id', 4)->count(),
-            'totalSuperAdmins' => 0, // Admin can't see super admins
-            'totalAdmins' => 0 // Admin can't see other admins
-        ];
-        
-        $recentActivities = [
-            [
-                'icon' => 'fas fa-user-plus',
-                'title' => 'New user added',
-                'description' => 'A new teacher has been added to the system',
-                'time' => '1 hour ago'
-            ],
-        ];
-        
-        return view('user-management.unified-user-management', [
-            'title' => 'User Management',
+        return view('admin.user-management', [
+            'title' => 'Manajemen Pengguna Admin',
             'users' => $users,
-            'user' => Auth::user(),
-            'classes' => \App\Models\Kelas::all(),
-            'stats' => $stats,
-            'recentActivities' => $recentActivities
+            'user' => Auth::user()
         ]);
     }
 

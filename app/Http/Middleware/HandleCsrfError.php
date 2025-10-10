@@ -41,7 +41,7 @@ class HandleCsrfError extends Middleware
             // For regular requests, redirect back with error message
             return redirect()->back()
                 ->with('login-error', 'Session expired. Please refresh the page and try again.')
-                ->withInput($request->except('password', '_token'));
+                ->withInput($request->except('password'));
         }
     }
 }

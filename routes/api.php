@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IotTugasController;
+use App\Http\Controllers\IotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,4 +27,11 @@ Route::prefix('iot')->middleware('auth')->group(function () {
     Route::get('/readings/student/{studentId}', [IotTugasController::class, 'getStudentReadings'])->name('api.iot.student-readings');
     Route::get('/readings/export', [IotTugasController::class, 'exportCsv'])->name('api.iot.export-readings');
     Route::get('/readings/realtime', [IotTugasController::class, 'getRealTimeData'])->name('api.iot.readings-realtime');
+    
+    // IoT Sensor Data Routes
+    Route::post('/sensor-data', [IotController::class, 'storeSensorData'])->name('api.iot.sensor-data');
+    Route::get('/real-time-data', [IotController::class, 'getRealTimeData'])->name('api.iot.real-time-data');
+    Route::get('/device-status', [IotController::class, 'getDeviceStatus'])->name('api.iot.device-status');
+    Route::post('/research-project', [IotController::class, 'storeResearchProject'])->name('api.iot.research-project');
+    Route::get('/research-project/{projectId}', [IotController::class, 'getResearchProjectData'])->name('api.iot.research-project-data');
 });

@@ -5,11 +5,19 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-wifi"></i>
-            Manajemen IoT
-        </h1>
-        <p class="page-description">Kelola perangkat dan sensor IoT</p>
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-wifi"></i>
+                Manajemen IoT
+            </h1>
+            <p class="page-subtitle">Kelola perangkat dan sensor IoT</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="openRegisterDeviceModal()">
+                <i class="fas fa-plus"></i>
+                Daftarkan Perangkat
+            </button>
+        </div>
     </div>
 
     <!-- Statistics Cards -->
@@ -268,26 +276,11 @@
 </div>
 
 <style>
-/* IoT Management Styles - Override any conflicting styles */
+/* IoT Management Styles */
 .page-container {
     padding: 2rem;
     background: #0f172a;
     min-height: 100vh;
-    margin-top: 70px; /* Account for fixed header */
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-/* Ensure FontAwesome icons are visible */
-.fas, .fa, .far, .fab {
-    font-family: "Font Awesome 6 Free" !important;
-    font-weight: 900 !important;
-    display: inline-block !important;
-    font-style: normal !important;
-    font-variant: normal !important;
-    text-rendering: auto !important;
-    line-height: 1 !important;
 }
 
 .page-header {
@@ -295,22 +288,12 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
 }
 
 .header-content h1 {
     color: #ffffff;
     font-size: 2rem;
     margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-content h1 i {
-    font-size: 1.8rem !important;
-    color: #667eea !important;
 }
 
 .header-content p {
@@ -345,12 +328,6 @@
     justify-content: center;
     font-size: 1.5rem;
     color: white;
-    flex-shrink: 0;
-}
-
-.stat-icon i {
-    font-size: 1.5rem !important;
-    color: white !important;
 }
 
 .stat-value {
@@ -429,10 +406,6 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.btn-filter i, .btn-clear i {
-    font-size: 0.9rem !important;
 }
 
 .btn-filter {
@@ -576,13 +549,6 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.btn-view i, .btn-edit i, .btn-data i, .btn-delete i {
-    font-size: 0.8rem !important;
-    color: white !important;
 }
 
 .btn-view {
@@ -688,21 +654,6 @@
 .btn-primary {
     background: #667eea;
     color: white;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.btn-primary i {
-    font-size: 0.9rem !important;
-    color: white !important;
 }
 
 .btn-secondary {
@@ -710,498 +661,21 @@
     color: white;
 }
 
-/* Override any Tailwind conflicts */
-.page-container * {
-    box-sizing: border-box;
-}
-
-.page-container .fas,
-.page-container .fa,
-.page-container .far,
-.page-container .fab {
-    font-family: "Font Awesome 6 Free" !important;
-    font-weight: 900 !important;
-    display: inline-block !important;
-    font-style: normal !important;
-    font-variant: normal !important;
-    text-rendering: auto !important;
-    line-height: 1 !important;
-}
-
-/* Ensure proper spacing and layout */
-.page-container {
-    position: relative;
-    z-index: 1;
-    box-sizing: border-box;
-}
-
-/* Global mobile improvements */
-* {
-    box-sizing: border-box;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-/* Mobile viewport improvements */
 @media (max-width: 768px) {
-    html {
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-    }
-    
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
-}
-
-/* Mobile touch improvements */
-@media (max-width: 768px) {
-    .btn-primary, .btn-secondary, .btn-filter, .btn-clear, .btn-export {
-        min-height: 44px;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        min-height: 44px;
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
-    
-    .data-table th,
-    .data-table td {
-        min-height: 44px;
-        vertical-align: middle;
-    }
-    
-    /* Improve mobile scrolling */
-    .page-container {
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Better mobile table handling */
-    .table-wrapper {
-        position: relative;
-    }
-    
-    .table-wrapper::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 20px;
-        height: 100%;
-        background: linear-gradient(to left, rgba(30, 41, 59, 0.8), transparent);
-        pointer-events: none;
-        z-index: 5;
-    }
-    
-    /* Mobile-specific improvements */
-    .page-container {
-        padding: 1rem;
-        margin-top: 60px;
-    }
-    
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-    
-    .stat-card {
-        padding: 1rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
-    }
-    
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-    
-    .stat-value {
-        font-size: 1.5rem;
-    }
-    
-    .stat-label {
-        font-size: 0.8rem;
-    }
-    
-    .device-filters {
-        padding: 1rem;
+        grid-template-columns: 1fr;
     }
     
     .filter-row {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-    
-    .filter-actions {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .btn-filter, .btn-clear {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .table-container {
-        padding: 1rem;
-    }
-    
-    .table-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    .table-actions {
-        width: 100%;
-    }
-    
-    .btn-export {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
-        border: 1px solid #334155;
-    }
-    
-    .data-table {
-        min-width: 800px;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    
-    .data-table th:first-child,
-    .data-table td:first-child {
-        position: sticky;
-        left: 0;
-        background: #2a2a3e;
-        z-index: 10;
-        border-right: 1px solid #334155;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.85rem;
-    }
-    
-    .action-buttons {
-        flex-wrap: wrap;
-        gap: 0.25rem;
-    }
-    
-    .btn-view, .btn-edit, .btn-data, .btn-delete {
-        width: 32px;
-        height: 32px;
-        font-size: 0.7rem;
-        min-width: 32px;
-        min-height: 32px;
-    }
-    
-    .btn-view i, .btn-edit i, .btn-data i, .btn-delete i {
-        font-size: 0.7rem !important;
-    }
-    
-    .modal-content {
-        width: 95%;
-        padding: 1.5rem;
-        margin: 1rem;
-        max-height: 90vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
     }
     
     .form-row {
         grid-template-columns: 1fr;
     }
     
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* Tablet and larger mobile styles */
-@media (max-width: 1024px) {
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    .header-actions {
-        width: 100%;
-    }
-    
-    .btn-primary {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .page-header {
-        margin-bottom: 1.5rem;
-    }
-    
-    .header-content h1 {
-        font-size: 1.5rem;
-    }
-    
-    .header-content h1 i {
-        font-size: 1.3rem !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .page-container {
-        padding: 0.75rem;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-card {
-        padding: 0.75rem;
-    }
-    
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-    }
-    
-    .stat-value {
-        font-size: 1.25rem;
-    }
-    
-    .header-content h1 {
-        font-size: 1.25rem;
-    }
-    
-    .page-subtitle {
-        font-size: 0.9rem;
-    }
-    
-    .btn-text {
-        display: none;
-    }
-    
-    .btn-primary {
-        width: auto;
-        padding: 0.75rem;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.75rem;
-    }
-    
-    .device-name {
-        font-size: 0.9rem;
-    }
-    
-    .device-description {
-        font-size: 0.7rem;
-    }
-    
-    .type-badge, .location-badge, .status-badge {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.5rem;
-    }
-    
-    .sensor-count, .last-update {
-        font-size: 0.75rem;
-    }
-    
-    .modal-content {
-        width: 98%;
-        padding: 1rem;
-        margin: 0.5rem;
-        max-height: 95vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .data-table th:first-child,
-    .data-table td:first-child {
-        position: sticky;
-        left: 0;
-        background: #2a2a3e;
-        z-index: 10;
-        border-right: 1px solid #334155;
-        min-width: 40px;
-    }
-    
-    .modal-header h3 {
-        font-size: 1.1rem;
-    }
-    
-    /* Better mobile table handling for very small screens */
-    .table-wrapper::after {
-        width: 15px;
-    }
-    
-    .data-table th:first-child,
-    .data-table td:first-child {
-        min-width: 35px;
-    }
-}
-
-/* Extra small mobile devices */
-@media (max-width: 360px) {
-    .page-container {
-        padding: 0.5rem;
-    }
-    
-    .stats-grid {
-        gap: 0.5rem;
-    }
-    
-    .stat-card {
-        padding: 0.5rem;
-    }
-    
-    .stat-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 0.9rem;
-    }
-    
-    .stat-value {
-        font-size: 1.1rem;
-    }
-    
-    .header-content h1 {
-        font-size: 1.1rem;
-    }
-    
-    .page-subtitle {
-        font-size: 0.8rem;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.4rem 0.2rem;
-        font-size: 0.7rem;
-    }
-    
-    .device-name {
-        font-size: 0.8rem;
-    }
-    
-    .device-description {
-        font-size: 0.65rem;
-    }
-    
-    .type-badge, .location-badge, .status-badge {
-        font-size: 0.65rem;
-        padding: 0.15rem 0.4rem;
-    }
-    
-    .sensor-count, .last-update {
-        font-size: 0.7rem;
-    }
-    
-    .modal-content {
-        width: 99%;
-        padding: 0.75rem;
-        margin: 0.25rem;
-    }
-    
-    .modal-header h3 {
-        font-size: 1rem;
-    }
-    
-    .table-wrapper::after {
-        width: 10px;
-    }
-}
-
-/* Extra small mobile devices */
-@media (max-width: 360px) {
-    .page-container {
-        padding: 0.5rem;
-    }
-    
-    .stats-grid {
-        gap: 0.5rem;
-    }
-    
-    .stat-card {
-        padding: 0.5rem;
-    }
-    
-    .stat-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 0.9rem;
-    }
-    
-    .stat-value {
-        font-size: 1.1rem;
-    }
-    
-    .header-content h1 {
-        font-size: 1.1rem;
-    }
-    
-    .page-subtitle {
-        font-size: 0.8rem;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.4rem 0.2rem;
-        font-size: 0.7rem;
-    }
-    
-    .device-name {
-        font-size: 0.8rem;
-    }
-    
-    .device-description {
-        font-size: 0.65rem;
-    }
-    
-    .type-badge, .location-badge, .status-badge {
-        font-size: 0.65rem;
-        padding: 0.15rem 0.4rem;
-    }
-    
-    .sensor-count, .last-update {
-        font-size: 0.7rem;
-    }
-    
-    .modal-content {
-        width: 99%;
-        padding: 0.75rem;
-        margin: 0.25rem;
-    }
-    
-    .modal-header h3 {
-        font-size: 1rem;
-    }
-    
-    .table-wrapper::after {
-        width: 10px;
+    .table-wrapper {
+        overflow-x: auto;
     }
 }
 </style>
@@ -1249,68 +723,4 @@ window.onclick = function(event) {
         closeRegisterDeviceModal();
     }
 }
-
-// Mobile touch improvements
-document.addEventListener('DOMContentLoaded', function() {
-    // Prevent zoom on input focus for mobile
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            if (window.innerWidth <= 768) {
-                this.style.fontSize = '16px';
-            }
-        });
-    });
-    
-    // Improve table scrolling on mobile
-    const tableWrapper = document.querySelector('.table-wrapper');
-    if (tableWrapper && window.innerWidth <= 768) {
-        tableWrapper.style.overflowX = 'auto';
-        tableWrapper.style.webkitOverflowScrolling = 'touch';
-    }
-    
-    // Add touch feedback for buttons
-    const buttons = document.querySelectorAll('.btn-view, .btn-edit, .btn-data, .btn-delete, .btn-primary, .btn-secondary, .btn-filter, .btn-clear, .btn-export');
-    buttons.forEach(button => {
-        button.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.95)';
-        });
-        
-        button.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
-    
-    // Improve modal handling on mobile
-    const modal = document.getElementById('registerDeviceModal');
-    if (modal) {
-        modal.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-    }
-    
-    // Add swipe gesture for table scrolling
-    let startX = 0;
-    let startY = 0;
-    const tableWrapper = document.querySelector('.table-wrapper');
-    
-    if (tableWrapper) {
-        tableWrapper.addEventListener('touchstart', function(e) {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        });
-        
-        tableWrapper.addEventListener('touchmove', function(e) {
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            const diffX = startX - currentX;
-            const diffY = startY - currentY;
-            
-            // If horizontal swipe is more significant than vertical
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-    }
-});
 </script>

@@ -1,4 +1,4 @@
-@extends('layouts.unified-layout-new')
+@extends('layouts.unified-layout')
 
 @section('title', 'Terra Assessment - Student Dashboard')
 
@@ -476,7 +476,7 @@
 
         <div class="dashboard-grid">
             <!-- Row 1 -->
-            <a href="{{ route('student.tasks') }}" class="card">
+            <a href="{{ route('student.tugas') }}" class="card">
                 <div class="card-icon blue">
                     <i class="fas fa-tasks"></i>
                 </div>
@@ -484,7 +484,7 @@
                 <p class="card-description">Lihat dan kerjakan tugas yang diberikan oleh pengajar</p>
             </a>
 
-            <a href="{{ route('student.materials') }}" class="card">
+            <a href="{{ route('student.materi') }}" class="card">
                 <div class="card-icon green">
                     <i class="fas fa-book"></i>
                 </div>
@@ -492,9 +492,9 @@
                 <p class="card-description">Akses materi pembelajaran dan sumber daya edukatif</p>
             </a>
 
-            <a href="{{ route('student.exams') }}" class="card">
+            <a href="{{ route('student.ujian') }}" class="card">
                 <div class="card-icon purple">
-                    <i class="fas fa-clipboard-check"></i>
+                    <i class="fas fa-file-alt"></i>
                 </div>
                 <h3 class="card-title">Ujian & Test</h3>
                 <p class="card-description">Ikuti ujian dan test untuk mengukur pemahaman Anda</p>
@@ -513,7 +513,7 @@
                 <div class="card-icon teal">
                 <i class="fas fa-microchip"></i>
                 </div>
-            <h3 class="card-title">IoT Research Projects</h3>
+            <h3 class="card-title">Penelitian IoT</h3>
             <p class="card-description">Eksplorasi proyek penelitian IoT dan teknologi terbaru</p>
             </a>
 
@@ -523,6 +523,14 @@
                 </div>
                 <h3 class="card-title">Profile Saya</h3>
             <p class="card-description">Kelola informasi profil dan pengaturan akun Anda</p>
+            </a>
+
+            <a href="{{ route('notifications.index') }}" class="card">
+                <div class="card-icon yellow">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="card-title">Notifikasi</h3>
+                <p class="card-description">Lihat notifikasi dan pengumuman terbaru</p>
             </a>
         </div>
 
@@ -599,7 +607,7 @@
                                 </div>
                             </div>
                                 <div class="list-item-actions">
-                                    <a href="{{ route('student.tasks') }}" class="btn-action">
+                                    <a href="{{ route('student.tugas') }}" class="btn-action">
                                         <i class="fas fa-eye"></i>
                                         Lihat Detail
                                 </a>
@@ -644,7 +652,7 @@
                                 </div>
                             </div>
                                 <div class="list-item-actions">
-                                    <a href="{{ route('student.materials.detail', $materiItem->id) }}" class="btn-action">
+                                    <a href="{{ route('student.materi.detail', $materiItem->id) }}" class="btn-action">
                                         <i class="fas fa-eye"></i>
                                         Lihat Materi
                                 </a>
@@ -710,7 +718,7 @@
                                 </div>
                             </div>
                                 <div class="list-item-actions">
-                                    <a href="{{ route('student.exams') }}" class="btn-action">
+                                    <a href="{{ route('student.ujian') }}" class="btn-action">
                                         <i class="fas fa-eye"></i>
                                         Lihat Detail
                                 </a>

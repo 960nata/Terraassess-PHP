@@ -1,9 +1,27 @@
-@extends('layouts.unified-layout-new')
-
-@section('title', 'Terra Assessment - Admin Dashboard')
-
-@section('content')
-<style>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Assessment - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css'])
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: {
+                        'md': '768px',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
+    <style>
         /* Notification Toast Styles */
         .notification-toast {
             position: fixed;
@@ -233,6 +251,152 @@
             }
         }
     </style>
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="logo-text hidden sm:block">Terra Assessment</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- Notification Dropdown -->
+            <div class="notification-container">
+                <button class="notification-btn" onclick="toggleNotificationDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="notification-header">
+                        <h4>Notifikasi</h4>
+                        <div class="notification-actions">
+                            <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
+                                <i class="fas fa-check-double"></i>
+                            </button>
+                            <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
+                                <i class="fas fa-list"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Memuat notifikasi...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-container">
+                <div class="user-profile" onclick="toggleProfileDropdown()">
+                    <div class="user-avatar">{{ substr($user->name ?? 'A', 0, 2) }}</div>
+                    <div class="user-info hidden sm:block">
+                        <div class="user-name">{{ $user->name ?? 'Admin' }}</div>
+                        <div class="user-role">Admin</div>
+                    </div>
+                    <i class="fas fa-chevron-down dropdown-icon hidden sm:block"></i>
+                </div>
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">{{ substr($user->name ?? 'A', 0, 2) }}</div>
+                        <div class="profile-dropdown-info">
+                            <div class="profile-dropdown-name">{{ $user->name ?? 'Admin' }}</div>
+                            <div class="profile-dropdown-role">Admin</div>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-menu">
+                        <a href="{{ route('admin.profile') }}" class="profile-dropdown-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </a>
+                        <div class="profile-dropdown-divider"></div>
+                        <a href="{{ route('logout.get') }}" class="profile-dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">Menu Utama</div>
+                <a href="{{ route('admin.dashboard') }}" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+                <a href="{{ route('admin.push-notification') }}" class="menu-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="menu-item-text">Push Notifikasi</span>
+                </a>
+                <a href="{{ route('admin.iot-management') }}" class="menu-item">
+                    <i class="fas fa-wifi"></i>
+                    <span class="menu-item-text">Manajemen IoT</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Manajemen</div>
+                <a href="{{ route('admin.task-management') }}" class="menu-item">
+                    <i class="fas fa-book"></i>
+                    <span class="menu-item-text">Manajemen Tugas</span>
+                </a>
+                <a href="{{ route('admin.exam-management') }}" class="menu-item">
+                    <i class="fas fa-bullseye"></i>
+                    <span class="menu-item-text">Manajemen Ujian</span>
+                </a>
+                <a href="{{ route('superadmin.user-management') }}" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-item-text">Manajemen Pengguna</span>
+                </a>
+                <a href="{{ route('admin.class-management') }}" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-item-text">Manajemen Kelas</span>
+                </a>
+                <a href="{{ route('admin.subject-management') }}" class="menu-item">
+                    <i class="fas fa-database"></i>
+                    <span class="menu-item-text">Mata Pelajaran</span>
+                </a>
+                <a href="{{ route('admin.material-management') }}" class="menu-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-item-text">Manajemen Materi</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Analitik</div>
+                <a href="{{ route('admin.reports') }}" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="menu-item-text">Laporan</span>
+                </a>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-section-title">Bantuan</div>
+                <a href="{{ route('admin.help') }}" class="menu-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-item-text">Bantuan</span>
+                </a>
+            </div>
+        </div>
+    </nav>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -694,4 +858,5 @@
         handleMobileDropdowns();
         window.addEventListener('resize', handleMobileDropdowns);
     </script>
-@endsection
+</body>
+</html>
