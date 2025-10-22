@@ -57,6 +57,11 @@ class IotDevice extends Model
         return $this->hasOne(IotSensorData::class, 'device_id')->latest('measured_at');
     }
 
+    public function status()
+    {
+        return $this->hasOne(IotDeviceStatus::class, 'device_id');
+    }
+
     // Scopes
     public function scopeConnected($query)
     {

@@ -650,7 +650,7 @@ let currentUjianId = {{ $ujian->id }};
 let currentUserId = null;
 
 function editExam(examId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.edit', '') }}/" + examId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + examId + "/edit";
 }
 
 function viewStudentProgress(ujianId, userId) {
@@ -698,8 +698,32 @@ function submitFeedback() {
 }
 
 function exportProgress() {
-    // TODO: Implement export functionality
-    alert('Fitur export akan segera tersedia');
+    // Export exam results to CSV
+    try {
+        // Get current exam ID from the page
+        const examId = currentUjianId;
+        
+        if (!examId) {
+            alert('Tidak dapat menemukan ID ujian');
+            return;
+        }
+        
+        // Create export URL
+        const exportUrl = `/teacher/enhanced-exam-management/${examId}/export`;
+        
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.href = exportUrl;
+        link.download = `hasil-ujian-${examId}-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Export exam results initiated');
+    } catch (error) {
+        console.error('Error exporting exam results:', error);
+        alert('Terjadi kesalahan saat mengexport data. Silakan coba lagi.');
+    }
 }
 
 // Close modal when clicking outside

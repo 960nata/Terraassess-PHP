@@ -73,7 +73,7 @@ class LoginRegistController extends Controller
                     // Buat data untuk user baru
                     $data = [
                         'name' => $dataSiswa2['name'],
-                        'roles_id' => 3, // 3 = Siswa
+                        'roles_id' => 4, // 4 = Siswa (Student)
                         'kelas_id' => $kelasSiswa,
 
                         'gambar' => null,

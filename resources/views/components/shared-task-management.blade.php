@@ -231,7 +231,7 @@
                 <i class="fas fa-search"></i>
                 Terapkan Filter
             </button>
-            <a href="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.tasks.management') }}" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <a href="{{ $userRole === 'superadmin' ? route('superadmin.tugas.index') : route('teacher.tasks') }}" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fas fa-times"></i>
                 Reset Filter
             </a>
@@ -323,31 +323,68 @@
 <script>
 function createMultipleChoiceTask() {
     // Redirect to create multiple choice task
-    window.location.href = "{{ $userRole === 'superadmin' ? route('superadmin.task-create-multiple-choice') : route('teacher.tasks.create.multiple-choice') }}";
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ route('superadmin.tasks.create.multiple-choice') }}";
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ route('admin.tasks.create.multiple-choice') }}";
+    @else
+        window.location.href = "{{ route('teacher.tasks.create.multiple-choice') }}";
+    @endif
 }
 
 function createEssayTask() {
     // Redirect to create essay task
-    window.location.href = "{{ $userRole === 'superadmin' ? route('superadmin.task-create-essay') : route('teacher.tasks.create.essay') }}";
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ route('superadmin.tasks.create.essay') }}";
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ route('admin.tasks.create.essay') }}";
+    @else
+        window.location.href = "{{ route('teacher.tasks.create.essay') }}";
+    @endif
 }
 
 function createGroupTask() {
     // Redirect to create group task
-    window.location.href = "{{ $userRole === 'superadmin' ? route('superadmin.task-create-group') : route('teacher.tasks.create.group') }}";
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ route('superadmin.tasks.create.group') }}";
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ route('admin.tasks.create.group') }}";
+    @else
+        window.location.href = "{{ route('teacher.tasks.create.group') }}";
+    @endif
+}
+
+function createIndividualTask() {
+    // Redirect to create individual task
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ route('superadmin.tasks.create.individual') }}";
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ route('admin.tasks.create.individual') }}";
+    @else
+        window.location.href = "{{ route('teacher.tasks.create.individual') }}";
+    @endif
 }
 
 function editTask(taskId) {
     // Redirect to edit task
-    window.location.href = "{{ $userRole === 'superadmin' ? route('superadmin.task-edit', '') : route('teacher.tasks.edit', '') }}/" + taskId;
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId + "/edit";
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId + "/edit";
+    @else
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId + "/edit";
+    @endif
 }
 
 function viewSubmissions(taskId) {
     // Redirect to view submissions
-    if ("{{ $userRole }}" === 'teacher') {
-        window.location.href = "{{ route('teacher.tasks.detail', '') }}/" + taskId;
-    } else {
-        window.location.href = "{{ $userRole === 'superadmin' ? route('superadmin.task-detail', '') : route('teacher.tasks.show', '') }}/" + taskId;
-    }
+    @if($userRole === 'superadmin')
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId;
+    @elseif($userRole === 'admin')
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId;
+    @else
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId;
+    @endif
 }
 
 function publishTask(taskId) {
@@ -361,8 +398,38 @@ function publishTask(taskId) {
 function deleteTask(taskId) {
     // Delete task
     if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
-        // Add delete logic here
-        console.log('Deleting task:', taskId);
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        
+        // Set action based on user role
+        let actionUrl;
+        if ("{{ $userRole }}" === 'superadmin') {
+            actionUrl = "{{ url('superadmin/tugas') }}/" + taskId;
+        } else if ("{{ $userRole }}" === 'admin') {
+            actionUrl = "{{ url('admin/tugas') }}/" + taskId;
+        } else {
+            actionUrl = "{{ url('teacher/tasks') }}/" + taskId;
+        }
+        
+        form.action = actionUrl;
+        
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        // Add method override for DELETE
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

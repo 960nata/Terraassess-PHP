@@ -832,7 +832,7 @@ function createEssayExam() {
 
 // Exam action functions
 function editExam(examId) {
-    window.location.href = "{{ route('teacher.exam-management') }}/" + examId + "/edit";
+    window.location.href = "{{ url('teacher/exam') }}/" + examId + "/edit";
 }
 
 function viewExam(examId) {
@@ -868,7 +868,7 @@ function deleteExam(examId) {
         // Create form and submit
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = "{{ route('teacher.exam-management') }}/" + examId;
+        form.action = "{{ url('teacher/exam') }}/" + examId;
         
         const csrfToken = document.createElement('input');
         csrfToken.type = 'hidden';

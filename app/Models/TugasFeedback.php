@@ -9,6 +9,8 @@ class TugasFeedback extends Model
 {
     use HasFactory;
 
+    protected $table = 'tugas_feedbacks';
+
     protected $fillable = [
         'tugas_id',
         'user_id',

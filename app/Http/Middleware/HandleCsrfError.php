@@ -9,6 +9,18 @@ use Illuminate\Session\TokenMismatchException;
 class HandleCsrfError extends Middleware
 {
     /**
+     * The URIs that should be excluded from CSRF verification.
+     *
+     * @var array<int, string>
+     */
+    protected $except = [
+        'api/iot/device-status', // ESP8266 device status updates
+        'api/iot/device-status/*', // ESP8266 device status updates
+        'groups/get-students/*', // Group management - get students
+        'groups/get-groups/*', // Group management - get groups
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request

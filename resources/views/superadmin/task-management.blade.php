@@ -637,6 +637,18 @@
             <p class="page-description">Kelola tugas per kelas dengan kategorisasi dan tingkat kesulitan</p>
         </div>
 
+        {{-- Success/Error Messages --}}
+        @if(session('success'))
+        <div class="alert alert-success mb-6" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <strong>✓ Berhasil!</strong> {{ session('success') }}
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="alert alert-danger mb-6" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <strong>✗ Error!</strong> {{ session('error') }}
+        </div>
+        @endif
 
         <!-- Task Type Cards -->
         <div class="task-type-cards">
@@ -678,43 +690,11 @@
                 </div>
             </div>
 
-            <div class="task-type-card individual" onclick="createIndividualTask()">
-                <div class="task-card-header">
-                    <div class="task-card-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="task-card-stats">
-                        <span class="task-count">{{ $tugasMandiri ?? 0 }}</span>
-                        <span class="task-label">Tugas</span>
-                    </div>
-                </div>
-                <div class="task-card-content">
-                    <h3 class="task-type-title">Mandiri</h3>
-                    <p class="task-type-description">Buat tugas individual untuk pembelajaran mandiri</p>
-                </div>
-                <div class="task-card-footer">
-                    <span class="task-card-action">Buat Tugas <i class="fas fa-arrow-right arrow-icon"></i></span>
-                </div>
-            </div>
-
-            <div class="task-type-card group" onclick="createGroupTask()">
-                <div class="task-card-header">
-                    <div class="task-card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="task-card-stats">
-                        <span class="task-count">{{ $tugasKelompok ?? 0 }}</span>
-                        <span class="task-label">Tugas</span>
-                    </div>
-                </div>
-                <div class="task-card-content">
-                    <h3 class="task-type-title">Kelompok</h3>
-                    <p class="task-type-description">Buat tugas kelompok untuk kolaborasi</p>
-                </div>
-                <div class="task-card-footer">
-                    <span class="task-card-action">Buat Tugas <i class="fas fa-arrow-right arrow-icon"></i></span>
-                </div>
-            </div>
+            @include('components.task-types', [
+                'user' => $user,
+                'tugasMandiri' => $tugasMandiri ?? 0,
+                'tugasKelompok' => $tugasKelompok ?? 0,
+            ])
         </div>
 
 
@@ -917,46 +897,80 @@
 <script>
 // Task creation functions - dynamic routes based on user role
 function createMultipleChoiceTask() {
-    @if($user->roles_id == 3) {{-- Teacher --}}
-        window.location.href = "{{ route('teacher.tasks.create', 1) }}";
-    @else {{-- Super Admin or Admin --}}
-        window.location.href = "{{ route('superadmin.tugas.create', 1) }}";
+    console.log('createMultipleChoiceTask clicked, user role:', {{ $user->roles_id }});
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        console.log('Redirecting to superadmin route');
+        window.location.href = "{{ route('superadmin.tasks.create.multiple-choice') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        console.log('Redirecting to admin route');
+        window.location.href = "{{ route('admin.tasks.create.multiple-choice') }}";
+    @else {{-- Teacher --}}
+        console.log('Redirecting to teacher route');
+        window.location.href = "{{ route('teacher.tasks.create.multiple-choice') }}";
     @endif
 }
 
 function createEssayTask() {
-    @if($user->roles_id == 3) {{-- Teacher --}}
-        window.location.href = "{{ route('teacher.tasks.create', 2) }}";
-    @else {{-- Super Admin or Admin --}}
-        window.location.href = "{{ route('superadmin.tugas.create', 2) }}";
+    console.log('createEssayTask clicked, user role:', {{ $user->roles_id }});
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        console.log('Redirecting to superadmin route');
+        window.location.href = "{{ route('superadmin.tasks.create.essay') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        console.log('Redirecting to admin route');
+        window.location.href = "{{ route('admin.tasks.create.essay') }}";
+    @else {{-- Teacher --}}
+        console.log('Redirecting to teacher route');
+        window.location.href = "{{ route('teacher.tasks.create.essay') }}";
     @endif
 }
 
 function createIndividualTask() {
-    @if($user->roles_id == 3) {{-- Teacher --}}
-        window.location.href = "{{ route('teacher.tasks.create', 3) }}";
-    @else {{-- Super Admin or Admin --}}
-        window.location.href = "{{ route('superadmin.tugas.create', 3) }}";
+    console.log('createIndividualTask clicked, user role:', {{ $user->roles_id }});
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        console.log('Redirecting to superadmin route');
+        window.location.href = "{{ route('superadmin.tasks.create.individual') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        console.log('Redirecting to admin route');
+        window.location.href = "{{ route('admin.tasks.create.individual') }}";
+    @else {{-- Teacher --}}
+        console.log('Redirecting to teacher route');
+        window.location.href = "{{ route('teacher.tasks.create.individual') }}";
     @endif
 }
 
 function createGroupTask() {
-    @if($user->roles_id == 3) {{-- Teacher --}}
-        window.location.href = "{{ route('teacher.tasks.create', 4) }}";
-    @else {{-- Super Admin or Admin --}}
-        window.location.href = "{{ route('superadmin.tugas.create', 4) }}";
+    console.log('createGroupTask clicked, user role:', {{ $user->roles_id }});
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        console.log('Redirecting to superadmin route');
+        window.location.href = "{{ route('superadmin.tasks.create.group') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        console.log('Redirecting to admin route');
+        window.location.href = "{{ route('admin.tasks.create.group') }}";
+    @else {{-- Teacher --}}
+        console.log('Redirecting to teacher route');
+        window.location.href = "{{ route('teacher.tasks.create.group') }}";
     @endif
 }
 
 // Task action functions
 function editTask(taskId) {
-    console.log('Edit task:', taskId);
-    // Implement edit functionality
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId + "/edit";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId + "/edit";
+    @else {{-- Teacher --}}
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId + "/edit";
+    @endif
 }
 
 function viewSubmissions(taskId) {
-    console.log('View submissions for task:', taskId);
-    // Implement view submissions functionality
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId;
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId;
+    @else {{-- Teacher --}}
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId;
+    @endif
 }
 
 function publishTask(taskId) {
@@ -966,8 +980,35 @@ function publishTask(taskId) {
 
 function deleteTask(taskId) {
     if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
-        console.log('Delete task:', taskId);
-        // Implement delete functionality
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        
+        // Set action based on user role
+        @if($user->roles_id == 1) {{-- Super Admin --}}
+            form.action = "{{ url('superadmin/tugas') }}/" + taskId;
+        @elseif($user->roles_id == 2) {{-- Admin --}}
+            form.action = "{{ url('admin/tugas') }}/" + taskId;
+        @else {{-- Teacher --}}
+            form.action = "{{ url('teacher/tasks') }}/" + taskId;
+        @endif
+        
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        // Add method override for DELETE
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

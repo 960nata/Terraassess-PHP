@@ -108,7 +108,10 @@
                                     <!-- Dropzone -->
                                     <div id="my-dropzone" class="dropzone"></div>
                                 </div>
-                            @elseif($tipe == 2 || $tipe == 3)
+                            @elseif($tipe == 2)
+                                <!-- Essay - konten akan diisi di bagian Data Soal -->
+                            @elseif($tipe == 3)
+                                <!-- Mandiri - konten sudah diisi di atas, tidak perlu duplikasi -->
                             @endif
 
 
@@ -118,7 +121,7 @@
                     </div>
                 </div>
 
-                @if ($tipe == 2 || $tipe == 3 || $tipe == 5)
+                @if ($tipe == 2 || $tipe == 5)
                     <div class="mb-2">
                         <label for="nama" class="form-label">Konten <span
                                 class="small text-info">(Opsional)</span></label>
@@ -133,7 +136,15 @@
                         <button type="button" class="btn btn-outline-success w-100 btn-lg" id="btnTambahPertanyaan">Tambah
                             Pertanyaan</button>
                     </div>
-                    @if ($tipe == 5)
+                @elseif($tipe == 3)
+                    {{-- Tugas Mandiri - tidak perlu Data Soal, hanya menggunakan konten di atas --}}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Tugas Mandiri:</strong> Deskripsi tugas sudah diisi di bagian atas. Siswa dapat mengumpulkan tugas dengan mengetik langsung atau upload file.
+                    </div>
+                @endif
+
+                @if ($tipe == 5)
                         @php
                             $user = App\Models\User::where('kelas_id', $kelasId)->get();
                             // dd($kelas);

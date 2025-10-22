@@ -11,7 +11,11 @@ class Kelas extends Model
 
     protected $fillable = [
         'name',
+        'code',
+        'level',
+        'major',
         'description',
+        'is_active',
     ];
 
     protected $guarded = [
@@ -33,6 +37,16 @@ class Kelas extends Model
         return $this->hasMany(DataSiswa::class);
     }
 
+    public function siswa()
+    {
+        return $this->hasMany(User::class)->where('roles_id', 4);
+    }
+
+    public function subjects()
+    {
+        return $this->hasMany(KelasMapel::class);
+    }
+
     public function kelasMapel()
     {
         return $this->hasMany(KelasMapel::class);
@@ -46,5 +60,10 @@ class Kelas extends Model
     public function research()
     {
         return $this->hasMany(Research::class);
+    }
+
+    public function tugasKelompoks()
+    {
+        return $this->hasMany(TugasKelompok::class);
     }
 }

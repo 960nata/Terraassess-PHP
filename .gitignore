@@ -50,3 +50,49 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+node_modules
+
+# Arduino files
+*.ino
+
+# Deployment scripts
+*.sh
+*.bat
+*.ps1
+*.py
+
+# SQL dumps
+*.sql
+
+# Test files
+test-*.html
+test-*.php
+debug-*.php
+
+# Deployment packages
+*.zip
+
+# Cursor IDE
+.cursor/
+
+# Extra docs (terlalu banyak)
+HOSTING_*.md
+DEPLOYMENT_*.md
+BACKEND_*.md
+COMPOSER_*.md
+MANUAL_*.md
+STORAGE_*.md
+SENSOR_*.md
+UPLOAD_*.md
+README_HOSTING.md
+TERRAASSESS_README.md
+
+# Backup files
+*.backup
+Salinan*
+
+# Hosting specific
+hosting-*.txt
+production-*.env
+terraassess-*.php
+terraassess-*.json

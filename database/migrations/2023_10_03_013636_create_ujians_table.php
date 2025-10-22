@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ujians', function (Blueprint $table) {
             $table->id();
-            $table->foreignid('kelas_mapel_id');
+            $table->foreignId('kelas_mapel_id')->constrained('kelas_mapels')->onDelete('cascade');
             $table->string('name');
             $table->bigInteger('isHidden')->default(0);
             $table->string('tipe');

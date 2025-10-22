@@ -522,10 +522,10 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <h3 class="card-title">Profile Saya</h3>
-            <p class="card-description">Kelola informasi profil dan pengaturan akun Anda</p>
+                <p class="card-description">Kelola informasi profil dan pengaturan akun Anda</p>
             </a>
 
-            <a href="{{ route('notifications.index') }}" class="card">
+            <a href="{{ route('student.notifications') }}" class="card">
                 <div class="card-icon yellow">
                     <i class="fas fa-bell"></i>
                 </div>

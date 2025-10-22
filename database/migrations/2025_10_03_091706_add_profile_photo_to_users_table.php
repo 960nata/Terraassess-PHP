@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('profile_photo')->nullable()->after('email');
+            // Check if column doesn't already exist
+            if (!Schema::hasColumn('users', 'profile_photo')) {
+                $table->string('profile_photo')->nullable()->after('email');
+            }
         });
     }
 

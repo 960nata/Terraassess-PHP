@@ -1,9 +1,22 @@
-@import "tailwindcss";
+/* Using CDN Tailwind for development - no local import needed */
 
 /* Import Design System */
 @import './design-system.css';
 @import './responsive-utilities.css';
-@import './space-minimal.css';
+/* space-minimal styles inline below */
+.space-minimal { margin: 0.5rem; padding: 0.5rem; }
+.space-minimal-sm { margin: 0.25rem; padding: 0.25rem; }
+.space-minimal-lg { margin: 1rem; padding: 1rem; }
+.m-minimal { margin: 0.5rem; }
+.p-minimal { padding: 0.5rem; }
+.mt-minimal { margin-top: 0.5rem; }
+.mb-minimal { margin-bottom: 0.5rem; }
+.ml-minimal { margin-left: 0.5rem; }
+.mr-minimal { margin-right: 0.5rem; }
+.pt-minimal { padding-top: 0.5rem; }
+.pb-minimal { padding-bottom: 0.5rem; }
+.pl-minimal { padding-left: 0.5rem; }
+.pr-minimal { padding-right: 0.5rem; }
 
 /* Custom styles for nebula background */
 .nebula-bg {

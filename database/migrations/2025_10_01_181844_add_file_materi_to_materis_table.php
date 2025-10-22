@@ -11,10 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('materis', function (Blueprint $table) {
-            $table->string('file_materi')->nullable()->after('content');
-            $table->text('deskripsi')->nullable()->after('file_materi');
-        });
+        // Check if table exists before modifying
+        if (Schema::hasTable('materis')) {
+            Schema::table('materis', function (Blueprint $table) {
+                // Check if columns don't already exist
+                if (!Schema::hasColumn('materis', 'file_materi')) {
+                    $table->string('file_materi')->nullable()->after('content');
+                }
+                if (!Schema::hasColumn('materis', 'deskripsi')) {
+                    $table->text('deskripsi')->nullable()->after('file_materi');
+                }
+            });
+        }
     }
 
     /**

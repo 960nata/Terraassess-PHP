@@ -1,38 +1,23 @@
 @props([
-    'title' => null,
-    'subtitle' => null,
-    'icon' => null,
-    'hover' => true
+    'class' => '',
+    'header' => null,
+    'footer' => null
 ])
 
-@php
-    $classes = 'galaxy-card';
-    if (!$hover) {
-        $classes .= ' hover:transform-none hover:shadow-none';
-    }
-@endphp
-
-<div {{ $attributes->merge(['class' => $classes]) }}>
-    @if($title || $subtitle || $icon)
-        <div class="galaxy-card-header">
-            @if($title)
-                <h3 class="galaxy-card-title">
-                    @if($icon)
-                        <svg class="galaxy-card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {!! $icon !!}
-                        </svg>
-                    @endif
-                    {{ $title }}
-                </h3>
-            @endif
-            
-            @if($subtitle)
-                <p class="galaxy-card-subtitle">{{ $subtitle }}</p>
-            @endif
+<div class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 rounded-xl shadow-2xl border border-purple-500 border-opacity-30 backdrop-blur-sm {{ $class }}">
+    @if($header)
+        <div class="px-6 py-4 border-b border-purple-500 border-opacity-30">
+            {{ $header }}
         </div>
     @endif
     
-    <div class="galaxy-card-content">
+    <div class="p-6">
         {{ $slot }}
     </div>
+    
+    @if($footer)
+        <div class="px-6 py-4 border-t border-purple-500 border-opacity-30">
+            {{ $footer }}
+        </div>
+    @endif
 </div>

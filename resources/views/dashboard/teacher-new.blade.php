@@ -25,13 +25,6 @@
         <p class="card-description">Kelola materi pembelajaran untuk kelas</p>
     </a>
 
-    <a href="{{ route('superadmin.iot-management') }}" class="card">
-        <div class="card-icon orange">
-            <i class="fas fa-wifi"></i>
-        </div>
-        <h3 class="card-title">Manajemen IoT</h3>
-        <p class="card-description">Monitor data IoT dan perangkat sensor</p>
-    </a>
 
     <a href="{{ route('superadmin.reports') }}" class="card">
         <div class="card-icon purple">

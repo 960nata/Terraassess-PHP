@@ -316,15 +316,15 @@
         }
 
         .question-editor .ql-toolbar .ql-stroke {
-            stroke: #cbd5e1;
+            stroke: #ffffff;
         }
 
         .question-editor .ql-toolbar .ql-fill {
-            fill: #cbd5e1;
+            fill: #ffffff;
         }
 
         .question-editor .ql-toolbar .ql-picker-label {
-            color: #cbd5e1;
+            color: #ffffff;
         }
 
         .question-editor .ql-toolbar button:hover .ql-stroke {
@@ -593,135 +593,184 @@
 @endsection
 
 @section('content')
-<div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-edit"></i>
-                Buat Ujian Essay
-            </h1>
-            <p class="page-description">Buat ujian dengan soal essay yang memerlukan penilaian manual</p>
-        </div>
-
-        <!-- Exam Settings -->
-        <div class="exam-settings">
-            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
-                <i class="fas fa-cog me-2"></i>Pengaturan Ujian
-            </h2>
+<div class="min-h-screen bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+            <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4">
+                <h1 class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-edit mr-3"></i>
+                    Buat Ujian Essay
+                </h1>
+                <p class="text-purple-100 mt-1">Buat ujian dengan soal essay yang memerlukan penilaian manual</p>
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-500 text-white">
+                        <i class="fas fa-tag mr-1"></i>
+                        Tipe: Essay
+                    </span>
+                </div>
+            </div>
+            
+            <div class="p-6 bg-gray-800">
+                <!-- Exam Settings -->
+                <div class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center mb-4">
+                        <i class="fas fa-cog mr-2 text-purple-400"></i>Pengaturan Ujian
+                    </h2>
             
             <form id="examForm" action="{{ route('superadmin.exam-management.create-essay.store') }}" method="POST">
                 @csrf
                 
-                <div class="settings-grid">
-                    <div class="form-group">
-                        <label for="exam_title">Judul Ujian</label>
-                        <input type="text" id="exam_title" name="exam_title" placeholder="Masukkan judul ujian" required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label for="exam_title" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Judul Ujian <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="exam_title" name="exam_title" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                       placeholder="Masukkan judul ujian" required>
+                            </div>
+                            
+                            <div>
+                                <label for="kelas_id" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Kelas <span class="text-red-400">*</span>
+                                </label>
+                                <select id="kelas_id" name="kelas_id" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih kelas</option>
+                                    @foreach($classes as $class)
+                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="mapel_id" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Mata Pelajaran <span class="text-red-400">*</span>
+                                </label>
+                                <select id="mapel_id" name="mapel_id" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih mata pelajaran</option>
+                                    @foreach($subjects as $subject)
+                                        <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="duration" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Durasi (menit) <span class="text-red-400">*</span>
+                                </label>
+                                <input type="number" id="duration" name="duration" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                       placeholder="120" min="1" max="300" required>
+                            </div>
+                            
+                            <div>
+                                <label for="max_score" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Nilai Maksimal <span class="text-red-400">*</span>
+                                </label>
+                                <input type="number" id="max_score" name="max_score" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                       placeholder="100" min="1" max="100" required>
+                            </div>
+                            
+                            <div>
+                                <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Tingkat Kesulitan <span class="text-red-400">*</span>
+                                </label>
+                                <select id="difficulty" name="difficulty" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih tingkat kesulitan</option>
+                                    <option value="easy">Mudah</option>
+                                    <option value="medium">Sedang</option>
+                                    <option value="hard">Sulit</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="exam_description" class="block text-sm font-medium text-gray-300 mb-2">
+                                Deskripsi Ujian <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="exam_description" name="exam_description" 
+                                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                      rows="3" placeholder="Masukkan deskripsi ujian yang detail" required></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label for="due_date" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Tanggal Mulai <span class="text-red-400">*</span>
+                                </label>
+                                <input type="datetime-local" id="due_date" name="due_date" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label for="is_hidden" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Status
+                                </label>
+                                <select id="is_hidden" name="is_hidden" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200">
+                                    <option value="1">Draft</option>
+                                    <option value="0">Publikasi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-question-circle mr-2 text-purple-400"></i>Soal Ujian
+                        </h2>
+                        <button type="button" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 flex items-center text-sm" onclick="addQuestion()">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Soal
+                        </button>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="class_id">Kelas</label>
-                        <select id="class_id" name="class_id" required>
-                            <option value="">Pilih kelas</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                            @endforeach
-                        </select>
+                    <div id="questionsContainer">
+                        <!-- Questions will be added here dynamically -->
+                    </div>
                 </div>
 
-                    <div class="form-group">
-                        <label for="subject_id">Mata Pelajaran</label>
-                        <select id="subject_id" name="subject_id" required>
-                            <option value="">Pilih mata pelajaran</option>
-                            @foreach($subjects as $subject)
-                                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                            @endforeach
-                        </select>
+                <!-- Rubric Section -->
+                <div class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-list-check mr-2 text-purple-400"></i>Rubrik Penilaian
+                        </h2>
+                        <button type="button" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition duration-200 flex items-center text-sm" onclick="addRubric()">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Kriteria Penilaian
+                        </button>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="duration">Durasi (menit)</label>
-                        <input type="number" id="duration" name="duration" placeholder="120" min="1" max="300" required>
-                </div>
-
-                    <div class="form-group">
-                        <label for="max_score">Nilai Maksimal</label>
-                        <input type="number" id="max_score" name="max_score" placeholder="100" min="1" max="100" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="difficulty">Tingkat Kesulitan</label>
-                        <select id="difficulty" name="difficulty" required>
-                            <option value="">Pilih tingkat kesulitan</option>
-                            <option value="easy">Mudah</option>
-                            <option value="medium">Sedang</option>
-                            <option value="hard">Sulit</option>
-                        </select>
+                    <div id="rubricContainer">
+                        <!-- Rubric will be added here dynamically -->
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="exam_description">Deskripsi Ujian</label>
-                    <textarea id="exam_description" name="exam_description" placeholder="Masukkan deskripsi ujian yang detail" required></textarea>
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 mt-8">
+                    <a href="{{ route('superadmin.exam-management') }}" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </a>
+                    <button type="button" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200" onclick="saveExam()">
+                        <i class="fas fa-save mr-2"></i> Simpan Ujian
+                    </button>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="due_date">Tanggal Mulai</label>
-                        <input type="datetime-local" id="due_date" name="due_date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="is_hidden">Status</label>
-                        <select id="is_hidden" name="is_hidden">
-                            <option value="1">Draft</option>
-                            <option value="0">Publikasi</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Questions Section -->
-        <div class="question-section">
-            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
-                <i class="fas fa-question-circle me-2"></i>Soal Ujian
-            </h2>
-            
-            <div id="questionsContainer">
-                <!-- Questions will be added here dynamically -->
             </div>
-            
-            <button type="button" class="add-question-btn" onclick="addQuestion()">
-                <i class="fas fa-plus"></i>
-                Tambah Soal
-            </button>
         </div>
-
-        <!-- Rubric Section -->
-        <div class="rubric-section">
-            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
-                <i class="fas fa-list-check me-2"></i>Rubrik Penilaian
-            </h2>
-            
-            <div id="rubricContainer">
-                <!-- Rubric will be added here dynamically -->
-            </div>
-            
-            <button type="button" class="add-rubric-btn" onclick="addRubric()">
-                <i class="fas fa-plus"></i>
-                Tambah Kriteria Penilaian
-            </button>
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button type="button" class="btn-primary" onclick="saveExam()">
-                <i class="fas fa-save"></i>
-                Simpan Ujian
-            </button>
-            <a href="{{ route('superadmin.exam-management') }}" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Kembali
-            </a>
-        </div>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1046,10 +1095,150 @@ document.addEventListener('DOMContentLoaded', function() {
     addQuestion();
     addRubric();
 });
+
+// Restore questions dan rubrics dari old input jika ada
+@if(old('questions'))
+    document.addEventListener('DOMContentLoaded', function() {
+        const oldQuestions = @json(old('questions'));
+        console.log('Restoring old essay questions:', oldQuestions);
+        
+        oldQuestions.forEach((question, index) => {
+            if (index > 0) addQuestion(); // Skip first question as it's already added
+            
+            // Fill data ke form
+            const questionId = index;
+            
+            // Fill question text
+            const questionInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][question]"]`);
+            if (questionInput) {
+                questionInput.value = question.question || '';
+            }
+            
+            // Fill score
+            const scoreInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][score]"]`);
+            if (scoreInput) {
+                scoreInput.value = question.score || 1;
+            }
+            
+            // Fill min_words
+            const minWordsInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][min_words]"]`);
+            if (minWordsInput) {
+                minWordsInput.value = question.min_words || 50;
+            }
+        });
+    });
+@endif
+
+@if(old('rubrics'))
+    document.addEventListener('DOMContentLoaded', function() {
+        const oldRubrics = @json(old('rubrics'));
+        console.log('Restoring old rubrics:', oldRubrics);
+        
+        oldRubrics.forEach((rubric, index) => {
+            if (index > 0) addRubric(); // Skip first rubric as it's already added
+            
+            // Fill rubric data
+            const rubricId = index;
+            
+            // Fill name
+            const nameInput = document.querySelector(`#rubric_name_${rubricId}`);
+            if (nameInput) {
+                nameInput.value = rubric.name || '';
+            }
+            
+            // Fill description
+            const descInput = document.querySelector(`#rubric_description_${rubricId}`);
+            if (descInput) {
+                descInput.value = rubric.description || '';
+            }
+            
+            // Fill weight
+            const weightInput = document.querySelector(`input[name="rubrics[${rubricId}][weight]"]`);
+            if (weightInput) {
+                weightInput.value = rubric.weight || 1;
+            }
+            
+            // Fill max_score
+            const maxScoreInput = document.querySelector(`input[name="rubrics[${rubricId}][max_score]"]`);
+            if (maxScoreInput) {
+                maxScoreInput.value = rubric.max_score || 10;
+            }
+        });
+    });
+@endif
+
+// Show notification that data was restored
+@if(session('error') && (old('questions') || old('rubrics')))
+    document.addEventListener('DOMContentLoaded', function() {
+        showNotification('Data Anda tersimpan! Silakan perbaiki error dan submit kembali. Data yang sudah Anda isi tidak hilang.', 'warning');
+    });
+@endif
 </script>
 
 @push('scripts')
 <!-- Quill Editor JS -->
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 @endpush
+
+<!-- Quill Editor CSS -->
+<style>
+/* Quill Editor Styles - From material-create.blade.php */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 200px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-dark .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.quill-editor-dark .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-dark .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.quill-editor-dark .ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-fill {
+    fill: #ffffff;
+}
+</style>
 @endsection

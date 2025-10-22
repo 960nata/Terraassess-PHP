@@ -1,59 +1,23 @@
-{{-- Modern Card Component --}}
 @props([
-    'variant' => 'default',
-    'elevated' => false,
-    'glass' => false,
-    'hover' => true,
-    'class' => ''
+    'class' => '',
+    'header' => null,
+    'footer' => null
 ])
 
-@php
-    $cardClasses = 'card';
-    
-    if ($variant === 'elevated' || $elevated) {
-        $cardClasses .= ' card-elevated';
-    }
-    
-    if ($variant === 'glass' || $glass) {
-        $cardClasses .= ' card-glass';
-    }
-    
-    if ($variant === 'flat') {
-        $cardClasses .= ' card-flat';
-    }
-    
-    if (!$hover) {
-        $cardClasses .= ' no-hover';
-    }
-    
-    $cardClasses .= ' ' . $class;
-@endphp
-
-<div {{ $attributes->merge(['class' => $cardClasses]) }}>
-    @if(isset($header))
-        <div class="card-header">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 {{ $class }}">
+    @if($header)
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             {{ $header }}
         </div>
     @endif
     
-    @if(isset($body))
-        <div class="card-body">
-            {{ $body }}
-        </div>
-    @else
+    <div class="p-6">
         {{ $slot }}
-    @endif
+    </div>
     
-    @if(isset($footer))
-        <div class="card-footer">
+    @if($footer)
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
             {{ $footer }}
         </div>
     @endif
 </div>
-
-<style>
-.no-hover:hover {
-    transform: none !important;
-    box-shadow: inherit !important;
-}
-</style>

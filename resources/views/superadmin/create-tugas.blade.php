@@ -25,8 +25,8 @@ function addNewQuestion() {
         console.log('Adding essay question');
         addEssayQuestion(questionCount);
     } else if (taskType == 3) {
-        console.log('Mandiri task - single question, no need to add');
-        // Mandiri hanya 1 soal, tidak perlu menambah
+        console.log('Mandiri task - using main description field only, no additional questions needed');
+        // Mandiri menggunakan field deskripsi utama saja, tidak perlu menambah soal
     } else if (taskType == 4) {
         console.log('Kelompok task - no dynamic questions needed');
         // Kelompok tidak perlu menambah soal dinamis
@@ -136,7 +136,6 @@ function addPilihanGandaQuestion(questionNum) {
 console.log('addNewQuestion function available:', typeof addNewQuestion);
 console.log('addPilihanGandaQuestion function available:', typeof addPilihanGandaQuestion);
 console.log('addEssayQuestion function available:', typeof addEssayQuestion);
-console.log('addMandiriQuestion function available:', typeof addMandiriQuestion);
 console.log('addKelompokQuestion function available:', typeof addKelompokQuestion);
 </script>
 
@@ -161,41 +160,57 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                         @csrf
                         <!-- Hidden input untuk tipe tugas -->
                         <input type="hidden" name="tipe" value="{{ $tipe }}">
+
+                        {{-- Success/Error Messages --}}
+                        @if(session('success'))
+                        <div class="alert alert-success" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <strong>✓ Berhasil!</strong> {{ session('success') }}
+                        </div>
+                        @endif
+
+                        @if(session('error'))
+                        <div class="alert alert-danger" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <strong>✗ Error!</strong> {{ session('error') }}
+                        </div>
+                        @endif
+
+                        @if($errors->any())
+                        <div class="alert alert-danger" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <strong>✗ Validasi Gagal!</strong>
+                            <ul style="margin: 0.5rem 0 0 1.5rem;">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
+
                         <!-- Pilih Kelas dan Mata Pelajaran -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
-                            <div>
-                                <label for="kelas_id" class="block text-sm font-medium text-gray-300 mb-2">
-                                    Pilih Kelas <span class="text-red-400">*</span>
-                                </label>
-                                <select class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 @error('kelas_id') border-red-500 @enderror" 
-                                        id="kelas_id" name="kelas_id" required>
-                                    <option value="">Pilih Kelas</option>
-                                    @foreach($kelas as $k)
-                                        <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
-                                            {{ $k->name }} - {{ $k->level ?? 'N/A' }}
+                        <div class="mb-6">
+                            <div class="form-group">
+                                <label for="kelas_mapel_id">Kelas & Mata Pelajaran <span class="text-red-400">*</span></label>
+                                <select id="kelas_mapel_id" name="kelas_mapel_id" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 @error('kelas_mapel_id') border-red-500 @enderror" required>
+                                    <option value="">-- Pilih Kelas & Mata Pelajaran --</option>
+                                    @forelse($kelasMapels ?? [] as $km)
+                                        <option value="{{ $km->id }}" {{ old('kelas_mapel_id') == $km->id ? 'selected' : '' }}>
+                                            {{ $km->kelas->name ?? 'N/A' }} - {{ $km->mapel->name ?? 'N/A' }}
+                                            @if($km->pengajar->count() > 0)
+                                                ({{ $km->pengajar_name }})
+                                            @endif
                                         </option>
-                                    @endforeach
+                                    @empty
+                                        <option value="" disabled>Tidak ada kelas mapel tersedia</option>
+                                    @endforelse
                                 </select>
-                                @error('kelas_id')
-                                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            
-                            <div>
-                                <label for="mapel_id" class="block text-sm font-medium text-gray-300 mb-2">
-                                    Pilih Mata Pelajaran <span class="text-red-400">*</span>
-                                </label>
-                                <select class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 @error('mapel_id') border-red-500 @enderror" 
-                                        id="mapel_id" name="mapel_id" required>
-                                    <option value="">Pilih Mata Pelajaran</option>
-                                    @foreach($subjects as $subject)
-                                        <option value="{{ $subject->id }}" {{ old('mapel_id') == $subject->id ? 'selected' : '' }}>
-                                            {{ $subject->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('mapel_id')
-                                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                                <small class="form-help">
+                                    @if(empty($kelasMapels))
+                                        <span style="color: #ef4444;">⚠️ Tidak ada kelas mapel. Hubungi admin untuk assign kelas mapel.</span>
+                                    @else
+                                        Pilih kombinasi kelas dan mata pelajaran untuk tugas ini
+                                    @endif
+                                </small>
+                                @error('kelas_mapel_id')
+                                    <span class="error-message">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
@@ -219,7 +234,6 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                                 <div class="w-full px-4 py-3 bg-gray-600 border border-gray-500 text-gray-300 rounded-lg">
                                     Pilihan Ganda
                             </div>
-                                <input type="hidden" name="tipe" value="pilihan_ganda">
                             </div>
                         </div>
 
@@ -292,34 +306,32 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
                         </div>
                         </div>
                         @elseif($tipe == 3)
-                        <!-- Mandiri Section - Single Question -->
+                        <!-- Mandiri Section - Info Only -->
                         <div id="mandiriSection" class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
                             <div class="flex justify-between items-center mb-4">
                                 <h5 class="text-lg font-semibold text-white flex items-center">
                                     <i class="fas fa-user mr-2 text-purple-400"></i>
-                                    Soal Mandiri
+                                    Tugas Mandiri
                                 </h5>
                                 <span class="px-3 py-1 bg-purple-500 text-white rounded-full text-sm">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    1 Soal
+                                    Upload/Text
                                 </span>
                             </div>
-                            <div id="mandiriContainer">
-                                <div class="bg-gray-800 rounded-lg p-6 border border-gray-600">
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-300 mb-2">Pertanyaan</label>
-                                            <div class="bg-gray-700 rounded-lg border border-gray-600 overflow-hidden">
-                                                <div id="quill-editor-mandiri-1" class="quill-editor-dark" style="height: 200px;"></div>
-                                                <textarea name="mandiri[1][pertanyaan]" id="quill-textarea-mandiri-1" style="display: none;"></textarea>
-                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-300 mb-2">Poin</label>
-                                            <input type="number" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                                                   name="mandiri[1][poin]" value="100" min="1" step="0.1">
-                                        </div>
-                                    </div>
+                            <div class="bg-gray-800 rounded-lg p-6 border border-gray-600">
+                                <div class="text-gray-300 space-y-3">
+                                    <p class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                        <span>Deskripsi tugas sudah diisi di bagian <strong>"Deskripsi Tugas"</strong> di atas</span>
+                                    </p>
+                                    <p class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                        <span>Siswa dapat mengumpulkan tugas dengan <strong>mengetik langsung</strong> atau <strong>upload file</strong></span>
+                                    </p>
+                                    <p class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-400 mr-2 mt-1"></i>
+                                        <span>Penilaian dilakukan secara <strong>manual</strong> oleh pengajar</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -499,11 +511,11 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
 }
 
 .quill-editor-dark .ql-toolbar .ql-stroke {
-    stroke: #D1D5DB;
+    stroke: #FFFFFF !important;
 }
 
 .quill-editor-dark .ql-toolbar .ql-fill {
-    fill: #D1D5DB;
+    fill: #FFFFFF !important;
 }
 
 .quill-editor-dark .ql-toolbar button:hover {
@@ -513,6 +525,111 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
 .quill-editor-dark .ql-toolbar button.ql-active {
     background: #3B82F6;
     color: white;
+}
+
+/* Additional icon color fixes - Enhanced with !important */
+.quill-editor-dark .ql-toolbar .ql-picker-label {
+    color: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-picker-label::before {
+    color: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-picker-options {
+    background: #374151 !important;
+    border-color: #4B5563 !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-picker-item {
+    color: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-picker-item:hover {
+    color: #F9FAFB !important;
+    background: #4B5563 !important;
+}
+
+.quill-editor-dark .ql-toolbar button:hover .ql-stroke {
+    stroke: #F9FAFB !important;
+}
+
+.quill-editor-dark .ql-toolbar button:hover .ql-fill {
+    fill: #F9FAFB !important;
+}
+
+.quill-editor-dark .ql-toolbar button.ql-active .ql-stroke {
+    stroke: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar button.ql-active .ql-fill {
+    fill: #FFFFFF !important;
+}
+
+/* Force all toolbar icons to be white colored */
+.quill-editor-dark .ql-toolbar .ql-stroke {
+    stroke: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-fill {
+    fill: #FFFFFF !important;
+}
+
+/* Ensure all SVG paths and elements are white colored */
+.quill-editor-dark .ql-toolbar svg {
+    color: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar svg path {
+    stroke: #FFFFFF !important;
+    fill: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar svg line {
+    stroke: #FFFFFF !important;
+}
+
+.quill-editor-dark .ql-toolbar svg circle {
+    stroke: #FFFFFF !important;
+    fill: #FFFFFF !important;
+}
+
+/* Additional specificity for toolbar icons */
+.quill-editor-dark .ql-toolbar .ql-stroke {
+    stroke: #ffffff !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-fill {
+    fill: #ffffff !important;
+}
+
+.quill-editor-dark .ql-toolbar .ql-picker-label {
+    color: #ffffff !important;
+}
+
+/* Global Quill Icon Fix - Ensure white icons */
+.ql-snow .ql-stroke {
+    stroke: #ffffff !important;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff !important;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff !important;
+}
+
+.ql-snow .ql-picker-label {
+    color: #ffffff !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke {
+    stroke: #f0f0f0 !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill {
+    fill: #f0f0f0 !important;
 }
 </style>
 
@@ -775,6 +892,57 @@ console.log('addKelompokQuestion function available:', typeof addKelompokQuestio
         padding: 1px;
     }
 }
+
+/* FORCE WHITE ICONS - Override all Quill default styles */
+.ql-snow .ql-stroke,
+.ql-snow .ql-stroke-miter,
+.ql-snow .ql-fill,
+.ql-snow .ql-picker-label,
+.ql-snow .ql-picker-item,
+.ql-snow .ql-toolbar .ql-stroke,
+.ql-snow .ql-toolbar .ql-fill,
+.ql-snow .ql-toolbar .ql-picker-label,
+.ql-snow .ql-toolbar button .ql-stroke,
+.ql-snow .ql-toolbar button .ql-fill,
+.ql-snow .ql-toolbar .ql-formats .ql-stroke,
+.ql-snow .ql-toolbar .ql-formats .ql-fill {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Force all SVG elements to be white */
+.ql-snow svg,
+.ql-snow svg path,
+.ql-snow svg line,
+.ql-snow svg circle,
+.ql-snow svg rect,
+.ql-snow svg polygon {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Force toolbar buttons */
+.ql-snow .ql-toolbar button,
+.ql-snow .ql-toolbar .ql-picker {
+    color: #ffffff !important;
+}
+
+.ql-snow .ql-toolbar button:hover,
+.ql-snow .ql-toolbar button:focus,
+.ql-snow .ql-toolbar button.ql-active {
+    color: #ffffff !important;
+}
+
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:focus .ql-stroke,
+.ql-snow .ql-toolbar button:focus .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-fill {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+}
 </style>
 @endpush
 
@@ -822,7 +990,46 @@ document.addEventListener('DOMContentLoaded', function() {
             container.style.background = '#1F2937';
             container.style.borderColor = '#4B5563';
         }
+        
+        // FORCE WHITE ICONS - Apply directly via JavaScript
+        forceWhiteIcons();
     }, 100);
+    
+    // Function to force all Quill icons to be white
+    function forceWhiteIcons() {
+        // Force all SVG elements to be white
+        const allSvgs = document.querySelectorAll('.ql-snow svg, .ql-toolbar svg');
+        allSvgs.forEach(svg => {
+            svg.style.color = '#ffffff';
+            const paths = svg.querySelectorAll('path, line, circle, rect, polygon');
+            paths.forEach(path => {
+                path.style.stroke = '#ffffff';
+                path.style.fill = '#ffffff';
+            });
+        });
+        
+        // Force all stroke and fill elements
+        const strokes = document.querySelectorAll('.ql-snow .ql-stroke, .ql-toolbar .ql-stroke');
+        strokes.forEach(stroke => {
+            stroke.style.stroke = '#ffffff';
+        });
+        
+        const fills = document.querySelectorAll('.ql-snow .ql-fill, .ql-toolbar .ql-fill');
+        fills.forEach(fill => {
+            fill.style.fill = '#ffffff';
+        });
+        
+        // Force picker labels
+        const pickerLabels = document.querySelectorAll('.ql-snow .ql-picker-label, .ql-toolbar .ql-picker-label');
+        pickerLabels.forEach(label => {
+            label.style.color = '#ffffff';
+        });
+        
+        console.log('Forced white icons applied');
+    }
+    
+    // Re-apply white icons periodically to ensure they stay white
+    setInterval(forceWhiteIcons, 1000);
     
     // Update deskripsi textarea
     deskripsiEditor.on('text-change', function() {
@@ -853,10 +1060,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskType = document.querySelector('input[name="tipe"]').value;
         
         if (taskType == 3) {
-            // Initialize mandiri editor
-        setTimeout(() => {
-                initializeQuillEditorForMandiri(1);
-        }, 100);
+            // Mandiri task - no additional editor needed, using main description only
+            console.log('Mandiri task - using main description field only');
         } else if (taskType == 4) {
             // Initialize kelompok editors
         setTimeout(() => {
@@ -938,6 +1143,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     container.style.background = '#1F2937';
                     container.style.borderColor = '#4B5563';
                 }
+                
+                // Force white icons for this editor
+                forceWhiteIcons();
             }, 100);
             
             // Update textarea when content changes
@@ -995,6 +1203,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     container.style.background = '#1F2937';
                     container.style.borderColor = '#4B5563';
                 }
+                
+                // Force white icons for this editor
+                forceWhiteIcons();
             }, 100);
             
             // Update textarea when content changes
@@ -1008,62 +1219,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Global function for initializing Quill editor for mandiri
-    function initializeQuillEditorForMandiri(questionNum) {
-        const editorId = `quill-editor-mandiri-${questionNum}`;
-        const textareaId = `quill-textarea-mandiri-${questionNum}`;
-        
-        const editorElement = document.getElementById(editorId);
-        const textareaElement = document.getElementById(textareaId);
-        
-        if (!editorElement || !textareaElement) {
-            console.error(`Elements not found for mandiri question ${questionNum}`);
-            return;
-        }
-        
-        try {
-            const quill = new Quill(`#${editorId}`, {
-                theme: 'snow',
-                placeholder: 'Masukkan pertanyaan mandiri...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link', 'image'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                }
-            });
-            
-            quillEditors[`mandiri-${questionNum}`] = quill;
-            
-            // Apply dark theme
-            setTimeout(() => {
-                const toolbar = editorElement.querySelector('.ql-toolbar');
-                const container = editorElement.querySelector('.ql-container');
-                if (toolbar) {
-                    toolbar.style.background = '#374151';
-                    toolbar.style.borderColor = '#4B5563';
-                }
-                if (container) {
-                    container.style.background = '#1F2937';
-                    container.style.borderColor = '#4B5563';
-                }
-            }, 100);
-            
-            // Update textarea when content changes
-            quill.on('text-change', function() {
-                textareaElement.value = quill.root.innerHTML;
-            });
-            
-            console.log(`Quill editor initialized for mandiri question ${questionNum}`);
-        } catch (error) {
-            console.error(`Error initializing Quill editor for mandiri question ${questionNum}:`, error);
-        }
-    }
+    // Global function for initializing Quill editor for mandiri - REMOVED
+    // Mandiri tasks now use only the main description field, no additional editor needed
     
     // Global function for initializing Quill editor for kelompok
     function initializeQuillEditorForKelompok(type) {
@@ -1118,6 +1275,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     container.style.background = '#1F2937';
                     container.style.borderColor = '#4B5563';
                 }
+                
+                // Force white icons for this editor
+                forceWhiteIcons();
             }, 100);
             
             // Update textarea when content changes
@@ -1185,54 +1345,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
     
-    // Global function for adding mandiri question
-    function addMandiriQuestion(questionNum) {
-        console.log('Adding mandiri question:', questionNum);
-        const container = document.getElementById('mandiriContainer');
-        
-        if (!container) {
-            console.error('mandiriContainer not found');
-            return;
-        }
-        
-        // Remove placeholder message if this is the first question
-        const placeholder = container.querySelector('.text-center');
-        if (placeholder) {
-            placeholder.remove();
-        }
-        
-        const questionCard = document.createElement('div');
-        questionCard.className = 'bg-gray-800 rounded-lg p-6 mb-4 border border-gray-600';
-        questionCard.innerHTML = `
-            <div class="flex justify-between items-center mb-4">
-                <h6 class="text-lg font-semibold text-white">Soal ${questionNum}</h6>
-                <button type="button" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition duration-200" onclick="removeQuestion(${questionNum})">
-                    <i class="fas fa-trash mr-1"></i> Hapus
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Pertanyaan</label>
-                    <div class="bg-gray-700 rounded-lg border border-gray-600 overflow-hidden">
-                        <div id="quill-editor-mandiri-${questionNum}" class="quill-editor-dark" style="height: 150px;"></div>
-                        <textarea name="mandiri[${questionNum}][pertanyaan]" id="quill-textarea-mandiri-${questionNum}" style="display: none;"></textarea>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Poin</label>
-                    <input type="number" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
-                           name="mandiri[${questionNum}][poin]" value="1" min="1" step="0.1">
-                </div>
-            </div>
-        `;
-        
-        container.appendChild(questionCard);
-        
-        // Initialize Quill editor
-        setTimeout(() => {
-            initializeQuillEditorForMandiri(questionNum);
-        }, 100);
-    }
+    // Global function for adding mandiri question - REMOVED
+    // Mandiri tasks now use only the main description field, no dynamic questions needed
     
     // Global function for adding kelompok question
     function addKelompokQuestion(questionNum) {
@@ -1293,8 +1407,106 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
+    // Real-time validation functions
+    function validateTaskForm() {
+        let isValid = true;
+        let errors = [];
+        
+        // Validate Judul
+        const title = document.getElementById('name').value.trim();
+        if (title === '' || title.length < 3) {
+            showError('name', 'Judul tugas wajib diisi (minimal 3 karakter)');
+            errors.push('Judul tugas');
+            isValid = false;
+        } else {
+            hideError('name');
+        }
+        
+        // Validate Kelas Mapel - Perbaikan validasi yang lebih toleran
+        const kelasMapelSelect = document.getElementById('kelas_mapel_id');
+        const kelasMapel = kelasMapelSelect ? kelasMapelSelect.value : '';
+        
+        // Debug logging untuk troubleshooting
+        console.log('Validasi Kelas Mapel (Superadmin) - Value:', kelasMapel, 'Type:', typeof kelasMapel);
+        
+        if (!kelasMapel || kelasMapel === '' || kelasMapel === 'null' || kelasMapel === 'undefined') {
+            showError('kelas_mapel_id', 'Kelas & Mata Pelajaran wajib dipilih');
+            errors.push('Kelas & Mata Pelajaran');
+            isValid = false;
+        } else {
+            hideError('kelas_mapel_id');
+        }
+        
+        // Validate Konten (Quill editor)
+        if (typeof deskripsiEditor !== 'undefined') {
+            const content = deskripsiEditor.getText().trim();
+            if (content === '' || content.length < 10) {
+                showError('content', 'Konten tugas wajib diisi (minimal 10 karakter)');
+                errors.push('Konten tugas');
+                isValid = false;
+            } else {
+                hideError('content');
+            }
+        }
+        
+        // Validate Deadline
+        const deadline = document.getElementById('due').value;
+        if (deadline === '') {
+            showError('due', 'Deadline wajib diisi');
+            errors.push('Deadline');
+            isValid = false;
+        } else {
+            hideError('due');
+        }
+        
+        // Show summary error if invalid
+        if (!isValid) {
+            alert('Form belum lengkap! Mohon lengkapi:\n\n' + errors.map((e, i) => `${i+1}. ${e}`).join('\n'));
+        }
+        
+        return isValid;
+    }
+
+    function showError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        field.style.borderColor = '#ef4444';
+        
+        let errorSpan = document.getElementById(fieldId + '-error');
+        if (!errorSpan) {
+            errorSpan = document.createElement('span');
+            errorSpan.id = fieldId + '-error';
+            errorSpan.className = 'validation-error';
+            errorSpan.style.display = 'block';
+            errorSpan.style.marginTop = '0.25rem';
+            errorSpan.style.color = '#ef4444';
+            errorSpan.style.fontSize = '0.875rem';
+            field.parentNode.appendChild(errorSpan);
+        }
+        errorSpan.textContent = message;
+    }
+
+    function hideError(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        field.style.borderColor = '';
+        
+        const errorSpan = document.getElementById(fieldId + '-error');
+        if (errorSpan) {
+            errorSpan.remove();
+        }
+    }
+
     // Form submission
     document.getElementById('tugasForm').addEventListener('submit', function(e) {
+        // Validate form first
+        if (!validateTaskForm()) {
+            e.preventDefault();
+            return false;
+        }
+        
         // Update deskripsi textarea
         document.getElementById('deskripsi-textarea').value = deskripsiEditor.root.innerHTML;
         
@@ -1310,6 +1522,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     textarea.value = quillEditors[key].root.innerHTML;
                 }
             }
+        });
     });
-});
+
+    // Hapus real-time validation yang terlalu agresif
+    // Validasi hanya dilakukan saat submit form untuk menghindari error prematur
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Form superadmin create-tugas loaded - validation hanya pada submit');
+    });
 </script>

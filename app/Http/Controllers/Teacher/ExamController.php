@@ -253,9 +253,19 @@ class ExamController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Log error untuk debugging
+            \Log::error('Failed to create exam', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
+            // Simpan semua input termasuk array kompleks
             return redirect()->back()
                 ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
-                ->withInput();
+                ->withInput($request->all()); // Pastikan semua data tersimpan
         }
     }
 

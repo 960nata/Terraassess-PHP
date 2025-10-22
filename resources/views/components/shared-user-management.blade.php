@@ -24,42 +24,48 @@
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
+        @if(isset($loading) && $loading)
+            @for($i = 0; $i < 4; $i++)
+                @include('components.skeleton-card')
+            @endfor
+        @else
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ $totalUsers ?? 0 }}</div>
+                    <div class="stat-label">Total Pengguna</div>
+                </div>
             </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ $totalUsers ?? 0 }}</div>
-                <div class="stat-label">Total Pengguna</div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ $totalTeachers ?? 0 }}</div>
+                    <div class="stat-label">Guru</div>
+                </div>
             </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-chalkboard-teacher"></i>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ $totalStudents ?? 0 }}</div>
+                    <div class="stat-label">Siswa</div>
+                </div>
             </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ $totalTeachers ?? 0 }}</div>
-                <div class="stat-label">Guru</div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ $totalAdmins ?? 0 }}</div>
+                    <div class="stat-label">Admin</div>
+                </div>
             </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ $totalStudents ?? 0 }}</div>
-                <div class="stat-label">Siswa</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-user-shield"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ $totalAdmins ?? 0 }}</div>
-                <div class="stat-label">Admin</div>
-            </div>
-        </div>
+        @endif
     </div>
 
     <!-- User Filters -->
@@ -123,24 +129,27 @@
         </div>
         
         <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Avatar</th>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Terakhir Login</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($users ?? [] as $index => $user)
+            @if(isset($loading) && $loading)
+                @include('components.skeleton-table')
+            @else
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
+                            <th>No</th>
+                            <th>Avatar</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Terakhir Login</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($users ?? [] as $index => $user)
+                        <tr>
+                            <td data-label="No">{{ $index + 1 }}</td>
+                            <td data-label="Avatar">
                                 <div class="user-avatar">
                                     @if($user->profile_photo)
                                         <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="{{ $user->name }}">
@@ -151,14 +160,14 @@
                                     @endif
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Nama">
                                 <div class="user-info">
                                     <div class="user-name">{{ $user->name }}</div>
                                     <div class="user-id">ID: {{ $user->id }}</div>
                                 </div>
                             </td>
-                            <td>{{ $user->email }}</td>
-                            <td>
+                            <td data-label="Email">{{ $user->email }}</td>
+                            <td data-label="Role">
                                 <span class="role-badge role-{{ $user->roles_id }}">
                                     @switch($user->roles_id)
                                         @case(1) Super Admin @break
@@ -169,13 +178,13 @@
                                     @endswitch
                                 </span>
                             </td>
-                            <td>
-                                <span class="status-badge {{ $user->is_active ? 'active' : 'inactive' }}">
-                                    {{ $user->is_active ? 'Aktif' : 'Tidak Aktif' }}
+                            <td data-label="Status">
+                                <span class="status-badge {{ $user->status == 'active' ? 'active' : 'inactive' }}">
+                                    {{ $user->status == 'active' ? 'Aktif' : ($user->status == 'inactive' ? 'Tidak Aktif' : 'Menunggu') }}
                                 </span>
                             </td>
-                            <td>{{ $user->last_login_at ? $user->last_login_at->format('d M Y H:i') : 'Belum pernah' }}</td>
-                            <td>
+                            <td data-label="Terakhir Login">{{ $user->last_login ? $user->last_login->format('d M Y H:i') : 'Belum pernah' }}</td>
+                            <td data-label="Aksi">
                                 <div class="action-buttons">
                                     <button class="btn-view" onclick="viewUser('{{ $user->id }}')" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
@@ -206,9 +215,10 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
         </div>
     </div>
 </div>
@@ -261,7 +271,7 @@
                                 <i class="fas fa-user"></i>
                                 Nama Lengkap
                             </label>
-                            <input type="text" id="name" name="name" required placeholder="Masukkan nama lengkap">
+                            <input type="text" id="name" name="user_name" required placeholder="Masukkan nama lengkap">
                             <div class="field-hint">Nama lengkap akan ditampilkan di sistem</div>
                         </div>
                         <div class="form-group">
@@ -269,7 +279,7 @@
                                 <i class="fas fa-envelope"></i>
                                 Email
                             </label>
-                            <input type="email" id="email" name="email" required placeholder="contoh@email.com">
+                            <input type="email" id="email" name="user_email" required placeholder="contoh@email.com">
                             <div class="field-hint">Email akan digunakan untuk login</div>
                         </div>
                     </div>
@@ -280,7 +290,7 @@
                                 Password
                             </label>
                             <div class="password-input">
-                                <input type="password" id="password" name="password" required placeholder="Minimal 8 karakter">
+                                <input type="password" id="password" name="user_password" required placeholder="Minimal 8 karakter">
                                 <button type="button" class="password-toggle" onclick="togglePassword('password')">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -293,7 +303,7 @@
                                 Konfirmasi Password
                             </label>
                             <div class="password-input">
-                                <input type="password" id="password_confirmation" name="password_confirmation" required placeholder="Ulangi password">
+                                <input type="password" id="password_confirmation" name="confirm_password" required placeholder="Ulangi password">
                                 <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -313,14 +323,14 @@
                                 <i class="fas fa-user-shield"></i>
                                 Role Pengguna
                             </label>
-                            <select id="roles_id" name="roles_id" required onchange="toggleRoleFields()">
+                            <select id="roles_id" name="user_role" required onchange="toggleRoleFields()">
                                 <option value="">Pilih Role</option>
                                 @if($userRole === 'superadmin')
-                                    <option value="1">Super Admin</option>
-                                    <option value="2">Admin</option>
+                                    <option value="superadmin">Super Admin</option>
+                                    <option value="admin">Admin</option>
                                 @endif
-                                <option value="3">Guru</option>
-                                <option value="4">Siswa</option>
+                                <option value="teacher">Guru</option>
+                                <option value="student">Siswa</option>
                             </select>
                             <div class="field-hint">Pilih role sesuai dengan posisi pengguna</div>
                         </div>
@@ -329,8 +339,24 @@
                                 <i class="fas fa-phone"></i>
                                 Nomor Telepon
                             </label>
-                            <input type="tel" id="phone" name="phone" placeholder="08xxxxxxxxxx">
+                            <input type="tel" id="phone" name="user_phone" placeholder="08xxxxxxxxxx">
                             <div class="field-hint">Nomor telepon (opsional)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status">
+                                <i class="fas fa-toggle-on"></i>
+                                Status Akun
+                            </label>
+                            <select id="status" name="status" required>
+                                <option value="">Pilih Status</option>
+                                <option value="active" selected>Aktif</option>
+                                <option value="inactive">Tidak Aktif</option>
+                                <option value="pending">Menunggu</option>
+                            </select>
+                            <div class="field-hint">Status default: Aktif</div>
                         </div>
                     </div>
                     
@@ -445,7 +471,7 @@
                     <i class="fas fa-arrow-left"></i>
                     Sebelumnya
                 </button>
-                <button type="button" class="btn-primary" id="nextStep" onclick="nextStep()">
+                <button type="button" class="btn-primary" id="nextStepBtn" onclick="nextStep()">
                     Selanjutnya
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -884,6 +910,25 @@
 
 .modal-form {
     padding: 2rem;
+    background: transparent !important;
+}
+
+.modal-body {
+    padding: 2rem;
+    color: #e2e8f0;
+}
+
+.user-detail p {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: rgba(51, 65, 85, 0.5);
+    border-radius: 0.5rem;
+    border-left: 3px solid #667eea;
+}
+
+.user-detail strong {
+    color: #a5b4fc;
+    margin-right: 0.5rem;
 }
 
 /* Progress Indicator */
@@ -950,6 +995,8 @@
 .form-step {
     display: none;
     animation: slideIn 0.3s ease;
+    background: transparent !important;
+    padding: 0 !important;
 }
 
 .form-step.active {
@@ -967,6 +1014,11 @@
     }
 }
 
+.step-content {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
 .step-content h4 {
     color: #ffffff;
     font-size: 1.1rem;
@@ -974,6 +1026,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background: transparent !important;
 }
 
 .step-content h4 i {
@@ -1214,35 +1267,210 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
+    background: transparent !important;
 }
 
-@media (max-width: 768px) {
+/* Tablet Breakpoint */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .filter-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-container {
+        padding: 1.5rem;
+    }
+    
+    .table-container {
+        padding: 1.25rem;
+    }
+    
+    .user-filters {
+        padding: 1.25rem;
+    }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 640px) {
+    /* Page Header Mobile */
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Statistics Cards Mobile */
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+    }
+    
+    /* Filter Form Mobile */
+    .user-filters {
+        padding: 1rem;
     }
     
     .filter-row {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
     
+    .filter-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn-filter, .btn-clear {
+        width: 100%;
+        justify-content: center;
+        padding: 0.875rem;
+    }
+    
+    /* Table Mobile - Card Layout */
+    .table-container {
+        padding: 1rem;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .table-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .btn-export {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Hide table, show card layout */
+    .table-wrapper {
+        overflow-x: visible;
+    }
+    
+    .data-table thead {
+        display: none;
+    }
+    
+    .data-table tbody {
+        display: block;
+    }
+    
+    .data-table tr {
+        display: block;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #334155;
+        text-align: left;
+    }
+    
+    .data-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #94a3b8;
+        flex-shrink: 0;
+        min-width: 100px;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+    }
+    
+    .btn-view, .btn-edit, .btn-delete {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+    
+    /* Form Row Mobile */
     .form-row {
         grid-template-columns: 1fr;
     }
     
-    .table-wrapper {
-        overflow-x: auto;
+    /* Touch-Friendly Elements */
+    button, a.btn, input, select {
+        min-height: 44px;
     }
     
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 1rem;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Modal Mobile Improvements */
     .modal-content {
-        width: 98%;
+        width: 100%;
         max-width: none;
-        margin: 1rem;
+        margin: 0;
+        border-radius: 20px 20px 0 0;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        transform: none;
         max-height: 90vh;
         overflow-y: auto;
     }
     
     .modal-header {
-        padding: 1.5rem;
+        padding: 1.5rem 1rem;
         flex-direction: column;
         text-align: center;
         gap: 1rem;
@@ -1259,7 +1487,7 @@
     }
     
     .modal-form {
-        padding: 1.5rem;
+        padding: 1rem;
     }
     
     .form-progress {
@@ -1282,6 +1510,7 @@
     .btn-primary, .btn-secondary, .btn-outline, .btn-success {
         width: 100%;
         justify-content: center;
+        padding: 1rem;
     }
     
     .role-specific-fields {
@@ -1350,7 +1579,7 @@ function updateStepDisplay() {
 
     // Update buttons
     const prevBtn = document.getElementById('prevStep');
-    const nextBtn = document.getElementById('nextStep');
+    const nextBtn = document.getElementById('nextStepBtn');
     const submitBtn = document.getElementById('submitBtn');
 
     prevBtn.style.display = currentStep > 1 ? 'flex' : 'none';
@@ -1429,11 +1658,11 @@ function toggleRoleFields() {
     
     hideAllRoleFields();
     
-    if (selectedRole === '3') { // Guru
+    if (selectedRole === 'teacher') { // Guru
         document.getElementById('guru-fields').style.display = 'block';
         document.getElementById('nip').required = true;
         document.getElementById('subject').required = true;
-    } else if (selectedRole === '4') { // Siswa
+    } else if (selectedRole === 'student') { // Siswa
         document.getElementById('siswa-fields').style.display = 'block';
         document.getElementById('nisn').required = true;
         document.getElementById('class').required = true;
@@ -1468,21 +1697,21 @@ function updateSummary() {
     let roleText = '-';
     if (selectedRole) {
         const roleOptions = {
-            '1': 'Super Admin',
-            '2': 'Admin',
-            '3': 'Guru',
-            '4': 'Siswa'
+            'superadmin': 'Super Admin',
+            'admin': 'Admin',
+            'teacher': 'Guru',
+            'student': 'Siswa'
         };
         roleText = roleOptions[selectedRole] || '-';
     }
     document.getElementById('summary-role').textContent = roleText;
     
     // Show/hide role-specific fields in summary
-    if (selectedRole === '3') { // Guru
+    if (selectedRole === 'teacher') { // Guru
         document.getElementById('summary-nip').style.display = 'flex';
         document.getElementById('summary-nisn').style.display = 'none';
         document.getElementById('summary-nip-value').textContent = nip;
-    } else if (selectedRole === '4') { // Siswa
+    } else if (selectedRole === 'student') { // Siswa
         document.getElementById('summary-nip').style.display = 'none';
         document.getElementById('summary-nisn').style.display = 'flex';
         document.getElementById('summary-nisn-value').textContent = nisn;
@@ -1509,19 +1738,111 @@ function togglePassword(fieldId) {
 }
 
 function viewUser(userId) {
-    // Implementation for viewing user details
-    console.log('View user:', userId);
+    // Fetch user details via AJAX
+    fetch(`/superadmin/user-management/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Create modal to display user details
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Detail Pengguna</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="user-detail">
+                            <p><strong>Nama:</strong> ${data.name}</p>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Role:</strong> ${data.role}</p>
+                            <p><strong>Status:</strong> ${data.status}</p>
+                            <p><strong>Kelas:</strong> ${data.class}</p>
+                            <p><strong>NIS/NIP:</strong> ${data.nis_nip}</p>
+                            <p><strong>Terakhir Login:</strong> ${data.last_login}</p>
+                            <p><strong>Telepon:</strong> ${data.phone}</p>
+                            <p><strong>Bio:</strong> ${data.bio}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal memuat detail pengguna');
+        });
 }
 
 function editUser(userId) {
-    // Implementation for editing user
-    console.log('Edit user:', userId);
+    // Fetch edit form via AJAX
+    fetch(`/superadmin/user-management/${userId}/edit`)
+        .then(response => response.text())
+        .then(html => {
+            // Create modal to display edit form
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Edit Pengguna</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ${html}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal memuat form edit');
+        });
 }
 
 function deleteUser(userId) {
     if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-        // Implementation for deleting user
-        console.log('Delete user:', userId);
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfMeta) {
+            alert('CSRF token tidak ditemukan. Refresh halaman dan coba lagi.');
+            return;
+        }
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/superadmin/user-management/${userId}`;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = csrfMeta.getAttribute('content');
+        form.appendChild(csrfToken);
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 

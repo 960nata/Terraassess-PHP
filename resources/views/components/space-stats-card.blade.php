@@ -1,39 +1,38 @@
 @props([
-    'title' => 'Title',
-    'value' => '0',
-    'change' => '+0%',
+    'title' => '',
+    'value' => '',
+    'change' => '',
     'changeType' => 'positive',
-    'icon' => 'ph-chart-line',
-    'color' => 'primary'
+    'icon' => 'ph-chart-line'
 ])
+
+@php
+    $changeClasses = [
+        'positive' => 'text-green-400',
+        'negative' => 'text-red-400',
+        'neutral' => 'text-gray-400'
+    ];
+    
+    $changeClass = $changeClasses[$changeType] ?? $changeClasses['positive'];
+@endphp
 
 <div class="space-stat-card space-fade-in">
     <div class="flex items-center justify-between mb-4">
         <div class="space-stat-icon">
-            <i class="{{ $icon }}"></i>
+            <i class="{{ $icon }} text-2xl"></i>
         </div>
-        <div class="text-right">
-            <div class="space-stat-value">{{ $value }}</div>
-            <div class="space-stat-label">{{ $title }}</div>
-        </div>
+        @if($change)
+            <div class="space-stat-trend {{ $changeClass }}">
+                <i class="ph-trend-up text-lg"></i>
+            </div>
+        @endif
     </div>
     
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            @if($changeType === 'positive')
-                <i class="ph-trend-up text-green-400 text-sm"></i>
-                <span class="text-green-400 text-sm font-medium">{{ $change }}</span>
-            @elseif($changeType === 'negative')
-                <i class="ph-trend-down text-red-400 text-sm"></i>
-                <span class="text-red-400 text-sm font-medium">{{ $change }}</span>
-            @else
-                <i class="ph-minus text-gray-400 text-sm"></i>
-                <span class="text-gray-400 text-sm font-medium">{{ $change }}</span>
-            @endif
-        </div>
-        
-        <div class="text-xs text-gray-400">
-            vs last month
-        </div>
+    <div class="space-stat-content">
+        <div class="space-stat-number">{{ $value }}</div>
+        <div class="space-stat-label">{{ $title }}</div>
+        @if($change)
+            <div class="space-stat-description">{{ $change }}</div>
+        @endif
     </div>
 </div>

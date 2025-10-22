@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('user_materis', function (Blueprint $table) {
             $table->id();
-            $table->string('materi_id');
+            $table->foreignId('materi_id')->constrained('materis')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('user_materi');
             $table->string('status');
             $table->timestamps();
+            
+            // Add unique constraint to prevent duplicate user-materi combinations
+            $table->unique(['user_id', 'materi_id']);
         });
     }
 

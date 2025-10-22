@@ -1,34 +1,40 @@
 @props([
     'type' => 'text',
-    'label' => null,
-    'error' => null,
-    'help' => null,
+    'name' => '',
+    'value' => '',
+    'placeholder' => '',
     'required' => false,
-    'placeholder' => null
+    'disabled' => false,
+    'readonly' => false,
+    'class' => ''
 ])
 
-<div class="space-y-2">
-    @if($label)
-        <label class="block text-sm font-medium text-gray-300">
-            {{ $label }}
-            @if($required)
-                <span class="text-red-400">*</span>
-            @endif
-        </label>
-    @endif
+@php
+    $baseClass = 'block w-full px-4 py-3 bg-transparent border border-purple-300 dark:border-purple-600 rounded-lg text-white placeholder-purple-300 dark:placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 backdrop-blur-sm';
     
-    <input 
-        type="{{ $type }}"
-        {{ $attributes->merge([
-            'class' => 'galaxy-input ' . ($error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''),
-            'placeholder' => $placeholder
-        ]) }}
-        @if($required) required @endif
-    />
+    if ($required) {
+        $baseClass .= ' required';
+    }
     
-    @if($error)
-        <p class="text-sm text-red-400">{{ $error }}</p>
-    @elseif($help)
-        <p class="text-sm text-gray-400">{{ $help }}</p>
-    @endif
-</div>
+    if ($disabled) {
+        $baseClass .= ' opacity-50 cursor-not-allowed';
+    }
+    
+    if ($readonly) {
+        $baseClass .= ' bg-purple-900 bg-opacity-20';
+    }
+    
+    $baseClass .= ' ' . $class;
+@endphp
+
+<input 
+    type="{{ $type }}"
+    name="{{ $name }}"
+    value="{{ $value }}"
+    placeholder="{{ $placeholder }}"
+    {{ $required ? 'required' : '' }}
+    {{ $disabled ? 'disabled' : '' }}
+    {{ $readonly ? 'readonly' : '' }}
+    class="{{ $baseClass }}"
+    {{ $attributes->except(['class', 'type', 'name', 'value', 'placeholder', 'required', 'disabled', 'readonly']) }}
+/>

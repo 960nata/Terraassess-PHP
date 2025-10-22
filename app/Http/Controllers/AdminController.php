@@ -696,4 +696,23 @@ class AdminController extends Controller
             return Kelas::withCount('siswa')->having('siswa_count', '>=', 30)->count();
         }
     }
+
+    /**
+     * Edit Admin Material
+     */
+    public function editAdminMaterial($id)
+    {
+        $material = Materi::findOrFail($id);
+        $subjects = Mapel::all();
+        $classes = Kelas::all();
+        
+        return view('material-edit', [
+            'title' => 'Edit Materi',
+            'user' => Auth::user(),
+            'userRole' => 'admin',
+            'material' => $material,
+            'subjects' => $subjects,
+            'classes' => $classes
+        ]);
+    }
 }

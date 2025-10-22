@@ -1,4 +1,4 @@
-@extends('layouts.teacher')
+@extends('layouts.unified-layout')
 
 @section('title', 'Demo Soal Pilihan Ganda')
 

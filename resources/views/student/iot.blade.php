@@ -304,6 +304,9 @@
                                 <th>Suhu</th>
                                 <th>Humus</th>
                                 <th>Kelembaban</th>
+                                <th>Nitrogen</th>
+                                <th>Fosfor</th>
+                                <th>Kalium</th>
                                 <th>Lokasi</th>
                                 <th>Status</th>
                             </tr>
@@ -339,6 +342,24 @@
                                         <div class="sensor-value">
                                             <i class="fas fa-tint"></i>
                                             <span>{{ $reading->formatted_soil_moisture ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-atom"></i>
+                                            <span>{{ $reading->nitrogen ? $reading->nitrogen . ' ppm' : '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-flask"></i>
+                                            <span>{{ $reading->phosphorus ? $reading->phosphorus . ' ppm' : '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sensor-value">
+                                            <i class="fas fa-seedling"></i>
+                                            <span>{{ $reading->potassium ? $reading->potassium . ' ppm' : '-' }}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -455,6 +476,9 @@
                             <th>Suhu</th>
                             <th>Humus</th>
                             <th>Kelembaban</th>
+                            <th>Nitrogen</th>
+                            <th>Fosfor</th>
+                            <th>Kalium</th>
                             <th>Lokasi</th>
                             <th>Status</th>
                         </tr>
@@ -490,6 +514,24 @@
                                     <div class="sensor-value">
                                         <i class="fas fa-tint"></i>
                                         <span>{{ $reading->formatted_soil_moisture ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-atom"></i>
+                                        <span>{{ $reading->nitrogen ? $reading->nitrogen . ' ppm' : '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-flask"></i>
+                                        <span>{{ $reading->phosphorus ? $reading->phosphorus . ' ppm' : '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="sensor-value">
+                                        <i class="fas fa-seedling"></i>
+                                        <span>{{ $reading->potassium ? $reading->potassium . ' ppm' : '-' }}</span>
                                     </div>
                                 </td>
                                 <td>

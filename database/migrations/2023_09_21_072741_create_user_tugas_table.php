@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_tugas', function (Blueprint $table) {
             $table->id();
-            $table->foreignid('tugas_id');
-            $table->foreignid('user_id');
+            $table->foreignId('tugas_id')->constrained('tugas')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('status')->default('Belum Mengerjakan');
             $table->BigInteger('nilai')->nullable();
             $table->timestamps();

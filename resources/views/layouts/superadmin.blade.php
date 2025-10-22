@@ -6,7 +6,7 @@
     <title>@yield('title', 'Terra Assessment - Super Admin')</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Quill.js for Rich Text Editor -->
@@ -49,7 +49,7 @@
             <!-- Notification Dropdown -->
             <div class="notification-container">
                 <button class="notification-btn" onclick="toggleNotificationDropdown()">
-                    <i class="ph-bell"></i>
+                    <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
                 </button>
                 
@@ -59,16 +59,16 @@
                         <h4>Notifikasi</h4>
                         <div class="notification-actions">
                             <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
-                                <i class="ph-check-double"></i>
+                                <i class="fas fa-check-double"></i>
                             </button>
                             <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
-                                <i class="ph-list"></i>
+                                <i class="fas fa-list"></i>
                             </a>
                         </div>
                     </div>
                     <div class="notification-list" id="notificationList">
                         <div class="notification-loading">
-                            <i class="ph-spinner ph-spin"></i>
+                            <i class="fas fa-spinner fa-spin"></i>
                             <span>Memuat notifikasi...</span>
                         </div>
                     </div>
@@ -174,10 +174,6 @@
 
             <div class="menu-section">
                 <div class="menu-section-title">IoT & Penelitian</div>
-                <a href="{{ route('superadmin.iot-tasks') }}" class="menu-item {{ request()->routeIs('superadmin.iot-tasks*') ? 'active' : '' }}">
-                    <i class="fas fa-tasks"></i>
-                    <span class="menu-item-text">Tugas IoT</span>
-                </a>
                 <a href="{{ route('superadmin.iot-research') }}" class="menu-item {{ request()->routeIs('superadmin.iot-research*') ? 'active' : '' }}">
                     <i class="fas fa-flask"></i>
                     <span class="menu-item-text">Penelitian IoT</span>
@@ -353,7 +349,7 @@
                     if (data.length === 0) {
                         notificationList.innerHTML = `
                             <div class="notification-loading">
-                                <i class="ph-bell-slash"></i>
+                                <i class="fas fa-bell-slash"></i>
                                 <span>Tidak ada notifikasi</span>
                             </div>
                         `;

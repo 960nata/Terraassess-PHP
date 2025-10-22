@@ -678,14 +678,14 @@
             'superAdminCreateMultipleChoice' => route('superadmin.exam-management.create-multiple-choice'),
             'superAdminCreateEssay' => route('superadmin.exam-management.create-essay'),
             'superAdminCreateMixed' => route('superadmin.exam-management.create-mixed'),
-            'superAdminView' => route('superadmin.exam-management.view', ''),
-            'superAdminResults' => route('superadmin.exam-management.results', ''),
-            'superAdminEdit' => route('superadmin.exam-management.edit', ''),
+            'superAdminView' => url('superadmin/exam-management'),
+            'superAdminResults' => url('superadmin/exam-management'),
+            'superAdminEdit' => url('superadmin/exam-management'),
         ]);
     }
     
     if ($userRole === 'admin') {
-        $examConfig['urls']['adminResults'] = route('superadmin.exam-management.results', '');
+        $examConfig['urls']['adminResults'] = url('admin/exam-management');
     }
     
     if (Route::has('teacher.exam-management.create-mixed')) {
@@ -693,15 +693,15 @@
     }
     
     if (Route::has('teacher.exam-management.view')) {
-        $examConfig['urls']['teacherView'] = route('teacher.exam-management.view', '');
+        $examConfig['urls']['teacherView'] = url('teacher/exam-management');
     }
     
     if (Route::has('teacher.exam-management.results')) {
-        $examConfig['urls']['teacherResults'] = route('teacher.exam-management.results', '');
+        $examConfig['urls']['teacherResults'] = url('teacher/exam-management');
     }
     
     if (Route::has('teacher.exam-management.edit')) {
-        $examConfig['urls']['teacherEdit'] = route('teacher.exam-management.edit', '');
+        $examConfig['urls']['teacherEdit'] = url('teacher/exam-management');
     }
 @endphp
 

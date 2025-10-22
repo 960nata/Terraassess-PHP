@@ -160,7 +160,7 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="student-count">{{ $class->students_count ?? 0 }} siswa</span>
+                                <span class="student-count">{{ $class->siswa_count ?? 0 }} siswa</span>
                             </td>
                             <td>
                                 <span class="subject-count">{{ $class->subjects_count ?? 0 }} mapel</span>
@@ -249,6 +249,84 @@
             <div class="form-actions">
                 <button type="button" class="btn-secondary" onclick="closeCreateClassModal()">Batal</button>
                 <button type="submit" class="btn-primary">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Class Modal -->
+<div id="editClassModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Kelas</h3>
+            <button class="modal-close" onclick="closeEditClassModal()">&times;</button>
+        </div>
+        <form id="editClassForm" method="POST" class="modal-form">
+            @csrf
+            @method('PUT')
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_name">Nama Kelas</label>
+                    <input type="text" id="edit_name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_code">Kode Kelas</label>
+                    <input type="text" id="edit_code" name="code" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_level">Tingkat</label>
+                    <select id="edit_level" name="level" required>
+                        <option value="">Pilih Tingkat</option>
+                        <option value="X">Kelas X</option>
+                        <option value="XI">Kelas XI</option>
+                        <option value="XII">Kelas XII</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_major">Jurusan</label>
+                    <select id="edit_major" name="major" required>
+                        <option value="">Pilih Jurusan</option>
+                        <option value="IPA">IPA</option>
+                        <option value="IPS">IPS</option>
+                        <option value="Bahasa">Bahasa</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_description">Deskripsi</label>
+                <textarea id="edit_description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Pilih Siswa</label>
+                <div class="selection-container">
+                    <div class="selection-search">
+                        <input type="text" id="edit_student_search" placeholder="Cari siswa..." onkeyup="filterEditStudents()">
+                    </div>
+                    <div class="selection-list" id="edit_students_list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Pilih Mata Pelajaran</label>
+                <div class="selection-container">
+                    <div class="selection-list" id="edit_subjects_list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="edit_is_active" name="is_active" value="1">
+                    <span class="checkmark"></span>
+                    Kelas Aktif
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeEditClassModal()">Batal</button>
+                <button type="submit" class="btn-primary">Simpan Perubahan</button>
             </div>
         </form>
     </div>
@@ -629,6 +707,84 @@
     color: white;
 }
 
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+.selection-container {
+    border: 1px solid #4b5563;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #1f2937;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.selection-search {
+    margin-bottom: 0.75rem;
+}
+
+.selection-search input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    background: #111827;
+    color: #ffffff;
+}
+
+.selection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.selection-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: #111827;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.selection-item:hover {
+    background: #374151;
+}
+
+.selection-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+.selection-item-info {
+    flex: 1;
+}
+
+.selection-item-name {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.selection-item-detail {
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
@@ -657,20 +813,117 @@ function closeCreateClassModal() {
     document.getElementById('createClassModal').style.display = 'none';
 }
 
+function openEditClassModal(data) {
+    // Populate basic form fields
+    document.getElementById('edit_name').value = data.class.name || '';
+    document.getElementById('edit_code').value = data.class.code || '';
+    document.getElementById('edit_level').value = data.class.level || '';
+    document.getElementById('edit_major').value = data.class.major || '';
+    document.getElementById('edit_description').value = data.class.description || '';
+    document.getElementById('edit_is_active').checked = data.class.is_active || false;
+    
+    // Populate students list
+    const studentsContainer = document.getElementById('edit_students_list');
+    studentsContainer.innerHTML = '';
+    
+    data.all_students.forEach(student => {
+        const isChecked = data.class_student_ids.includes(student.id);
+        const currentClass = student.kelas_id ? ` (Saat ini di kelas lain)` : '';
+        
+        studentsContainer.innerHTML += `
+            <label class="selection-item">
+                <input type="checkbox" name="students[]" value="${student.id}" ${isChecked ? 'checked' : ''}>
+                <div class="selection-item-info">
+                    <div class="selection-item-name">${student.name}</div>
+                    <div class="selection-item-detail">${student.email}${currentClass}</div>
+                </div>
+            </label>
+        `;
+    });
+    
+    // Populate subjects list
+    const subjectsContainer = document.getElementById('edit_subjects_list');
+    subjectsContainer.innerHTML = '';
+    
+    data.all_subjects.forEach(subject => {
+        const isChecked = data.class_subject_ids.includes(subject.id);
+        
+        subjectsContainer.innerHTML += `
+            <label class="selection-item">
+                <input type="checkbox" name="subjects[]" value="${subject.id}" ${isChecked ? 'checked' : ''}>
+                <div class="selection-item-info">
+                    <div class="selection-item-name">${subject.name}</div>
+                    <div class="selection-item-detail">${subject.code || 'N/A'}</div>
+                </div>
+            </label>
+        `;
+    });
+    
+    // Set form action
+    document.getElementById('editClassForm').action = `/superadmin/class-management/${data.class.id}`;
+    
+    // Show modal
+    document.getElementById('editClassModal').style.display = 'block';
+}
+
+function closeEditClassModal() {
+    document.getElementById('editClassModal').style.display = 'none';
+}
+
+function filterEditStudents() {
+    const searchValue = document.getElementById('edit_student_search').value.toLowerCase();
+    const items = document.querySelectorAll('#edit_students_list .selection-item');
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(searchValue) ? 'flex' : 'none';
+    });
+}
+
 function viewClass(classId) {
-    // Implementation for viewing class details
-    console.log('View class:', classId);
+    window.location.href = `/superadmin/class-management/${classId}`;
 }
 
 function editClass(classId) {
-    // Implementation for editing class
-    console.log('Edit class:', classId);
+    // Open modal with class data for editing
+    fetch(`/superadmin/class-management/${classId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Populate edit modal with data
+                openEditClassModal(data.data);
+            } else {
+                alert('Gagal memuat data kelas');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat data kelas');
+        });
 }
 
 function deleteClass(classId) {
     if (confirm('Apakah Anda yakin ingin menghapus kelas ini?')) {
-        // Implementation for deleting class
-        console.log('Delete class:', classId);
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/superadmin/class-management/${classId}`;
+        
+        // CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+        
+        // Method spoofing for DELETE
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
@@ -681,9 +934,14 @@ function exportClasses() {
 
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('createClassModal');
-    if (event.target === modal) {
+    const createModal = document.getElementById('createClassModal');
+    const editModal = document.getElementById('editClassModal');
+    
+    if (event.target === createModal) {
         closeCreateClassModal();
+    }
+    if (event.target === editModal) {
+        closeEditClassModal();
     }
 }
 </script>

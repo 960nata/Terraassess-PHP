@@ -136,15 +136,6 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="youtube_url">URL YouTube (Opsional)</label>
-                    <input type="url" id="youtube_url" name="youtube_url" class="form-control" 
-                           placeholder="https://www.youtube.com/watch?v=..." value="{{ old('youtube_url') }}">
-                    <small class="form-help">Link video YouTube untuk materi</small>
-                    @error('youtube_url')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
-                </div>
             </div>
 
             <!-- Settings -->
@@ -306,6 +297,22 @@
     font-size: 0.8rem;
 }
 
+.validation-error {
+    display: block;
+    margin-top: 0.25rem;
+    color: #ef4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.form-control.error {
+    border-color: #ef4444 !important;
+}
+
+.form-control.valid {
+    border-color: #10b981 !important;
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
@@ -395,8 +402,9 @@
 
 <script>
 // Initialize Quill Editor
+let quill;
 document.addEventListener('DOMContentLoaded', function() {
-    const quill = new Quill('#quill-editor', {
+    quill = new Quill('#quill-editor', {
         theme: 'snow',
         modules: {
             toolbar: [
@@ -413,6 +421,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Fungsi untuk kompres gambar base64
+    function compressImage(base64Str, maxWidth = 800, quality = 0.7) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // Resize jika lebih besar dari maxWidth
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Kompres dengan quality
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.src = base64Str;
+        });
+    }
+
+    // Custom image handler untuk kompres gambar
+    quill.getModule('toolbar').addHandler('image', async function() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+        
+        input.onchange = async function() {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64 = e.target.result;
+                    
+                    try {
+                        // Kompres gambar
+                        const compressed = await compressImage(base64, 800, 0.7);
+                        
+                        // Insert ke Quill
+                        const range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', compressed);
+                    } catch (error) {
+                        console.error('Error compressing image:', error);
+                        // Fallback: insert original image
+                        const range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', base64);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    });
+
     // Set initial content if editing
     const contentTextarea = document.getElementById('content');
     if (contentTextarea.value) {
@@ -422,20 +492,213 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update hidden textarea when editor content changes
     quill.on('text-change', function() {
         contentTextarea.value = quill.root.innerHTML;
+        validateContent();
     });
 
-    // Form submission
+    // Initialize real-time validation
+    initializeValidation();
+});
+
+// Real-time validation functions
+function validateTitle() {
+    const input = document.getElementById('title');
+    const value = input.value.trim();
+    const errorId = 'title-error';
+    
+    if (value === '') {
+        showValidationError(input, errorId, 'Judul materi wajib diisi');
+        return false;
+    } else if (value.length < 3) {
+        showValidationError(input, errorId, 'Judul minimal 3 karakter');
+        return false;
+    } else {
+        hideValidationError(input, errorId);
+        return true;
+    }
+}
+
+function validateSubject() {
+    const select = document.getElementById('subject_id');
+    const value = select.value;
+    const errorId = 'subject-error';
+    
+    if (value === '' || value === null) {
+        showValidationError(select, errorId, 'Mata pelajaran wajib dipilih');
+        return false;
+    } else {
+        hideValidationError(select, errorId);
+        return true;
+    }
+}
+
+function validateClass() {
+    const select = document.getElementById('class_id');
+    const value = select.value;
+    const errorId = 'class-error';
+    
+    if (value === '' || value === null) {
+        showValidationError(select, errorId, 'Kelas wajib dipilih');
+        return false;
+    } else {
+        hideValidationError(select, errorId);
+        return true;
+    }
+}
+
+function validateContent() {
+    const quillContent = quill.getText().trim();
+    const errorId = 'content-error';
+    const errorContainer = document.getElementById(errorId);
+    
+    if (quillContent === '' || quillContent.length < 10) {
+        if (!errorContainer) {
+            const error = document.createElement('span');
+            error.id = errorId;
+            error.className = 'validation-error';
+            error.textContent = 'Konten materi wajib diisi (minimal 10 karakter)';
+            document.getElementById('quill-editor').parentNode.appendChild(error);
+        }
+        return false;
+    } else {
+        if (errorContainer) {
+            errorContainer.remove();
+        }
+        return true;
+    }
+}
+
+function validateFile() {
+    const input = document.getElementById('file');
+    if (!input.files || input.files.length === 0) return true; // Optional field
+    
+    const file = input.files[0];
+    const errorId = 'file-error';
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['application/pdf', 'video/mp4', 'image/jpeg', 'image/png', 
+                          'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                          'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+    
+    if (file.size > maxSize) {
+        showValidationError(input, errorId, 'Ukuran file maksimal 10MB');
+        return false;
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+        showValidationError(input, errorId, 'Format file tidak didukung');
+        return false;
+    }
+    
+    hideValidationError(input, errorId);
+    return true;
+}
+
+
+// Helper functions
+function showValidationError(input, errorId, message) {
+    // Add red border
+    input.style.borderColor = '#ef4444';
+    
+    // Show/create error message
+    let errorSpan = document.getElementById(errorId);
+    if (!errorSpan) {
+        errorSpan = document.createElement('span');
+        errorSpan.id = errorId;
+        errorSpan.className = 'validation-error';
+        input.parentNode.appendChild(errorSpan);
+    }
+    errorSpan.textContent = message;
+    errorSpan.style.display = 'block';
+}
+
+function hideValidationError(input, errorId) {
+    // Reset border
+    input.style.borderColor = '#333';
+    
+    // Hide error message
+    const errorSpan = document.getElementById(errorId);
+    if (errorSpan) {
+        errorSpan.style.display = 'none';
+    }
+}
+
+// Validate all before submit
+function validateAllFields() {
+    const validations = [
+        validateTitle(),
+        validateSubject(),
+        validateClass(),
+        validateContent(),
+        validateFile()
+    ];
+    
+    return validations.every(v => v === true);
+}
+
+// Initialize validation event listeners
+function initializeValidation() {
+    // Real-time validation on blur
+    document.getElementById('title').addEventListener('blur', validateTitle);
+    document.getElementById('title').addEventListener('input', validateTitle);
+    
+    document.getElementById('subject_id').addEventListener('change', validateSubject);
+    document.getElementById('class_id').addEventListener('change', validateClass);
+    
+    document.getElementById('file').addEventListener('change', validateFile);
+    
+    // Form submit validation
     document.getElementById('materialForm').addEventListener('submit', function(e) {
         // Ensure content is updated before submission
+        const contentTextarea = document.getElementById('content');
         contentTextarea.value = quill.root.innerHTML;
         
-        // Basic validation
-        if (!contentTextarea.value.trim()) {
+        if (!validateAllFields()) {
             e.preventDefault();
-            alert('Konten materi tidak boleh kosong');
+            alert('Mohon lengkapi semua field yang wajib diisi dengan benar');
             return false;
         }
     });
-});
+
+    // Restore material data dari old input jika ada
+    @if(old('title') || old('content') || old('description'))
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Restoring old material data');
+            
+            // Restore basic fields
+            if (document.getElementById('title') && '{{ old("title") }}') {
+                document.getElementById('title').value = '{{ old("title") }}';
+            }
+            
+            if (document.getElementById('description') && '{{ old("description") }}') {
+                document.getElementById('description').value = '{{ old("description") }}';
+            }
+            
+            if (document.getElementById('type') && '{{ old("type") }}') {
+                document.getElementById('type').value = '{{ old("type") }}';
+            }
+            
+            if (document.getElementById('class_id') && '{{ old("class_id") }}') {
+                document.getElementById('class_id').value = '{{ old("class_id") }}';
+            }
+            
+            if (document.getElementById('subject_id') && '{{ old("subject_id") }}') {
+                document.getElementById('subject_id').value = '{{ old("subject_id") }}';
+            }
+            
+            if (document.getElementById('status') && '{{ old("status") }}') {
+                document.getElementById('status').value = '{{ old("status") }}';
+            }
+            
+            // Restore Quill editor content
+            if (quill && '{{ old("content") }}') {
+                quill.root.innerHTML = '{!! old("content") !!}';
+            }
+            
+            // Show notification that data was restored
+            @if(session('error'))
+                showNotification('Data Anda tersimpan! Silakan perbaiki error dan submit kembali. Data yang sudah Anda isi tidak hilang.', 'warning');
+            @endif
+        });
+    @endif
+}
 </script>
 @endsection

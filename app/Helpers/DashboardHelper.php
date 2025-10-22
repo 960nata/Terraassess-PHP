@@ -206,7 +206,6 @@ class DashboardHelper
                     ['name' => 'Manajemen Materi', 'route' => 'superadmin.material-management', 'icon' => 'fas fa-file-alt']
                 ],
                 'iot' => [
-                    ['name' => 'Tugas IoT', 'route' => 'iot.tugas', 'icon' => 'fas fa-server'],
                     ['name' => 'Penelitian IoT', 'route' => 'iot.research-projects', 'icon' => 'fas fa-wave-square']
                 ],
                 'analytics' => [
@@ -233,7 +232,6 @@ class DashboardHelper
                     ['name' => 'Manajemen Materi', 'route' => 'admin.material-management', 'icon' => 'fas fa-file-alt']
                 ],
                 'iot' => [
-                    ['name' => 'Tugas IoT', 'route' => 'iot.tugas', 'icon' => 'fas fa-server'],
                     ['name' => 'Penelitian IoT', 'route' => 'iot.research-projects', 'icon' => 'fas fa-wave-square']
                 ],
                 'analytics' => [
@@ -248,7 +246,7 @@ class DashboardHelper
             3 => [ // Teacher
                 'main' => [
                     ['name' => 'Dashboard', 'route' => 'teacher.dashboard', 'icon' => 'fas fa-tachometer-alt'],
-                    ['name' => 'Tugas Saya', 'route' => 'teacher.tasks.management', 'icon' => 'fas fa-book'],
+                    ['name' => 'Tugas Saya', 'route' => 'teacher.tasks', 'icon' => 'fas fa-book'],
                     ['name' => 'Ujian Saya', 'route' => 'teacher.exam-management', 'icon' => 'fas fa-bullseye'],
                     ['name' => 'Materi Saya', 'route' => 'teacher.materials', 'icon' => 'fas fa-file-alt']
                 ],

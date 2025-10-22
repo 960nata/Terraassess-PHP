@@ -386,20 +386,20 @@
         <!-- Statistics -->
         <div class="iot-task-stats">
             <div class="stat-card">
-                <div class="stat-value">28</div>
+                <div class="stat-value">{{ $totalIotTasks }}</div>
                 <div class="stat-label">Total Tugas IoT</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">15</div>
+                <div class="stat-value">{{ $activeIotTasks }}</div>
                 <div class="stat-label">Tugas Aktif</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">8</div>
+                <div class="stat-value">{{ $completedIotTasks }}</div>
                 <div class="stat-label">Tugas Selesai</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">5</div>
-                <div class="stat-label">Tugas Draft</div>
+                <div class="stat-value">{{ $pendingIotTasks }}</div>
+                <div class="stat-label">Tugas Pending</div>
             </div>
         </div>
 
@@ -464,396 +464,109 @@
                 <i class="fas fa-list me-2"></i>Daftar Tugas IoT
             </h2>
             
-            <div class="iot-tasks-grid">
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Monitoring Suhu Ruangan</div>
-                            <div class="iot-task-subject">Fisika</div>
-                        </div>
-                        <div class="iot-task-type type-sensor">Sensor</div>
+            @if($iotTasks->isEmpty())
+                <!-- Empty State -->
+                <div class="iot-task-card" style="text-align: center; padding: 3rem;">
+                    <div style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 1rem;">
+                        <i class="fas fa-microchip" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        Belum ada tugas IoT yang tersedia
                     </div>
-                    <div class="iot-task-description">
-                        Tugas untuk memantau suhu ruangan menggunakan sensor DHT22 dan menampilkan data real-time.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">Arduino Uno + DHT22 + WiFi Module</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">Suhu</div>
-                                <div class="sensor-data-value">25.3°C</div>
-                            </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">Kelembaban</div>
-                                <div class="sensor-data-value">65%</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">7 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Sedang</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">X IPA 1</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-active">Aktif</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(1)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(1)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="monitorIoTTask(1)">
-                            <i class="fas fa-chart-line"></i> Monitor
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(1)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(1)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
+                    <p style="color: #64748b; margin-bottom: 2rem;">
+                        Mulai buat tugas IoT pertama Anda untuk memulai penelitian dan monitoring menggunakan perangkat IoT.
+                    </p>
+                    <button class="btn-primary" onclick="createIoTTask()">
+                        <i class="fas fa-plus"></i> Buat Tugas IoT Pertama
+                    </button>
                 </div>
-
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Kontrol Lampu Otomatis</div>
-                            <div class="iot-task-subject">Fisika</div>
-                        </div>
-                        <div class="iot-task-type type-actuator">Actuator</div>
-                    </div>
-                    <div class="iot-task-description">
-                        Tugas untuk membuat sistem kontrol lampu otomatis berdasarkan sensor cahaya.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">ESP32 + LDR + Relay + LED</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">Cahaya</div>
-                                <div class="sensor-data-value">320 lux</div>
+            @else
+                <div class="iot-tasks-grid">
+                    @foreach($iotTasks as $task)
+                        <div class="iot-task-card">
+                            <div class="iot-task-header">
+                                <div>
+                                    <div class="iot-task-title">{{ $task->name }}</div>
+                                    <div class="iot-task-subject">
+                                        {{ $task->kelasMapel->mapel->name ?? 'Tidak ada mata pelajaran' }}
+                                    </div>
+                                </div>
+                                <div class="iot-task-type type-{{ strtolower($task->tipe) }}">
+                                    {{ ucfirst($task->tipe) }}
+                                </div>
                             </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">Status</div>
-                                <div class="sensor-data-value">ON</div>
+                            <div class="iot-task-description">
+                                {{ $task->content ? \Str::limit($task->content, 150) : 'Tidak ada deskripsi tersedia' }}
+                            </div>
+                            <div class="iot-device-info">
+                                <div class="device-title">Perangkat IoT</div>
+                                <div class="device-details">
+                                    {{ $task->tipe == 'iot' ? 'Arduino/ESP32 + Sensor' : 'Perangkat IoT' }}
+                                </div>
+                            </div>
+                            <div class="sensor-data">
+                                <div class="sensor-title">Data Sensor</div>
+                                <div class="sensor-values">
+                                    <div class="sensor-value">
+                                        <div class="sensor-label">Status</div>
+                                        <div class="sensor-data-value">{{ ucfirst($task->status) }}</div>
+                                    </div>
+                                    <div class="sensor-value">
+                                        <div class="sensor-label">Progress</div>
+                                        <div class="sensor-data-value">{{ $task->getCompletionRate() }}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="iot-task-info">
+                                <div class="info-item">
+                                    <span class="info-label">Deadline:</span>
+                                    <span class="info-value">{{ $task->due ? $task->due->format('d M Y') : 'Tidak ada deadline' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Kelas:</span>
+                                    <span class="info-value">{{ $task->kelasMapel->kelas->name ?? 'Tidak ada kelas' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Peserta:</span>
+                                    <span class="info-value">{{ $task->getParticipantCount() }} siswa</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Status:</span>
+                                    <span class="status-badge status-{{ $task->status }}">{{ $task->status_text }}</span>
+                                </div>
+                            </div>
+                            <div class="iot-task-actions">
+                                <button class="btn-primary" onclick="viewIoTTask({{ $task->id }})">
+                                    <i class="fas fa-eye"></i> Lihat
+                                </button>
+                                <button class="btn-secondary" onclick="editIoTTask({{ $task->id }})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                @if($task->status == 'active')
+                                    <button class="btn-success" onclick="monitorIoTTask({{ $task->id }})">
+                                        <i class="fas fa-chart-line"></i> Monitor
+                                    </button>
+                                @elseif($task->status == 'completed')
+                                    <button class="btn-success" onclick="viewResults({{ $task->id }})">
+                                        <i class="fas fa-chart-bar"></i> Hasil
+                                    </button>
+                                @elseif($task->status == 'pending')
+                                    <button class="btn-success" onclick="startIoTTask({{ $task->id }})">
+                                        <i class="fas fa-play"></i> Mulai
+                                    </button>
+                                @elseif($task->status == 'inactive')
+                                    <button class="btn-success" onclick="publishIoTTask({{ $task->id }})">
+                                        <i class="fas fa-paper-plane"></i> Publikasi
+                                    </button>
+                                @endif
+                                <button class="btn-warning" onclick="duplicateIoTTask({{ $task->id }})">
+                                    <i class="fas fa-copy"></i> Duplikat
+                                </button>
+                                <button class="btn-danger" onclick="deleteIoTTask({{ $task->id }})">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">5 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Mudah</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">X IPA 2</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-active">Aktif</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(2)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(2)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="monitorIoTTask(2)">
-                            <i class="fas fa-chart-line"></i> Monitor
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(2)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(2)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
+                    @endforeach
                 </div>
-
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Monitoring Kualitas Air</div>
-                            <div class="iot-task-subject">Kimia</div>
-                        </div>
-                        <div class="iot-task-type type-monitoring">Monitoring</div>
-                    </div>
-                    <div class="iot-task-description">
-                        Tugas untuk memantau kualitas air menggunakan sensor pH, TDS, dan suhu.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">Arduino Mega + pH Sensor + TDS Sensor</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">pH</div>
-                                <div class="sensor-data-value">7.2</div>
-                            </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">TDS</div>
-                                <div class="sensor-data-value">150 ppm</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">10 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Sulit</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">XI IPA 1</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-completed">Selesai</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(3)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(3)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="viewResults(3)">
-                            <i class="fas fa-chart-bar"></i> Hasil
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(3)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(3)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                </div>
-
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Sistem Keamanan IoT</div>
-                            <div class="iot-task-subject">Fisika</div>
-                        </div>
-                        <div class="iot-task-type type-control">Control</div>
-                    </div>
-                    <div class="iot-task-description">
-                        Tugas untuk membuat sistem keamanan menggunakan sensor PIR dan buzzer.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">Raspberry Pi + PIR Sensor + Buzzer + Camera</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">PIR</div>
-                                <div class="sensor-data-value">OFF</div>
-                            </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">Status</div>
-                                <div class="sensor-data-value">Safe</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">14 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Sulit</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">XII IPA 1</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-pending">Pending</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(4)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(4)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="startIoTTask(4)">
-                            <i class="fas fa-play"></i> Mulai
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(4)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(4)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                </div>
-
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Smart Garden System</div>
-                            <div class="iot-task-subject">Biologi</div>
-                        </div>
-                        <div class="iot-task-type type-monitoring">Monitoring</div>
-                    </div>
-                    <div class="iot-task-description">
-                        Tugas untuk membuat sistem monitoring taman otomatis dengan sensor kelembaban tanah.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">Arduino Uno + Soil Moisture + Water Pump</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">Kelembaban</div>
-                                <div class="sensor-data-value">45%</div>
-                            </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">Pompa</div>
-                                <div class="sensor-data-value">OFF</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">21 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Sedang</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">XI IPA 2</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-draft">Draft</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(5)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(5)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="publishIoTTask(5)">
-                            <i class="fas fa-paper-plane"></i> Publikasi
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(5)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(5)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                </div>
-
-                <div class="iot-task-card">
-                    <div class="iot-task-header">
-                        <div>
-                            <div class="iot-task-title">Weather Station</div>
-                            <div class="iot-task-subject">Fisika</div>
-                        </div>
-                        <div class="iot-task-type type-sensor">Sensor</div>
-                    </div>
-                    <div class="iot-task-description">
-                        Tugas untuk membuat stasiun cuaca mini dengan sensor suhu, kelembaban, dan tekanan.
-                    </div>
-                    <div class="iot-device-info">
-                        <div class="device-title">Perangkat IoT</div>
-                        <div class="device-details">ESP32 + BME280 + Anemometer</div>
-                    </div>
-                    <div class="sensor-data">
-                        <div class="sensor-title">Data Sensor</div>
-                        <div class="sensor-values">
-                            <div class="sensor-value">
-                                <div class="sensor-label">Suhu</div>
-                                <div class="sensor-data-value">28.5°C</div>
-                            </div>
-                            <div class="sensor-value">
-                                <div class="sensor-label">Tekanan</div>
-                                <div class="sensor-data-value">1013 hPa</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="iot-task-info">
-                        <div class="info-item">
-                            <span class="info-label">Durasi:</span>
-                            <span class="info-value">30 hari</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kesulitan:</span>
-                            <span class="info-value">Sulit</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelas:</span>
-                            <span class="info-value">XII IPA 2</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status:</span>
-                            <span class="status-badge status-active">Aktif</span>
-                        </div>
-                    </div>
-                    <div class="iot-task-actions">
-                        <button class="btn-primary" onclick="viewIoTTask(6)">
-                            <i class="fas fa-eye"></i> Lihat
-                        </button>
-                        <button class="btn-secondary" onclick="editIoTTask(6)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn-success" onclick="monitorIoTTask(6)">
-                            <i class="fas fa-chart-line"></i> Monitor
-                        </button>
-                        <button class="btn-warning" onclick="duplicateIoTTask(6)">
-                            <i class="fas fa-copy"></i> Duplikat
-                        </button>
-                        <button class="btn-danger" onclick="deleteIoTTask(6)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
 @endsection

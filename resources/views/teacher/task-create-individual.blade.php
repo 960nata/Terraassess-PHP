@@ -12,7 +12,7 @@
                 <p class="mt-2 text-gray-300">Buat tugas individual dengan opsi upload file atau ketik langsung</p>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline">
+                <a href="{{ route('teacher.tasks') }}" class="btn btn-outline">
                     <i class="ph-arrow-left mr-2"></i>
                     Kembali
                 </a>
@@ -23,6 +23,8 @@
     <form id="individualForm" method="POST" action="{{ route('teacher.tasks.store') }}">
         @csrf
         <input type="hidden" name="tipe" value="3">
+        <!-- Hidden field untuk kelas_mapel_id yang akan diisi oleh JavaScript -->
+        <input type="hidden" name="kelas_mapel_id" id="kelas_mapel_id" value="">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Form -->
@@ -46,7 +48,7 @@
 
                             <div>
                                 <label class="form-label">Deskripsi/Instruksi *</label>
-                                @include('components.rich-text-editor', [
+                                @include('components.modern-quill-editor', [
                                     'name' => 'content',
                                     'content' => old('content'),
                                     'placeholder' => 'Tuliskan instruksi yang jelas untuk siswa...',
@@ -279,7 +281,7 @@
                             Buat Tugas
                         </button>
                         
-                        <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline w-full">
+                        <a href="{{ route('teacher.tasks') }}" class="btn btn-outline w-full">
                             <i class="ph-x mr-2"></i>
                             Batal
                         </a>
@@ -384,6 +386,91 @@ function toggleFileTypes() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     toggleFileTypes();
+    
+    // Handle form submission - gabungkan kelas_id dan mapel_id menjadi kelas_mapel_id
+    const form = document.getElementById('individualForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const kelasId = document.getElementById('kelas_id').value;
+            const mapelId = document.getElementById('mapel_id').value;
+            
+            // Validasi bahwa kedua dropdown sudah dipilih
+            if (!kelasId || !mapelId) {
+                e.preventDefault();
+                alert('Kelas Tujuan dan Mata Pelajaran wajib dipilih!');
+                return false;
+            }
+            
+            // Gabungkan kelas_id dan mapel_id menjadi kelas_mapel_id
+            // Format: "kelas_id:mapel_id" untuk sementara, nanti controller akan handle
+            const kelasMapelId = `${kelasId}:${mapelId}`;
+            document.getElementById('kelas_mapel_id').value = kelasMapelId;
+            
+            console.log('Form submit (Individual) - Kelas ID:', kelasId, 'Mapel ID:', mapelId, 'Kombinasi:', kelasMapelId);
+        });
+    }
 });
 </script>
+
+<!-- Quill Editor CSS -->
+<style>
+/* Quill Editor Styles - From material-create.blade.php */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 200px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-dark .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.quill-editor-dark .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-dark .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.quill-editor-dark .ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-fill {
+    fill: #ffffff;
+}
+</style>
 @endsection

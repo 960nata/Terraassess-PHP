@@ -856,8 +856,7 @@ function createEssayExam() {
 
 // Exam action functions
 function editExam(examId) {
-    console.log('Edit exam:', examId);
-    // Implement edit functionality
+    window.location.href = "{{ url('superadmin/exam-management') }}/" + examId + "/edit";
 }
 
 function viewExam(examId) {
@@ -872,8 +871,25 @@ function publishExam(examId) {
 
 function deleteExam(examId) {
     if (confirm('Apakah Anda yakin ingin menghapus ujian ini?')) {
-        console.log('Delete exam:', examId);
-        // Implement delete functionality
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url('superadmin/exam-management') }}/" + examId;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

@@ -108,10 +108,54 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="stat-card">
                 <div class="text-center">
-                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
-                    <h1 class="display-4 text-success fw-bold" id="current-nutrient">--%</h1>
-                    <h5 class="text-white">Level Nutrisi</h5>
-                    <p class="text-white-75 small">Kandungan nutrisi</p>
+                    <i class="fas fa-atom fa-3x text-info mb-3"></i>
+                    <h1 class="display-4 text-info fw-bold" id="current-nitrogen">-- ppm</h1>
+                    <h5 class="text-white">Nitrogen (N)</h5>
+                    <p class="text-white-75 small">Kandungan nitrogen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Nutrient Data Row -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-flask fa-3x text-primary mb-3"></i>
+                    <h1 class="display-4 text-primary fw-bold" id="current-phosphorus">-- ppm</h1>
+                    <h5 class="text-white">Fosfor (P)</h5>
+                    <p class="text-white-75 small">Kandungan fosfor</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-seedling fa-3x text-success mb-3"></i>
+                    <h1 class="display-4 text-success fw-bold" id="current-potassium">-- ppm</h1>
+                    <h5 class="text-white">Kalium (K)</h5>
+                    <p class="text-white-75 small">Kandungan kalium</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
+                    <h1 class="display-4 text-warning fw-bold" id="thingsboard-status">--</h1>
+                    <h5 class="text-white">ThingsBoard</h5>
+                    <p class="text-white-75 small">Status sinkronisasi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="text-center">
+                    <i class="fas fa-clock fa-3x text-secondary mb-3"></i>
+                    <h1 class="display-4 text-secondary fw-bold" id="last-sync">--:--</h1>
+                    <h5 class="text-white">Terakhir Sync</h5>
+                    <p class="text-white-75 small">Waktu sinkronisasi</p>
                 </div>
             </div>
         </div>
@@ -186,6 +230,9 @@
                                     <th>Suhu</th>
                                     <th>Kelembaban</th>
                                     <th>Kelembaban Tanah</th>
+                                    <th>Nitrogen</th>
+                                    <th>Fosfor</th>
+                                    <th>Kalium</th>
                                     <th>Kelas</th>
                                     <th>Status</th>
                                 </tr>
@@ -194,10 +241,13 @@
                                 @forelse($recentData ?? [] as $data)
                                     <tr>
                                         <td>{{ $data->measured_at->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $data->device->device_name ?? 'Unknown' }}</td>
-                                        <td>{{ $data->formatted_temperature }}</td>
+                                        <td>{{ $data->device->name ?? 'Unknown' }}</td>
+                                        <td>{{ $data->formatted_soil_temperature }}</td>
                                         <td>{{ $data->formatted_humidity }}</td>
                                         <td>{{ $data->formatted_soil_moisture }}</td>
+                                        <td>{{ $data->formatted_nitrogen ?? '--' }}</td>
+                                        <td>{{ $data->formatted_phosphorus ?? '--' }}</td>
+                                        <td>{{ $data->formatted_potassium ?? '--' }}</td>
                                         <td>{{ $data->kelas->nama_kelas ?? 'Unknown' }}</td>
                                         <td>
                                             <span class="badge badge-{{ $data->soil_quality_status === 'excellent' ? 'success' : ($data->soil_quality_status === 'good' ? 'warning' : 'danger') }}">
@@ -477,10 +527,22 @@ document.addEventListener('DOMContentLoaded', function() {
             phElement.textContent = data.ph_level.toFixed(1);
         }
         
-        // Update nutrient level if available
-        const nutrientElement = document.getElementById('current-nutrient');
-        if (nutrientElement && data.nutrient_level !== undefined) {
-            nutrientElement.textContent = data.nutrient_level.toFixed(1) + '%';
+        // Update nitrogen if available
+        const nitrogenElement = document.getElementById('current-nitrogen');
+        if (nitrogenElement && data.nitrogen !== undefined) {
+            nitrogenElement.textContent = data.nitrogen.toFixed(1) + ' ppm';
+        }
+        
+        // Update phosphorus if available
+        const phosphorusElement = document.getElementById('current-phosphorus');
+        if (phosphorusElement && data.phosphorus !== undefined) {
+            phosphorusElement.textContent = data.phosphorus.toFixed(1) + ' ppm';
+        }
+        
+        // Update potassium if available
+        const potassiumElement = document.getElementById('current-potassium');
+        if (potassiumElement && data.potassium !== undefined) {
+            potassiumElement.textContent = data.potassium.toFixed(1) + ' ppm';
         }
     }
     
@@ -493,11 +555,13 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const payload = {
                 device_id: 'arduino_usb_' + Date.now(), // Generate unique device ID
-                temperature: data.temperature,
+                soil_temperature: data.temperature,
                 humidity: data.humidity,
                 soil_moisture: data.soil_moisture,
                 ph_level: data.ph_level || null,
-                nutrient_level: data.nutrient_level || null,
+                nitrogen: data.nitrogen || null,
+                phosphorus: data.phosphorus || null,
+                potassium: data.potassium || null,
                 kelas_id: window.iotManager.recordingData.kelasId,
                 location: window.iotManager.recordingData.location,
                 notes: window.iotManager.recordingData.notes,
@@ -536,5 +600,364 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSoilQuality(data.temperature, data.humidity, data.soil_moisture);
     };
 });
+
+// IoT Dashboard Real-time Manager
+class IoTDashboardRealtime {
+    constructor() {
+        this.apiUrl = '/api/iot';
+        this.pollingInterval = 30000; // 30 seconds
+        this.isPolling = false;
+        this.pollingTimer = null;
+        this.lastSyncTime = null;
+        this.thingsBoardStatus = 'unknown';
+        
+        this.init();
+    }
+
+    init() {
+        this.startPolling();
+        this.checkThingsBoardStatus();
+        this.setupEventListeners();
+    }
+
+    startPolling() {
+        if (this.isPolling) return;
+        
+        this.isPolling = true;
+        console.log('Starting IoT real-time polling...');
+        
+        this.fetchRealTimeData();
+        this.pollingTimer = setInterval(() => {
+            this.fetchRealTimeData();
+            this.checkThingsBoardStatus();
+        }, this.pollingInterval);
+    }
+
+    stopPolling() {
+        if (!this.isPolling) return;
+        
+        this.isPolling = false;
+        console.log('Stopping IoT real-time polling...');
+        
+        if (this.pollingTimer) {
+            clearInterval(this.pollingTimer);
+            this.pollingTimer = null;
+        }
+    }
+
+    async fetchRealTimeData() {
+        try {
+            const response = await fetch(`${this.apiUrl}/real-time-data`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                this.updateDashboardData(result.data);
+                this.updateLastSyncTime();
+            }
+
+        } catch (error) {
+            console.error('Error fetching real-time data:', error);
+        }
+    }
+
+    async checkThingsBoardStatus() {
+        try {
+            const response = await fetch(`${this.apiUrl}/thingsboard/status`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.status) {
+                this.updateThingsBoardStatus(result.status);
+            }
+
+        } catch (error) {
+            console.error('Error checking ThingsBoard status:', error);
+            this.updateThingsBoardStatus({ connected: false, error: error.message });
+        }
+    }
+
+    updateDashboardData(data) {
+        if (!data || data.length === 0) return;
+        
+        const latestData = data[0];
+        this.updateSensorDisplay(latestData);
+        this.updateRecentDataTable(data);
+        this.animateDataUpdate();
+    }
+
+    updateSensorDisplay(data) {
+        // Update soil temperature
+        const tempElement = document.getElementById('current-temperature');
+        if (tempElement && data.soil_temperature !== undefined) {
+            this.animateValueChange(tempElement, data.soil_temperature.toFixed(1) + '°C');
+        }
+
+        // Update humidity
+        const humidityElement = document.getElementById('current-humidity');
+        if (humidityElement && data.humidity !== undefined) {
+            this.animateValueChange(humidityElement, data.humidity.toFixed(1) + '%');
+        }
+
+        // Update soil moisture
+        const moistureElement = document.getElementById('current-moisture');
+        if (moistureElement && data.soil_moisture !== undefined) {
+            this.animateValueChange(moistureElement, data.soil_moisture.toFixed(1) + '%');
+        }
+
+        // Update pH
+        const phElement = document.getElementById('current-ph');
+        if (phElement && data.ph_level !== undefined) {
+            this.animateValueChange(phElement, data.ph_level.toFixed(1));
+        }
+
+        // Update nitrogen
+        const nitrogenElement = document.getElementById('current-nitrogen');
+        if (nitrogenElement && data.nitrogen !== undefined) {
+            this.animateValueChange(nitrogenElement, data.nitrogen.toFixed(1) + ' ppm');
+        }
+
+        // Update phosphorus
+        const phosphorusElement = document.getElementById('current-phosphorus');
+        if (phosphorusElement && data.phosphorus !== undefined) {
+            this.animateValueChange(phosphorusElement, data.phosphorus.toFixed(1) + ' ppm');
+        }
+
+        // Update potassium
+        const potassiumElement = document.getElementById('current-potassium');
+        if (potassiumElement && data.potassium !== undefined) {
+            this.animateValueChange(potassiumElement, data.potassium.toFixed(1) + ' ppm');
+        }
+    }
+
+    updateRecentDataTable(data) {
+        const tableBody = document.getElementById('recent-data-table');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        data.slice(0, 10).forEach(item => {
+            const row = document.createElement('tr');
+            
+            const deviceName = item.device?.name || 'Unknown';
+            const deviceDisplay = item.thingsboard_device_token ? 
+                `${deviceName} <span class="badge badge-info ms-1">TB</span>` : 
+                deviceName;
+
+            row.innerHTML = `
+                <td>${this.formatDateTime(item.measured_at)}</td>
+                <td>${deviceDisplay}</td>
+                <td>${item.soil_temperature ? item.soil_temperature.toFixed(1) + '°C' : '--'}</td>
+                <td>${item.humidity ? item.humidity.toFixed(1) + '%' : '--'}</td>
+                <td>${item.soil_moisture ? item.soil_moisture.toFixed(1) + '%' : '--'}</td>
+                <td>${item.nitrogen ? item.nitrogen.toFixed(1) + ' ppm' : '--'}</td>
+                <td>${item.phosphorus ? item.phosphorus.toFixed(1) + ' ppm' : '--'}</td>
+                <td>${item.potassium ? item.potassium.toFixed(1) + ' ppm' : '--'}</td>
+                <td>${item.kelas?.nama_kelas || 'Unknown'}</td>
+                <td>
+                    <span class="badge badge-${this.getSoilQualityBadge(item)}">
+                        ${this.getSoilQualityLabel(item)}
+                    </span>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+
+    updateThingsBoardStatus(status) {
+        const statusElement = document.getElementById('thingsboard-status');
+        if (!statusElement) return;
+
+        if (status.connected) {
+            statusElement.textContent = 'ON';
+            statusElement.className = 'display-4 text-success fw-bold';
+            this.thingsBoardStatus = 'connected';
+        } else {
+            statusElement.textContent = 'OFF';
+            statusElement.className = 'display-4 text-danger fw-bold';
+            this.thingsBoardStatus = 'disconnected';
+        }
+    }
+
+    updateLastSyncTime() {
+        const syncElement = document.getElementById('last-sync');
+        if (!syncElement) return;
+
+        this.lastSyncTime = new Date();
+        syncElement.textContent = this.lastSyncTime.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    animateValueChange(element, newValue) {
+        if (element.textContent === newValue) return;
+        
+        element.classList.add('pulse-animation');
+        element.textContent = newValue;
+        
+        setTimeout(() => {
+            element.classList.remove('pulse-animation');
+        }, 500);
+    }
+
+    animateDataUpdate() {
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.classList.add('data-update-animation');
+            setTimeout(() => {
+                card.classList.remove('data-update-animation');
+            }, 1000);
+        });
+    }
+
+    formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    getSoilQualityBadge(item) {
+        const temp = item.soil_temperature;
+        const humidity = item.humidity;
+        const moisture = item.soil_moisture;
+        const ph = item.ph_level;
+        const nitrogen = item.nitrogen;
+        const phosphorus = item.phosphorus;
+        const potassium = item.potassium;
+
+        let score = 0;
+
+        if (temp >= 20 && temp <= 30) score += 2;
+        else if (temp >= 15 && temp <= 35) score += 1;
+
+        if (humidity >= 40 && humidity <= 70) score += 2;
+        else if (humidity >= 30 && humidity <= 80) score += 1;
+
+        if (moisture >= 30 && moisture <= 60) score += 2;
+        else if (moisture >= 20 && moisture <= 70) score += 1;
+
+        if (ph >= 6.0 && ph <= 7.5) score += 2;
+        else if (ph >= 5.5 && ph <= 8.0) score += 1;
+
+        if (nitrogen && nitrogen >= 20 && nitrogen <= 50) score += 1;
+        if (phosphorus && phosphorus >= 10 && phosphorus <= 30) score += 1;
+        if (potassium && potassium >= 15 && potassium <= 40) score += 1;
+
+        if (score >= 8) return 'success';
+        if (score >= 5) return 'warning';
+        return 'danger';
+    }
+
+    getSoilQualityLabel(item) {
+        const badgeClass = this.getSoilQualityBadge(item);
+        
+        switch (badgeClass) {
+            case 'success': return 'Sangat Baik';
+            case 'warning': return 'Baik';
+            case 'danger': return 'Perlu Perhatian';
+            default: return 'Tidak Diketahui';
+        }
+    }
+
+    setupEventListeners() {
+        const syncButton = document.getElementById('manual-sync-btn');
+        if (syncButton) {
+            syncButton.addEventListener('click', () => {
+                this.manualSync();
+            });
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stopPolling();
+            } else {
+                this.startPolling();
+            }
+        });
+    }
+
+    async manualSync() {
+        try {
+            const response = await fetch(`${this.apiUrl}/thingsboard/sync`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('Manual sync successful:', result.data);
+                this.fetchRealTimeData();
+            }
+
+        } catch (error) {
+            console.error('Error during manual sync:', error);
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.iotRealtimeManager = new IoTDashboardRealtime();
+});
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    .pulse-animation {
+        animation: pulse 0.5s ease-in-out;
+    }
+    
+    .data-update-animation {
+        animation: dataUpdate 1s ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes dataUpdate {
+        0% { background-color: rgba(255, 255, 255, 0.1); }
+        50% { background-color: rgba(255, 255, 255, 0.2); }
+        100% { background-color: rgba(255, 255, 255, 0.1); }
+    }
+`;
+document.head.appendChild(style);
 </script>
 @endpush

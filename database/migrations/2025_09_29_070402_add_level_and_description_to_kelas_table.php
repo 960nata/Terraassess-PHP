@@ -11,10 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kelas', function (Blueprint $table) {
-            $table->string('level')->nullable()->after('name');
-            $table->text('description')->nullable()->after('level');
-        });
+        // Check if table exists before modifying
+        if (Schema::hasTable('kelas')) {
+            Schema::table('kelas', function (Blueprint $table) {
+                // Check if columns don't already exist
+                if (!Schema::hasColumn('kelas', 'level')) {
+                    $table->string('level')->nullable()->after('name');
+                }
+                if (!Schema::hasColumn('kelas', 'description')) {
+                    $table->text('description')->nullable()->after('level');
+                }
+            });
+        }
     }
 
     /**

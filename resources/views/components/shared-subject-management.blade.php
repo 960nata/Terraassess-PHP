@@ -211,8 +211,8 @@
             <button class="modal-close" onclick="closeCreateSubjectModal()">&times;</button>
         </div>
         <form action="{{ 
-            $userRole === 'superadmin' ? route('superadmin.subject-management.create') : 
-            ($userRole === 'admin' ? route('superadmin.subject-management.create') : route('teacher.subject-management.create'))
+            $userRole === 'superadmin' ? route('superadmin.subject-management.store') : 
+            ($userRole === 'admin' ? route('admin.subject-management.store') : route('teacher.subject-management.store'))
         }}" method="POST" class="modal-form">
             @csrf
             <div class="form-row">
@@ -222,27 +222,26 @@
                 </div>
                 <div class="form-group">
                     <label for="code">Kode Mata Pelajaran</label>
-                    <input type="text" id="code" name="code" required>
+                    <input type="text" id="code" name="code">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="category">Kategori</label>
-                    <select id="category" name="category" required>
+                    <label for="kategori">Kategori</label>
+                    <select id="kategori" name="kategori" required>
                         <option value="">Pilih Kategori</option>
-                        <option value="Umum">Umum</option>
-                        <option value="IPA">IPA</option>
-                        <option value="IPS">IPS</option>
-                        <option value="Bahasa">Bahasa</option>
+                        <option value="akademik">Akademik</option>
+                        <option value="sains">Sains</option>
+                        <option value="bahasa">Bahasa</option>
+                        <option value="sosial">Sosial</option>
+                        <option value="seni">Seni</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="level">Tingkat</label>
-                    <select id="level" name="level" required>
-                        <option value="">Pilih Tingkat</option>
-                        <option value="X">Kelas X</option>
-                        <option value="XI">Kelas XI</option>
-                        <option value="XII">Kelas XII</option>
+                    <label for="is_active">Status</label>
+                    <select id="is_active" name="is_active">
+                        <option value="1" selected>Aktif</option>
+                        <option value="0">Tidak Aktif</option>
                     </select>
                 </div>
             </div>
@@ -255,6 +254,111 @@
                 <button type="submit" class="btn-primary">Simpan</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Edit Subject Modal -->
+<div id="editSubjectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Mata Pelajaran</h3>
+            <button class="modal-close" onclick="closeEditSubjectModal()">&times;</button>
+        </div>
+        <form id="editSubjectForm" class="modal-form">
+            @csrf
+            @method('PUT')
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_name">Nama Mata Pelajaran</label>
+                    <input type="text" id="edit_name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_code">Kode Mata Pelajaran</label>
+                    <input type="text" id="edit_code" name="code">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_kategori">Kategori</label>
+                    <select id="edit_kategori" name="kategori" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="akademik">Akademik</option>
+                        <option value="sains">Sains</option>
+                        <option value="bahasa">Bahasa</option>
+                        <option value="sosial">Sosial</option>
+                        <option value="seni">Seni</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_is_active">Status</label>
+                    <select id="edit_is_active" name="is_active">
+                        <option value="1">Aktif</option>
+                        <option value="0">Tidak Aktif</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_description">Deskripsi</label>
+                <textarea id="edit_description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeEditSubjectModal()">Batal</button>
+                <button type="submit" class="btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Subject Modal -->
+<div id="viewSubjectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Detail Mata Pelajaran</h3>
+            <button class="modal-close" onclick="closeViewSubjectModal()">&times;</button>
+        </div>
+        <div class="view-content">
+            <div class="view-section">
+                <h4>Informasi Umum</h4>
+                <div class="view-grid">
+                    <div class="view-item">
+                        <label>Nama Mata Pelajaran:</label>
+                        <span id="view_name">-</span>
+                    </div>
+                    <div class="view-item">
+                        <label>Kode:</label>
+                        <span id="view_code">-</span>
+                    </div>
+                    <div class="view-item">
+                        <label>Kategori:</label>
+                        <span id="view_kategori">-</span>
+                    </div>
+                    <div class="view-item">
+                        <label>Status:</label>
+                        <span id="view_status">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="view-section">
+                <h4>Deskripsi</h4>
+                <p id="view_description">-</p>
+            </div>
+            <div class="view-section">
+                <h4>Statistik</h4>
+                <div class="view-grid">
+                    <div class="view-item">
+                        <label>Jumlah Kelas:</label>
+                        <span id="view_classes_count">-</span>
+                    </div>
+                    <div class="view-item">
+                        <label>Jumlah Guru:</label>
+                        <span id="view_teachers_count">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="closeViewSubjectModal()">Tutup</button>
+        </div>
     </div>
 </div>
 
@@ -643,6 +747,76 @@
     color: white;
 }
 
+/* View Modal Styles */
+.view-content {
+    padding: 1rem 0;
+}
+
+.view-section {
+    margin-bottom: 2rem;
+}
+
+.view-section h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+.view-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.view-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.view-item label {
+    font-weight: 600;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.view-item span {
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.view-item p {
+    color: #e2e8f0;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Loading and Error States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.error-message {
+    background: #ef4444;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.success-message {
+    background: #10b981;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
@@ -659,6 +833,10 @@
     .table-wrapper {
         overflow-x: auto;
     }
+    
+    .view-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
@@ -672,20 +850,147 @@ function closeCreateSubjectModal() {
 }
 
 function viewSubject(subjectId) {
-    // Implementation for viewing subject details
-    console.log('View subject:', subjectId);
+    // Show loading state
+    const modal = document.getElementById('viewSubjectModal');
+    modal.style.display = 'block';
+    
+    // Clear previous content
+    document.getElementById('view_name').textContent = '-';
+    document.getElementById('view_code').textContent = '-';
+    document.getElementById('view_kategori').textContent = '-';
+    document.getElementById('view_status').textContent = '-';
+    document.getElementById('view_description').textContent = '-';
+    document.getElementById('view_classes_count').textContent = '-';
+    document.getElementById('view_teachers_count').textContent = '-';
+    
+    // Fetch subject details
+    fetch(`/superadmin/subject-management/${subjectId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate view modal
+            document.getElementById('view_name').textContent = data.name || '-';
+            document.getElementById('view_code').textContent = data.code || '-';
+            document.getElementById('view_kategori').textContent = data.kategori || '-';
+            document.getElementById('view_status').textContent = data.is_active ? 'Aktif' : 'Tidak Aktif';
+            document.getElementById('view_description').textContent = data.description || 'Tidak ada deskripsi';
+            
+            // Get additional data from the table row
+            const row = document.querySelector(`button[onclick="viewSubject('${subjectId}')"]`).closest('tr');
+            if (row) {
+                const classesCount = row.cells[6]?.textContent || '0';
+                const teachersCount = row.cells[5]?.querySelector('.teacher-name') ? '1+' : '0';
+                
+                document.getElementById('view_classes_count').textContent = classesCount;
+                document.getElementById('view_teachers_count').textContent = teachersCount;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching subject details:', error);
+            alert('Gagal memuat detail mata pelajaran');
+        });
 }
 
 function editSubject(subjectId) {
-    // Implementation for editing subject
-    console.log('Edit subject:', subjectId);
+    // Show loading state
+    const modal = document.getElementById('editSubjectModal');
+    modal.style.display = 'block';
+    
+    // Clear previous content
+    document.getElementById('edit_name').value = '';
+    document.getElementById('edit_code').value = '';
+    document.getElementById('edit_kategori').value = '';
+    document.getElementById('edit_is_active').value = '1';
+    document.getElementById('edit_description').value = '';
+    
+    // Fetch subject details
+    fetch(`/superadmin/subject-management/${subjectId}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate edit form
+            document.getElementById('edit_name').value = data.name || '';
+            document.getElementById('edit_code').value = data.code || '';
+            document.getElementById('edit_kategori').value = data.kategori || '';
+            document.getElementById('edit_is_active').value = data.is_active ? '1' : '0';
+            document.getElementById('edit_description').value = data.description || '';
+            
+            // Set form action
+            document.getElementById('editSubjectForm').action = `/superadmin/subject-management/${subjectId}`;
+        })
+        .catch(error => {
+            console.error('Error fetching subject details:', error);
+            alert('Gagal memuat data mata pelajaran');
+        });
 }
 
 function deleteSubject(subjectId) {
     if (confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?')) {
-        // Implementation for deleting subject
-        console.log('Delete subject:', subjectId);
+        // Show loading state
+        const row = document.querySelector(`button[onclick="deleteSubject('${subjectId}')"]`).closest('tr');
+        if (row) {
+            row.classList.add('loading');
+        }
+        
+        // Make delete request
+        fetch(`/superadmin/subject-management/${subjectId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove row from table
+                if (row) {
+                    row.remove();
+                }
+                // Show success message
+                showMessage(data.message, 'success');
+            } else {
+                // Show error message
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting subject:', error);
+            showMessage('Gagal menghapus mata pelajaran', 'error');
+        })
+        .finally(() => {
+            // Remove loading state
+            if (row) {
+                row.classList.remove('loading');
+            }
+        });
     }
+}
+
+function closeEditSubjectModal() {
+    document.getElementById('editSubjectModal').style.display = 'none';
+}
+
+function closeViewSubjectModal() {
+    document.getElementById('viewSubjectModal').style.display = 'none';
+}
+
+function showMessage(message, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.error-message, .success-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create new message
+    const messageDiv = document.createElement('div');
+    messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+    messageDiv.textContent = message;
+    
+    // Insert at top of page container
+    const pageContainer = document.querySelector('.page-container');
+    pageContainer.insertBefore(messageDiv, pageContainer.firstChild);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
 }
 
 function exportSubjects() {
@@ -693,11 +998,67 @@ function exportSubjects() {
     console.log('Export subjects');
 }
 
+// Handle edit form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editSubjectForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const subjectId = this.action.split('/').pop();
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Menyimpan...';
+            submitBtn.disabled = true;
+            
+            fetch(this.action, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeEditSubjectModal();
+                    showMessage(data.message, 'success');
+                    // Reload page to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating subject:', error);
+                showMessage('Gagal memperbarui mata pelajaran', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+});
+
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('createSubjectModal');
-    if (event.target === modal) {
+    const createModal = document.getElementById('createSubjectModal');
+    const editModal = document.getElementById('editSubjectModal');
+    const viewModal = document.getElementById('viewSubjectModal');
+    
+    if (event.target === createModal) {
         closeCreateSubjectModal();
+    } else if (event.target === editModal) {
+        closeEditSubjectModal();
+    } else if (event.target === viewModal) {
+        closeViewSubjectModal();
     }
 }
 </script>

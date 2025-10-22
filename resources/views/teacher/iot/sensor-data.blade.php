@@ -257,6 +257,9 @@
                     <th>Kelembaban</th>
                     <th>Kel. Tanah</th>
                     <th>pH</th>
+                    <th>Nitrogen</th>
+                    <th>Fosfor</th>
+                    <th>Kalium</th>
                     <th>Kualitas</th>
                     <th>Waktu</th>
                 </tr>
@@ -270,8 +273,8 @@
                     </td>
                     <td>{{ $data->kelas->name ?? 'Unknown' }}</td>
                     <td>
-                        <span style="color: #667eea; font-weight: 600;">{{ $data->temperature }}°C</span>
-                        @if($data->temperature > 30)
+                        <span style="color: #667eea; font-weight: 600;">{{ $data->soil_temperature }}°C</span>
+                        @if($data->soil_temperature > 30)
                             <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;" title="Suhu tinggi"></i>
                         @endif
                     </td>
@@ -291,6 +294,24 @@
                         <span style="color: #8b5cf6; font-weight: 600;">{{ $data->ph_level }}</span>
                         @if($data->ph_level < 6 || $data->ph_level > 8)
                             <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;" title="pH tidak optimal"></i>
+                        @endif
+                    </td>
+                    <td>
+                        <span style="color: #06b6d4; font-weight: 600;">{{ $data->nitrogen ? $data->nitrogen . ' ppm' : '-' }}</span>
+                        @if($data->nitrogen && ($data->nitrogen < 20 || $data->nitrogen > 50))
+                            <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;" title="Nitrogen tidak optimal"></i>
+                        @endif
+                    </td>
+                    <td>
+                        <span style="color: #8b5cf6; font-weight: 600;">{{ $data->phosphorus ? $data->phosphorus . ' ppm' : '-' }}</span>
+                        @if($data->phosphorus && ($data->phosphorus < 10 || $data->phosphorus > 30))
+                            <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;" title="Fosfor tidak optimal"></i>
+                        @endif
+                    </td>
+                    <td>
+                        <span style="color: #10b981; font-weight: 600;">{{ $data->potassium ? $data->potassium . ' ppm' : '-' }}</span>
+                        @if($data->potassium && ($data->potassium < 15 || $data->potassium > 40))
+                            <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;" title="Kalium tidak optimal"></i>
                         @endif
                     </td>
                     <td>
@@ -360,7 +381,7 @@
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
                 <div>
                     <div style="color: #94a3b8; font-size: 0.75rem;">Suhu</div>
-                    <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">{{ $data->temperature }}°C</div>
+                    <div style="color: #667eea; font-weight: 600; font-size: 1.1rem;">{{ $data->soil_temperature }}°C</div>
                 </div>
                 <div>
                     <div style="color: #94a3b8; font-size: 0.75rem;">Kelembaban</div>
@@ -373,6 +394,18 @@
                 <div>
                     <div style="color: #94a3b8; font-size: 0.75rem;">pH</div>
                     <div style="color: #8b5cf6; font-weight: 600; font-size: 1.1rem;">{{ $data->ph_level }}</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Nitrogen</div>
+                    <div style="color: #06b6d4; font-weight: 600; font-size: 1.1rem;">{{ $data->nitrogen ? $data->nitrogen . ' ppm' : '-' }}</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Fosfor</div>
+                    <div style="color: #8b5cf6; font-weight: 600; font-size: 1.1rem;">{{ $data->phosphorus ? $data->phosphorus . ' ppm' : '-' }}</div>
+                </div>
+                <div>
+                    <div style="color: #94a3b8; font-size: 0.75rem;">Kalium</div>
+                    <div style="color: #10b981; font-weight: 600; font-size: 1.1rem;">{{ $data->potassium ? $data->potassium . ' ppm' : '-' }}</div>
                 </div>
             </div>
         </div>

@@ -24,17 +24,17 @@
             <ul class="nav nav-tabs mb-4" id="notificationTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                        Semua ({{ $notifications->total() }})
+                        Semua ({{ $totalCount }})
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="unread-tab" data-bs-toggle="tab" data-bs-target="#unread" type="button" role="tab">
-                        Belum Dibaca ({{ $notifications->filter(function($notification) { return !$notification->is_read; })->count() }})
+                        Belum Dibaca ({{ $unreadCount }})
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="read-tab" data-bs-toggle="tab" data-bs-target="#read" type="button" role="tab">
-                        Sudah Dibaca ({{ $notifications->filter(function($notification) { return $notification->is_read; })->count() }})
+                        Sudah Dibaca ({{ $readCount }})
                     </button>
                 </li>
             </ul>
@@ -43,7 +43,7 @@
             <div class="tab-content" id="notificationTabContent">
                 {{-- All Notifications --}}
                 <div class="tab-pane fade show active" id="all" role="tabpanel">
-                    @if($notifications->total() > 0)
+                    @if($notifications->count() > 0)
                         <div class="notification-list">
                             @foreach($notifications as $notification)
                             <div class="notification-card {{ !$notification->is_read ? 'unread' : '' }}" 
@@ -107,7 +107,7 @@
 
                 {{-- Unread Notifications --}}
                 <div class="tab-pane fade" id="unread" role="tabpanel">
-                    @php $unreadNotifications = $notifications->filter(function($notification) { return !$notification->is_read; }); @endphp
+                    @php $unreadNotifications = $notifications->items(); $unreadNotifications = collect($unreadNotifications)->filter(function($notification) { return !$notification->is_read; }); @endphp
                     @if($unreadNotifications->count() > 0)
                         <div class="notification-list">
                             @foreach($unreadNotifications as $notification)
@@ -160,7 +160,7 @@
 
                 {{-- Read Notifications --}}
                 <div class="tab-pane fade" id="read" role="tabpanel">
-                    @php $readNotifications = $notifications->filter(function($notification) { return $notification->is_read; }); @endphp
+                    @php $readNotifications = $notifications->items(); $readNotifications = collect($readNotifications)->filter(function($notification) { return $notification->is_read; }); @endphp
                     @if($readNotifications->count() > 0)
                         <div class="notification-list">
                             @foreach($readNotifications as $notification)

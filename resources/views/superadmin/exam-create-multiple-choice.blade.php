@@ -393,123 +393,202 @@
                 margin-right: 4px;
             }
         }
+
+        /* Quill Editor Icon Colors - Make icons white */
+        .ql-toolbar .ql-stroke {
+            stroke: #ffffff !important;
+        }
+
+        .ql-toolbar .ql-fill {
+            fill: #ffffff !important;
+        }
+
+        .ql-toolbar .ql-picker-label {
+            color: #ffffff !important;
+        }
+
+        .ql-toolbar svg {
+            color: #ffffff !important;
+        }
+
+        .ql-toolbar svg path {
+            stroke: #ffffff !important;
+            fill: #ffffff !important;
+        }
+
+        .ql-toolbar svg line {
+            stroke: #ffffff !important;
+        }
+
+        .ql-toolbar svg circle {
+            stroke: #ffffff !important;
+            fill: #ffffff !important;
+        }
 </style>
 @endsection
 
 @section('content')
-<div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-list-ul"></i>
-                Buat Ujian Pilihan Ganda
-            </h1>
-            <p class="page-description">Buat ujian dengan soal pilihan ganda yang dapat dinilai otomatis</p>
-        </div>
-
-        <!-- Exam Settings -->
-        <div class="exam-settings">
-            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
-                <i class="fas fa-cog me-2"></i>Pengaturan Ujian
-            </h2>
+<div class="min-h-screen bg-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                <h1 class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-list-ul mr-3"></i>
+                    Buat Ujian Pilihan Ganda
+                </h1>
+                <p class="text-blue-100 mt-1">Buat ujian dengan soal pilihan ganda yang dapat dinilai otomatis</p>
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500 text-white">
+                        <i class="fas fa-tag mr-1"></i>
+                        Tipe: Pilihan Ganda
+                    </span>
+                </div>
+            </div>
+            
+            <div class="p-6 bg-gray-800">
+                <!-- Exam Settings -->
+                <div class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <h2 class="text-lg font-semibold text-white flex items-center mb-4">
+                        <i class="fas fa-cog mr-2 text-blue-400"></i>Pengaturan Ujian
+                    </h2>
             
             <form id="examForm" action="{{ route('superadmin.exam-management.create-multiple-choice.store') }}" method="POST">
                 @csrf
                 
-                <div class="settings-grid">
-                    <div class="form-group">
-                        <label for="exam_title">Judul Ujian</label>
-                        <input type="text" id="exam_title" name="exam_title" placeholder="Masukkan judul ujian" required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label for="exam_title" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Judul Ujian <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="exam_title" name="exam_title" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                       placeholder="Masukkan judul ujian" required>
+                            </div>
+                            
+                            <div>
+                                <label for="kelas_id" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Kelas <span class="text-red-400">*</span>
+                                </label>
+                                <select id="kelas_id" name="kelas_id" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih kelas</option>
+                                    @foreach($classes as $class)
+                                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="mapel_id" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Mata Pelajaran <span class="text-red-400">*</span>
+                                </label>
+                                <select id="mapel_id" name="mapel_id" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih mata pelajaran</option>
+                                    @foreach($subjects as $subject)
+                                        <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="duration" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Durasi (menit) <span class="text-red-400">*</span>
+                                </label>
+                                <input type="number" id="duration" name="duration" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                       placeholder="90" min="1" max="300" required>
+                            </div>
+                            
+                            <div>
+                                <label for="max_score" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Nilai Maksimal <span class="text-red-400">*</span>
+                                </label>
+                                <input type="number" id="max_score" name="max_score" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                       placeholder="100" min="1" max="100" required>
+                            </div>
+                            
+                            <div>
+                                <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Tingkat Kesulitan <span class="text-red-400">*</span>
+                                </label>
+                                <select id="difficulty" name="difficulty" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                        required>
+                                    <option value="">Pilih tingkat kesulitan</option>
+                                    <option value="easy">Mudah</option>
+                                    <option value="medium">Sedang</option>
+                                    <option value="hard">Sulit</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="exam_description" class="block text-sm font-medium text-gray-300 mb-2">
+                                Deskripsi Ujian <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="exam_description" name="exam_description" 
+                                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                      rows="3" placeholder="Masukkan deskripsi ujian yang detail" required></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label for="due_date" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Tanggal Mulai <span class="text-red-400">*</span>
+                                </label>
+                                <input type="datetime-local" id="due_date" name="due_date" 
+                                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label for="is_hidden" class="block text-sm font-medium text-gray-300 mb-2">
+                                    Status
+                                </label>
+                                <select id="is_hidden" name="is_hidden" 
+                                        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                                    <option value="1">Draft</option>
+                                    <option value="0">Publikasi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="mb-6 bg-gray-700 rounded-lg p-6 border border-gray-600">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center">
+                            <i class="fas fa-question-circle mr-2 text-blue-400"></i>Soal Ujian
+                        </h2>
+                        <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center text-sm" onclick="addQuestion()">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Soal
+                        </button>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="class_id">Kelas</label>
-                        <select id="class_id" name="class_id" required>
-                            <option value="">Pilih kelas</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="subject_id">Mata Pelajaran</label>
-                        <select id="subject_id" name="subject_id" required>
-                            <option value="">Pilih mata pelajaran</option>
-                            @foreach($subjects as $subject)
-                                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="duration">Durasi (menit)</label>
-                        <input type="number" id="duration" name="duration" placeholder="90" min="1" max="300" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="max_score">Nilai Maksimal</label>
-                        <input type="number" id="max_score" name="max_score" placeholder="100" min="1" max="100" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="difficulty">Tingkat Kesulitan</label>
-                        <select id="difficulty" name="difficulty" required>
-                            <option value="">Pilih tingkat kesulitan</option>
-                            <option value="easy">Mudah</option>
-                            <option value="medium">Sedang</option>
-                            <option value="hard">Sulit</option>
-                        </select>
+                    <div id="questionsContainer">
+                        <!-- Questions will be added here dynamically -->
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="exam_description">Deskripsi Ujian</label>
-                    <textarea id="exam_description" name="exam_description" placeholder="Masukkan deskripsi ujian yang detail" required></textarea>
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 mt-8">
+                    <a href="{{ route('superadmin.exam-management') }}" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </a>
+                    <button type="button" id="saveExamBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200" onclick="saveExam()">
+                        <i class="fas fa-save mr-2"></i> Simpan Ujian
+                    </button>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="due_date">Tanggal Mulai</label>
-                        <input type="datetime-local" id="due_date" name="due_date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="is_hidden">Status</label>
-                        <select id="is_hidden" name="is_hidden">
-                            <option value="1">Draft</option>
-                            <option value="0">Publikasi</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Questions Section -->
-        <div class="question-section">
-            <h2 style="color: #ffffff; margin-bottom: 1.5rem; font-size: 1.25rem;">
-                <i class="fas fa-question-circle me-2"></i>Soal Ujian
-            </h2>
-            
-            <div id="questionsContainer">
-                <!-- Questions will be added here dynamically -->
             </div>
-            
-            <button type="button" class="add-question-btn" onclick="addQuestion()">
-                <i class="fas fa-plus"></i>
-                Tambah Soal
-            </button>
         </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button type="button" class="btn-primary" onclick="saveExam()">
-                <i class="fas fa-save"></i>
-                Simpan Ujian
-            </button>
-            <a href="{{ route('superadmin.exam-management') }}" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Kembali
-            </a>
-        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -818,7 +897,7 @@ function saveExam() {
     }
     
     // Show loading
-    const saveBtn = document.querySelector('.btn-primary');
+    const saveBtn = document.getElementById('saveExamBtn');
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     saveBtn.disabled = true;
@@ -956,5 +1035,126 @@ window.addEventListener('beforeunload', function() {
         localStorage.removeItem('exam_draft');
     }
 });
+
+// Restore questions dari old input jika ada
+@if(old('questions'))
+    document.addEventListener('DOMContentLoaded', function() {
+        const oldQuestions = @json(old('questions'));
+        console.log('Restoring old exam questions:', oldQuestions);
+        
+        oldQuestions.forEach((question, index) => {
+            addQuestion();
+            
+            // Fill data ke form
+            const questionId = index;
+            
+            // Fill question text
+            const questionInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][question]"]`);
+            if (questionInput) {
+                questionInput.value = question.question || '';
+            }
+            
+            // Fill points
+            const pointsInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][points]"]`);
+            if (pointsInput) {
+                pointsInput.value = question.points || 1;
+            }
+            
+            // Fill category
+            const categorySelect = document.querySelector(`#question-${questionId} select[name="questions[${questionId}][category]"]`);
+            if (categorySelect) {
+                categorySelect.value = question.category || 'medium';
+            }
+            
+            // Fill correct answer
+            const correctAnswerRadio = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][correct_answer]"][value="${question.correct_answer}"]`);
+            if (correctAnswerRadio) {
+                correctAnswerRadio.checked = true;
+            }
+            
+            // Fill options
+            if (question.options) {
+                ['1', '2', '3', '4'].forEach(option => {
+                    const optionInput = document.querySelector(`#question-${questionId} input[name="questions[${questionId}][options][${option}]"]`);
+                    if (optionInput) {
+                        optionInput.value = question.options[option] || '';
+                    }
+                });
+            }
+            
+            // Initialize Quill editors for this question
+            setTimeout(() => {
+                initializeQuillEditors();
+            }, 100);
+        });
+        
+        // Show notification that data was restored
+        @if(session('error'))
+            showNotification('Data Anda tersimpan! Silakan perbaiki error dan submit kembali. Data yang sudah Anda isi tidak hilang.', 'warning');
+        @endif
+    });
+@endif
 </script>
+
+<!-- Quill Editor CSS -->
+<style>
+/* Quill Editor Styles - From material-create.blade.php */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 200px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-modern .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.quill-editor-modern .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-modern .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.quill-editor-modern .ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.quill-editor-modern .ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.quill-editor-modern .ql-snow .ql-fill {
+    fill: #ffffff;
+}
+</style>
 @endsection

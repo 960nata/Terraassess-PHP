@@ -6,6 +6,7 @@ use App\Models\IotDevice;
 use App\Models\IotSensorData;
 use App\Models\ResearchProject;
 use App\Models\Kelas;
+use App\Services\ThingsBoardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -111,11 +112,14 @@ class IotController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'device_id' => 'required|string',
-            'temperature' => 'required|numeric|between:-50,100',
+            'soil_temperature' => 'required|numeric|between:-50,100',
             'humidity' => 'required|numeric|between:0,100',
             'soil_moisture' => 'required|numeric|between:0,100',
             'ph_level' => 'nullable|numeric|between:0,14',
-            'nutrient_level' => 'nullable|numeric|min:0',
+            'nitrogen' => 'nullable|numeric|min:0',
+            'phosphorus' => 'nullable|numeric|min:0',
+            'potassium' => 'nullable|numeric|min:0',
+            'thingsboard_device_token' => 'nullable|string',
             'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'raw_data' => 'nullable|array'
@@ -134,7 +138,7 @@ class IotController extends Controller
             $device = IotDevice::where('device_id', $request->device_id)->first();
             if (!$device) {
                 $device = IotDevice::create([
-                    'device_name' => 'IoT Device ' . $request->device_id,
+                    'name' => 'IoT Device ' . $request->device_id,
                     'device_id' => $request->device_id,
                     'bluetooth_address' => $request->bluetooth_address ?? 'unknown',
                     'device_type' => 'soil_sensor',
@@ -149,11 +153,14 @@ class IotController extends Controller
                 'device_id' => $device->id,
                 'kelas_id' => $request->kelas_id ?? 1, // Default class
                 'user_id' => auth()->id(),
-                'temperature' => $request->temperature,
+                'soil_temperature' => $request->soil_temperature,
                 'humidity' => $request->humidity,
                 'soil_moisture' => $request->soil_moisture,
                 'ph_level' => $request->ph_level,
-                'nutrient_level' => $request->nutrient_level,
+                'nitrogen' => $request->nitrogen,
+                'phosphorus' => $request->phosphorus,
+                'potassium' => $request->potassium,
+                'thingsboard_device_token' => $request->thingsboard_device_token,
                 'location' => $request->location,
                 'notes' => $request->notes,
                 'raw_data' => $request->raw_data,
@@ -163,9 +170,12 @@ class IotController extends Controller
             Log::info('IoT sensor data stored', [
                 'device_id' => $device->id,
                 'sensor_data_id' => $sensorData->id,
-                'temperature' => $request->temperature,
+                'soil_temperature' => $request->soil_temperature,
                 'humidity' => $request->humidity,
-                'soil_moisture' => $request->soil_moisture
+                'soil_moisture' => $request->soil_moisture,
+                'nitrogen' => $request->nitrogen,
+                'phosphorus' => $request->phosphorus,
+                'potassium' => $request->potassium
             ]);
 
             return response()->json([
@@ -219,7 +229,7 @@ class IotController extends Controller
         $status = $devices->map(function ($device) {
             return [
                 'id' => $device->id,
-                'device_name' => $device->device_name,
+                'device_name' => $device->name,
                 'device_id' => $device->device_id,
                 'status' => $device->status,
                 'is_online' => $device->isOnline(),
@@ -355,5 +365,56 @@ class IotController extends Controller
         
         return view('superadmin.iot-dashboard', compact('devices', 'recentData', 'kelas', 'totalData', 'activeDevices', 'activeClasses', 'activeProjects'))
             ->with('title', 'IoT Dashboard Super Admin');
+    }
+
+    /**
+     * Sync data from ThingsBoard
+     */
+    public function syncFromThingsBoard()
+    {
+        try {
+            $thingsBoardService = new ThingsBoardService();
+            $result = $thingsBoardService->syncSensorData();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data synced successfully from ThingsBoard',
+                'data' => $result
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to sync from ThingsBoard', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to sync from ThingsBoard',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get ThingsBoard connection status
+     */
+    public function getThingsBoardStatus()
+    {
+        try {
+            $thingsBoardService = new ThingsBoardService();
+            $status = $thingsBoardService->checkConnection();
+
+            return response()->json([
+                'success' => true,
+                'status' => $status
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to check ThingsBoard status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -11,10 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tugas_quizzes', function (Blueprint $table) {
-            $table->integer('poin')->default(10)->after('soal');
-            $table->string('kategori')->default('medium')->after('poin'); // easy, medium, hard
-        });
+        // Check if table exists before modifying
+        if (Schema::hasTable('tugas_quizzes')) {
+            Schema::table('tugas_quizzes', function (Blueprint $table) {
+                // Check if columns don't already exist
+                if (!Schema::hasColumn('tugas_quizzes', 'poin')) {
+                    $table->integer('poin')->default(10)->after('soal');
+                }
+                if (!Schema::hasColumn('tugas_quizzes', 'kategori')) {
+                    $table->string('kategori')->default('medium')->after('poin'); // easy, medium, hard
+                }
+            });
+        }
     }
 
     /**

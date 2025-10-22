@@ -69,7 +69,7 @@
                         </div>
                         <div class="question-content">
                             <p class="question-text">{{ $soal->pertanyaan }}</p>
-                            @include('components.rich-text-editor', [
+                            @include('components.modern-quill-editor', [
                                 'name' => 'jawaban_essay[' . $soal->id . ']',
                                 'content' => '',
                                 'placeholder' => 'Tulis jawaban Anda di sini...',

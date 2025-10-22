@@ -13,6 +13,8 @@ use App\Models\TugasKelompok;
 use App\Models\AnggotaTugasKelompok;
 use App\Models\TugasMultiple;
 use App\Models\TugasQuiz;
+use App\Models\TugasMandiri;
+use App\Models\DataSiswa;
 use App\Models\EditorAccess;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
@@ -32,9 +34,19 @@ class TaskController extends Controller
         // Get teacher's assigned classes and subjects
         $assignedData = $this->getTeacherAssignedData(request());
         
-        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
-            // Jika teacher tidak memiliki kelas yang ditugaskan, tampilkan data kosong
-            return view('superadmin.task-management', [
+        // Untuk teacher (roles_id = 3), berikan akses penuh meskipun tidak ada EditorAccess
+        if ($user->roles_id == 3 && (!$assignedData || empty($assignedData['kelas_mapel_ids']))) {
+            // Teacher tanpa EditorAccess tetap bisa akses, tapi dengan data terbatas
+            $assignedData = [
+                'kelas_mapel_ids' => [],
+                'kelas_ids' => [],
+                'mapel_ids' => []
+            ];
+        }
+        
+        if ($user->roles_id != 3 && (!$assignedData || empty($assignedData['kelas_mapel_ids']))) {
+            // Jika non-teacher tidak memiliki kelas yang ditugaskan, tampilkan data kosong
+            return view('admin.task-management', [
                 'title' => 'Manajemen Tugas',
                 'user' => $user,
                 'totalTasks' => 0,
@@ -54,46 +66,89 @@ class TaskController extends Controller
             ]);
         }
         
-        // Statistik tugas - hanya untuk kelas yang diajar teacher
-        $totalTugas = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
-        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', 0)->count();
-        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('due', '<', now())->count();
-        $activeClasses = Kelas::whereIn('id', $assignedData['kelas_ids'])->count();
+        // Statistik tugas - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            // Teacher: show all tasks created by them
+            $totalTugas = Tugas::where('created_by', $user->id)->count();
+            $activeTasks = Tugas::where('created_by', $user->id)->where('isHidden', 0)->count();
+            $completedTasks = Tugas::where('created_by', $user->id)->where('due', '<', now())->count();
+            $activeClasses = Kelas::count(); // All classes for teacher
+            $tugasPilihanGanda = Tugas::where('created_by', $user->id)->where('tipe', 1)->count();
+            $tugasEssay = Tugas::where('created_by', $user->id)->where('tipe', 2)->count();
+            $tugasMandiri = Tugas::where('created_by', $user->id)->where('tipe', 3)->count();
+            $tugasKelompok = Tugas::where('created_by', $user->id)->where('tipe', 4)->count();
+        } else {
+            // Other roles: use assigned data
+            $totalTugas = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+            $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', 0)->count();
+            $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('due', '<', now())->count();
+            $activeClasses = Kelas::whereIn('id', $assignedData['kelas_ids'])->count();
+            $tugasPilihanGanda = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 1)->count();
+            $tugasEssay = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 2)->count();
+            $tugasMandiri = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 3)->count();
+            $tugasKelompok = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 4)->count();
+        }
         
-        $tugasPilihanGanda = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 1)->count();
-        $tugasEssay = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 2)->count();
-        $tugasMandiri = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 3)->count();
-        $tugasKelompok = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 4)->count();
+        // Tugas terbaru - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            $tugasTerbaru = Tugas::with(['kelasMapel.mapel', 'kelasMapel.kelas'])
+                ->where('created_by', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        } else {
+            $tugasTerbaru = Tugas::with(['kelasMapel.mapel', 'kelasMapel.kelas'])
+                ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
         
-        // Tugas terbaru - hanya dari kelas yang diajar teacher
-        $tugasTerbaru = Tugas::with(['KelasMapel.Mapel', 'KelasMapel.Kelas'])
-            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+        // Progress siswa - untuk guru: dari semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            $progressSiswa = TugasProgress::with(['user', 'tugas'])
+                ->whereHas('tugas', function($query) use ($user) {
+                    $query->where('created_by', $user->id);
+                })
+                ->where('status', 'submitted')
+                ->orderBy('submitted_at', 'desc')
+                ->limit(10)
+                ->get();
+        } else {
+            $progressSiswa = TugasProgress::with(['user', 'tugas'])
+                ->whereHas('tugas', function($query) use ($assignedData) {
+                    $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+                })
+                ->where('status', 'submitted')
+                ->orderBy('submitted_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
         
-        // Progress siswa - hanya dari tugas yang diajar teacher
-        $progressSiswa = TugasProgress::with(['user', 'tugas'])
-            ->whereHas('tugas', function($query) use ($assignedData) {
-                $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
-            })
-            ->where('status', 'submitted')
-            ->orderBy('submitted_at', 'desc')
-            ->limit(10)
-            ->get();
+        // Data untuk form - untuk guru: semua kelas dan mata pelajaran, untuk role lain: berdasarkan yang ditugaskan
+        if ($user->roles_id == 3) {
+            $subjects = Mapel::all();
+            $classes = Kelas::all();
+        } else {
+            $subjects = Mapel::whereIn('id', $assignedData['mapel_ids'])->get();
+            $classes = Kelas::whereIn('id', $assignedData['kelas_ids'])->get();
+        }
         
-        // Data untuk form - hanya kelas dan mata pelajaran yang diajar teacher
-        $subjects = Mapel::whereIn('id', $assignedData['mapel_ids'])->get();
-        $classes = Kelas::whereIn('id', $assignedData['kelas_ids'])->get();
+        // Ambil semua tugas untuk tabel - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            $tasks = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->where('created_by', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $tasks = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
         
-        // Ambil semua tugas untuk tabel - hanya dari kelas yang diajar teacher
-        $tasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
-            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        // Menggunakan view superadmin dengan data terbatas untuk teacher
-        return view('superadmin.task-management', [
+        // Menggunakan view admin (shared) untuk semua role
+        return view('admin.task-management', [
             'title' => 'Manajemen Tugas',
             'user' => $user,
             'totalTasks' => $totalTugas,
@@ -110,78 +165,10 @@ class TaskController extends Controller
             'subjects' => $subjects,
             'classes' => $classes,
             'tasks' => $tasks,
+            'filters' => request()->only(['filter_class', 'filter_subject', 'filter_status']),
         ]);
     }
 
-    /**
-     * Halaman utama manajemen tugas
-     */
-    public function management(Request $request)
-    {
-        $user = Auth::user();
-        
-        // Get teacher's assigned classes and subjects
-        $assignedData = $this->getTeacherAssignedData($request);
-        
-        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
-            return view('teacher.task-management-main', [
-                'title' => 'Manajemen Tugas',
-                'user' => $user,
-                'stats' => ['total' => 0, 'active' => 0, 'completed' => 0, 'multiple_choice' => 0, 'essay' => 0, 'individual' => 0, 'group' => 0],
-                'tasks' => collect(),
-                'classes' => collect(),
-                'subjects' => collect(),
-                'activeClasses' => 0,
-                'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
-            ]);
-        }
-        
-        // Get all tasks for the teacher (for the table) from assigned classes only
-        $tasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
-            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        // Get additional data needed for the shared component - only assigned classes/subjects
-        $classes = $this->getTeacherAvailableClasses($request);
-        $subjects = $this->getTeacherAvailableSubjects($request);
-        
-        // Calculate stats from assigned classes only
-        $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
-        
-        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->where('isHidden', false)->count();
-        
-        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->where('isHidden', true)->count();
-        
-        $activeClasses = $classes->count();
-        
-        $stats = [
-            'total' => $totalTasks,
-            'active' => $activeTasks,
-            'completed' => $completedTasks,
-            'multiple_choice' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 1)->count(),
-            'essay' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 2)->count(),
-            'individual' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 3)->count(),
-            'group' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 4)->count(),
-        ];
-
-        return view('teacher.task-management-main', [
-            'title' => 'Manajemen Tugas',
-            'user' => $user,
-            'stats' => $stats,
-            'tasks' => $tasks,
-            'classes' => $classes,
-            'subjects' => $subjects,
-            'activeClasses' => $activeClasses,
-            'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
-        ]);
-    }
 
     /**
      * Filter tasks
@@ -193,32 +180,56 @@ class TaskController extends Controller
         // Get teacher's assigned classes and subjects
         $assignedData = $this->getTeacherAssignedData($request);
         
-        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
-            return view('teacher.task-management-main', [
+        // Untuk teacher (roles_id = 3), berikan akses penuh meskipun tidak ada EditorAccess
+        if ($user->roles_id == 3 && (!$assignedData || empty($assignedData['kelas_mapel_ids']))) {
+            // Teacher tanpa EditorAccess tetap bisa akses, tapi dengan data terbatas
+            $assignedData = [
+                'kelas_mapel_ids' => [],
+                'kelas_ids' => [],
+                'mapel_ids' => []
+            ];
+        }
+        
+        if ($user->roles_id != 3 && (!$assignedData || empty($assignedData['kelas_mapel_ids']))) {
+            return view('admin.task-management', [
                 'title' => 'Manajemen Tugas',
                 'user' => $user,
-                'stats' => ['total' => 0, 'active' => 0, 'completed' => 0, 'multiple_choice' => 0, 'essay' => 0, 'individual' => 0, 'group' => 0],
-                'tasks' => collect(),
-                'classes' => collect(),
-                'subjects' => collect(),
+                'totalTasks' => 0,
+                'activeTasks' => 0,
+                'completedTasks' => 0,
                 'activeClasses' => 0,
+                'totalTugas' => 0,
+                'tugasPilihanGanda' => 0,
+                'tugasEssay' => 0,
+                'tugasMandiri' => 0,
+                'tugasKelompok' => 0,
+                'tugasTerbaru' => collect(),
+                'progressSiswa' => collect(),
+                'subjects' => collect(),
+                'classes' => collect(),
+                'tasks' => collect(),
                 'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
             ]);
         }
         
-        // Build query with filters
-        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
-            ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        // Build query with filters - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            $query = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->where('created_by', $user->id);
+        } else {
+            $query = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+                ->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        }
         
         // Apply filters
         if ($request->filled('filter_class')) {
-            $query->whereHas('KelasMapel', function($q) use ($request) {
+            $query->whereHas('kelasMapel', function($q) use ($request) {
                 $q->where('kelas_id', $request->filter_class);
             });
         }
         
         if ($request->filled('filter_subject')) {
-            $query->whereHas('KelasMapel', function($q) use ($request) {
+            $query->whereHas('kelasMapel', function($q) use ($request) {
                 $q->where('mapel_id', $request->filter_subject);
             });
         }
@@ -242,43 +253,65 @@ class TaskController extends Controller
         
         $tasks = $query->orderBy('created_at', 'desc')->get();
         
-        // Get additional data needed for the shared component
-        $classes = $this->getTeacherAvailableClasses($request);
-        $subjects = $this->getTeacherAvailableSubjects($request);
+        // Get additional data needed for the shared component - untuk guru: semua data, untuk role lain: berdasarkan yang ditugaskan
+        if ($user->roles_id == 3) {
+            $classes = Kelas::all();
+            $subjects = Mapel::all();
+        } else {
+            $classes = $this->getTeacherAvailableClasses($request);
+            $subjects = $this->getTeacherAvailableSubjects($request);
+        }
         
-        // Calculate stats from assigned classes only
-        $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
-        
-        $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->where('isHidden', false)->count();
-        
-        $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->where('isHidden', true)->count();
-        
-        $activeClasses = $classes->count();
-        
-        $stats = [
-            'total' => $totalTasks,
-            'active' => $activeTasks,
-            'completed' => $completedTasks,
-            'multiple_choice' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 1)->count(),
-            'essay' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 2)->count(),
-            'individual' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 3)->count(),
-            'group' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-                ->where('tipe', 4)->count(),
-        ];
+        // Calculate stats - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan kelas yang ditugaskan
+        if ($user->roles_id == 3) {
+            $totalTasks = Tugas::where('created_by', $user->id)->count();
+            $activeTasks = Tugas::where('created_by', $user->id)->where('isHidden', false)->count();
+            $completedTasks = Tugas::where('created_by', $user->id)->where('isHidden', true)->count();
+            $activeClasses = $classes->count();
+            
+            $stats = [
+                'total' => $totalTasks,
+                'active' => $activeTasks,
+                'completed' => $completedTasks,
+                'multiple_choice' => Tugas::where('created_by', $user->id)->where('tipe', 1)->count(),
+                'essay' => Tugas::where('created_by', $user->id)->where('tipe', 2)->count(),
+                'individual' => Tugas::where('created_by', $user->id)->where('tipe', 3)->count(),
+                'group' => Tugas::where('created_by', $user->id)->where('tipe', 4)->count(),
+            ];
+        } else {
+            $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+            $activeTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', false)->count();
+            $completedTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('isHidden', true)->count();
+            $activeClasses = $classes->count();
+            
+            $stats = [
+                'total' => $totalTasks,
+                'active' => $activeTasks,
+                'completed' => $completedTasks,
+                'multiple_choice' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 1)->count(),
+                'essay' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 2)->count(),
+                'individual' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 3)->count(),
+                'group' => Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->where('tipe', 4)->count(),
+            ];
+        }
 
-        return view('teacher.task-management-main', [
+        return view('admin.task-management', [
             'title' => 'Manajemen Tugas',
             'user' => $user,
-            'stats' => $stats,
-            'tasks' => $tasks,
-            'classes' => $classes,
-            'subjects' => $subjects,
+            'totalTasks' => $stats['total'],
+            'activeTasks' => $stats['active'],
+            'completedTasks' => $stats['completed'],
             'activeClasses' => $activeClasses,
+            'totalTugas' => $stats['total'],
+            'tugasPilihanGanda' => $stats['multiple_choice'],
+            'tugasEssay' => $stats['essay'],
+            'tugasMandiri' => $stats['individual'],
+            'tugasKelompok' => $stats['group'],
+            'tugasTerbaru' => collect(),
+            'progressSiswa' => collect(),
+            'subjects' => $subjects,
+            'classes' => $classes,
+            'tasks' => $tasks,
             'filters' => $request->only(['filter_class', 'filter_subject', 'filter_status', 'filter_difficulty'])
         ]);
     }
@@ -290,12 +323,18 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        $query = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel', 'TugasProgress'])
-            ->whereHas('KelasMapel', function($query) use ($user) {
-                $query->whereHas('EditorAccess', function($editorQuery) use ($user) {
-                    $editorQuery->where('user_id', $user->id);
+        // Build query - untuk guru: semua tugas yang dibuat, untuk role lain: berdasarkan EditorAccess
+        if ($user->roles_id == 3) {
+            $query = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel', 'tugasProgress'])
+                ->where('created_by', $user->id);
+        } else {
+            $query = Tugas::with(['kelasMapel.kelas', 'kelasMapel.mapel', 'tugasProgress'])
+                ->whereHas('kelasMapel', function($query) use ($user) {
+                    $query->whereHas('editorAccess', function($editorQuery) use ($user) {
+                        $editorQuery->where('user_id', $user->id);
+                    });
                 });
-            });
+        }
 
         // Filter berdasarkan tipe
         if ($request->has('type') && $request->type) {
@@ -322,26 +361,40 @@ class TaskController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $tasks = $query->orderBy('created_at', 'desc')->paginate(10);
+        $tasks = $query->orderBy('created_at', 'desc')->paginate(50);
 
         // Gunakan cache untuk statistik
         $stats = CacheService::getTaskStats($user->id);
 
-        // Ambil data kelas dan mata pelajaran untuk form dengan cache
-        $classes = CacheService::getUserClasses($user->id);
-        $subjects = CacheService::getUserSubjects($user->id);
+        // Ambil data kelas dan mata pelajaran untuk form - untuk guru: semua data, untuk role lain: dengan cache
+        if ($user->roles_id == 3) {
+            $classes = Kelas::all();
+            $subjects = Mapel::all();
+        } else {
+            $classes = CacheService::getUserClasses($user->id);
+            $subjects = CacheService::getUserSubjects($user->id);
+        }
 
         // Hitung kelas aktif
         $activeClasses = $classes->count();
 
-        return view('teacher.task-management', [
+        return view('superadmin.task-management', [
             'title' => 'Daftar Tugas',
             'user' => $user,
-            'tasks' => $tasks,
-            'stats' => $stats,
-            'classes' => $classes,
-            'subjects' => $subjects,
+            'totalTasks' => $stats['total'] ?? 0,
+            'activeTasks' => $stats['active'] ?? 0,
+            'completedTasks' => $stats['completed'] ?? 0,
             'activeClasses' => $activeClasses,
+            'totalTugas' => $stats['total'] ?? 0,
+            'tugasPilihanGanda' => $stats['multiple_choice'] ?? 0,
+            'tugasEssay' => $stats['essay'] ?? 0,
+            'tugasMandiri' => $stats['individual'] ?? 0,
+            'tugasKelompok' => $stats['group'] ?? 0,
+            'tugasTerbaru' => collect(),
+            'progressSiswa' => collect(),
+            'subjects' => $subjects,
+            'classes' => $classes,
+            'tasks' => $tasks,
             'filters' => $request->only(['type', 'status', 'search'])
         ]);
     }
@@ -362,27 +415,65 @@ class TaskController extends Controller
         ];
 
         if (!isset($tipeTugas[$tipe])) {
-            return redirect()->route('teacher.tasks.management')
+            // Determine redirect route based on role
+            if ($user->roles_id == 1) {
+                $route = 'superadmin.task-management';
+            } elseif ($user->roles_id == 2) {
+                $route = 'admin.task-management';
+            } else {
+                $route = 'teacher.tasks';
+            }
+            
+            return redirect()->route($route)
                 ->with('error', 'Tipe tugas tidak valid');
         }
 
-        // Ambil kelas dan mata pelajaran yang diajar oleh guru
-        $kelas = Kelas::whereHas('users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
+        // Get all necessary data
+        $kelas = Kelas::orderBy('name')->get();
+        $mapels = Mapel::orderBy('name')->get();
+        
+        // Get KelasMapel based on role - teachers now get same access as superadmin
+        if ($user->roles_id == 1 || $user->roles_id == 2 || $user->roles_id == 3) {
+            // Superadmin, Admin, and Teachers: all KelasMapel
+            $kelasMapels = KelasMapel::with(['kelas', 'mapel', 'pengajar'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // Other roles: only their KelasMapel
+            $kelasMapels = KelasMapel::with(['kelas', 'mapel', 'pengajar'])
+                ->where('pengajar_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+        
+        // Check if kelasMapels is empty
+        if ($kelasMapels->isEmpty()) {
+            // Determine redirect route based on role
+            if ($user->roles_id == 1) {
+                $route = 'superadmin.task-management';
+            } elseif ($user->roles_id == 2) {
+                $route = 'admin.task-management';
+            } else {
+                $route = 'teacher.tasks';
+            }
+            
+            return redirect()->route($route)
+                ->with('error', 'Anda belum memiliki kelas mapel. Silakan hubungi admin untuk assign kelas mapel terlebih dahulu.');
+        }
 
-        $mapel = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->get();
-
-        return view('teacher.task-create', [
-            'title' => 'Buat Tugas ' . $tipeTugas[$tipe],
-            'user' => $user,
-            'tipe' => $tipe,
-            'tipeTugas' => $tipeTugas[$tipe],
-            'kelas' => $kelas,
-            'mapel' => $mapel
-        ]);
+        // Routes are already mapped directly to specific methods, no need to redirect
+        // This method is only used for /create/{tipe} route, not the specific create routes
+        // Determine redirect route based on role
+        if ($user->roles_id == 1) {
+            $route = 'superadmin.task-management';
+        } elseif ($user->roles_id == 2) {
+            $route = 'admin.task-management';
+        } else {
+            $route = 'teacher.tasks';
+        }
+        
+        return redirect()->route($route)
+            ->with('error', 'Please use the specific create task buttons');
     }
 
     /**
@@ -392,18 +483,39 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Get class subjects that the teacher has access to
-        $classSubjects = KelasMapel::with(['Kelas', 'Mapel'])
-            ->whereHas('EditorAccess', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->get();
+        if (!$user) {
+            return redirect()->route('login');
+        }
         
-        return view('teacher.create-multiple-choice-questions', [
-            'title' => 'Buat Soal Pilihan Ganda',
-            'user' => $user,
-            'classSubjects' => $classSubjects
-        ]);
+        // Check if user is super admin, admin, or teacher - all get same access
+        if ($user->roles_id == 1 || $user->roles_id == 2 || $user->roles_id == 3) {
+            // Super admin, admin, and teachers can access all classes and subjects
+            $kelas = Kelas::with(['KelasMapel.Mapel'])->get();
+            $mapel = Mapel::all();
+            
+            return view('superadmin.task-create-multiple-choice', [
+                'title' => 'Buat Tugas Pilihan Ganda',
+                'user' => $user,
+                'kelas' => $kelas,
+                'mapel' => $mapel
+            ]);
+        } else {
+            // Fallback for other roles
+            $kelas = Kelas::whereHas('users', function($query) use ($user) {
+                $query->where('id', $user->id);
+            })->with(['KelasMapel.Mapel'])->get();
+
+            $mapel = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
+                $query->where('id', $user->id);
+            })->get();
+
+            return view('teacher.task-create-multiple-choice', [
+                'title' => 'Buat Tugas Pilihan Ganda',
+                'user' => $user,
+                'kelas' => $kelas,
+                'mapel' => $mapel
+            ]);
+        }
     }
 
     /**
@@ -413,23 +525,32 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Check if user is super admin
-        if ($user->roles_id == 1) {
-            // Super admin can access all classes and subjects
+        $tipeTugas = [
+            1 => 'Pilihan Ganda',
+            2 => 'Esai',
+            3 => 'Mandiri',
+            4 => 'Kelompok'
+        ];
+
+        // Check if user is super admin, admin, or teacher - all get same access
+        if ($user->roles_id == 1 || $user->roles_id == 2 || $user->roles_id == 3) {
+            // Super admin, admin, and teachers can access all classes and subjects
             $kelas = Kelas::with(['KelasMapel.Mapel'])->get();
             $mapel = Mapel::all();
             
             return view('superadmin.task-create-essay', [
                 'title' => 'Buat Tugas Esai',
                 'user' => $user,
+                'tipe' => 2,  // 2 = Essay
+                'tipeTugas' => $tipeTugas[2],  // 'Esai'
                 'kelas' => $kelas,
                 'mapel' => $mapel
             ]);
         } else {
-            // Regular teacher access
-            $kelas = Kelas::with(['KelasMapel.Mapel'])->whereHas('users', function($query) use ($user) {
+            // Fallback for other roles
+            $kelas = Kelas::whereHas('users', function($query) use ($user) {
                 $query->where('id', $user->id);
-            })->get();
+            })->with(['KelasMapel.Mapel'])->get();
 
             $mapel = Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
                 $query->where('id', $user->id);
@@ -438,6 +559,8 @@ class TaskController extends Controller
             return view('teacher.task-create-essay', [
                 'title' => 'Buat Tugas Esai',
                 'user' => $user,
+                'tipe' => 2,  // 2 = Essay
+                'tipeTugas' => $tipeTugas[2],  // 'Esai'
                 'kelas' => $kelas,
                 'mapel' => $mapel
             ]);
@@ -451,20 +574,20 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Check if user is super admin
-        if ($user->roles_id == 1) {
-            // Super admin can access all classes and subjects
+        // Check if user is super admin, admin, or teacher - all get same access
+        if ($user->roles_id == 1 || $user->roles_id == 2 || $user->roles_id == 3) {
+            // Super admin, admin, and teachers can access all classes and subjects
             $kelas = Kelas::with(['KelasMapel.Mapel'])->get();
             $mapel = Mapel::all();
             
-            return view('superadmin.task-create-individual', [
-                'title' => 'Buat Tugas Mandiri',
-                'user' => $user,
-                'kelas' => $kelas,
-                'mapel' => $mapel
-            ]);
+        return view('shared.task-create-individual', [
+            'title' => 'Buat Tugas Mandiri',
+            'user' => $user,
+            'kelas' => $kelas,
+            'mapel' => $mapel
+        ]);
         } else {
-            // Regular teacher access
+            // Fallback for other roles
             $kelas = Kelas::whereHas('users', function($query) use ($user) {
                 $query->where('id', $user->id);
             })->with(['KelasMapel.Mapel'])->get();
@@ -489,21 +612,31 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Check if user is super admin
-        if ($user->roles_id == 1) {
-            // Super admin can access all classes and subjects
-            $kelas = Kelas::with(['KelasMapel.Mapel'])->get();
+        // Check if user is super admin, admin, or teacher - all get same access
+        if ($user->roles_id == 1 || $user->roles_id == 2 || $user->roles_id == 3) {
+            // Super admin, admin, and teachers can access all classes and subjects
+            $kelas = Kelas::with(['KelasMapel.Mapel', 'tugasKelompoks' => function($query) {
+                $query->where('is_template', true)
+                      ->with(['anggotaTugasKelompok.user']);
+            }])->get();
             $mapel = Mapel::all();
             
-            return view('superadmin.task-create-group', [
+            // Get existing groups for dropdown
+            $groups = TugasKelompok::with('AnggotaTugasKelompok')->get();
+            
+            return view('shared.task-create-group', [
                 'title' => 'Buat Tugas Kelompok',
                 'user' => $user,
                 'kelas' => $kelas,
-                'mapel' => $mapel
+                'mapel' => $mapel,
+                'groups' => $groups
             ]);
         } else {
-            // Regular teacher access
-            $kelas = Kelas::with(['KelasMapel.Mapel'])->whereHas('users', function($query) use ($user) {
+            // Fallback for other roles
+            $kelas = Kelas::with(['KelasMapel.Mapel', 'tugasKelompoks' => function($query) {
+                $query->where('is_template', true)
+                      ->with(['anggotaTugasKelompok.user']);
+            }])->whereHas('users', function($query) use ($user) {
                 $query->where('id', $user->id);
             })->get();
 
@@ -511,7 +644,7 @@ class TaskController extends Controller
                 $query->where('id', $user->id);
             })->get();
 
-            return view('teacher.task-create-group', [
+            return view('shared.task-create-group', [
                 'title' => 'Buat Tugas Kelompok',
                 'user' => $user,
                 'kelas' => $kelas,
@@ -525,57 +658,107 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'content' => 'required|string',
+        $user = auth()->user();
+
+        // Validasi field yang dikirim langsung dari form
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255',
+            'content' => 'required|string|min:10',
             'tipe' => 'required|integer|in:1,2,3,4',
-            'due' => 'nullable|date|after:now',
-            'mapel_id' => 'required|exists:mapels,id',
+            'due' => 'required|date|after:now',
             'kelas_id' => 'required|exists:kelas,id',
-            'allow_file_upload' => 'boolean',
-            'allow_text_input' => 'boolean',
-            'questions' => 'array',
-            'questions.*.question' => 'required|string',
-            'questions.*.options' => 'array|min:2',
-            'questions.*.options.*' => 'required|string',
-            'questions.*.correct_answer' => 'required|integer',
-            'questions.*.points' => 'required|integer|min:1',
-            'groups' => 'array',
-            'groups.*.name' => 'required|string',
-            'groups.*.members' => 'array|min:1',
-            'groups.*.leader' => 'required|integer',
-            'peer_assessment_due' => 'nullable|date|after:due',
-            'rubric_items' => 'array',
-            'rubric_items.*.item' => 'required|string',
-            'rubric_items.*.type' => 'required|in:yes_no,scale,text',
-            'rubric_items.*.points' => 'required|integer|min:0'
+            'mapel_id' => 'required|exists:mapels,id',
+            'isHidden' => 'nullable|boolean',
+            // Group task validation
+            'is_new_group' => 'required|boolean',
+            'group_names' => 'nullable|array',
+            'group_names.*' => 'required|string|min:2|max:255',
+            'group_members' => 'nullable|array',
+            'group_members.*' => 'required|array|min:2',
+            'group_members.*.*' => 'required|exists:users,id',
+            'group_leaders' => 'nullable|array',
+            'group_leaders.*' => 'required|exists:users,id',
+            'existing_group_id' => 'required_if:is_new_group,0|nullable|exists:tugas_kelompoks,id',
+            // Peer assessment validation
+            'enable_peer_assessment' => 'nullable|boolean',
+            'peer_assessment_due' => 'required_if:enable_peer_assessment,1|nullable|date|after:due',
+            'scale_labels' => 'required_if:enable_peer_assessment,1|array|min:2',
+            'scale_labels.*' => 'required|string|max:50',
+            'scale_points' => 'required_if:enable_peer_assessment,1|array|min:2',
+            'scale_points.*' => 'required|integer|min:0'
+        ], [
+            'name.required' => 'Judul tugas wajib diisi',
+            'name.min' => 'Judul tugas minimal 3 karakter',
+            'kelas_id.required' => 'Kelas Tujuan wajib dipilih',
+            'kelas_id.exists' => 'Kelas yang dipilih tidak valid',
+            'mapel_id.required' => 'Mata Pelajaran wajib dipilih',
+            'mapel_id.exists' => 'Mata Pelajaran yang dipilih tidak valid',
+            'content.required' => 'Konten tugas wajib diisi',
+            'content.min' => 'Konten tugas minimal 10 karakter',
+            'due.required' => 'Deadline wajib diisi',
+            'due.after' => 'Deadline harus di masa depan',
+            'tipe.required' => 'Tipe tugas wajib dipilih',
+            // Group task error messages
+            'group_names.*.required' => 'Nama kelompok wajib diisi',
+            'group_members.*.required' => 'Minimal 2 anggota kelompok diperlukan',
+            'group_members.*.min' => 'Minimal 2 anggota kelompok diperlukan',
+            'group_leaders.*.required' => 'Ketua kelompok wajib dipilih',
+            'existing_group_id.required_if' => 'Pilih kelompok existing atau buat kelompok baru',
+            // Peer assessment error messages
+            'peer_assessment_due.required_if' => 'Deadline penilaian antar kelompok wajib diisi',
+            'peer_assessment_due.after' => 'Deadline penilaian harus setelah deadline tugas',
+            'scale_labels.required_if' => 'Skala penilaian wajib diisi',
+            'scale_labels.min' => 'Minimal 2 skala penilaian diperlukan',
+            'scale_points.required_if' => 'Point penilaian wajib diisi',
+            'scale_points.min' => 'Minimal 2 skala penilaian diperlukan'
         ]);
+
+        // Proses kelas_mapel_id dari kelas_id dan mapel_id
+        $kelasMapel = KelasMapel::firstOrCreate([
+            'kelas_id' => $validated['kelas_id'],
+            'mapel_id' => $validated['mapel_id'],
+        ]);
+
+        // Update validated data dengan kelas_mapel_id yang sudah diproses
+        $validated['kelas_mapel_id'] = $kelasMapel->id;
+
+        // Additional validation for group tasks (only if selecting existing groups)
+        if ($request->tipe == 4 && $request->has('selected_groups')) {
+            $this->validateGroupTask($request);
+        }
 
         try {
             DB::beginTransaction();
-
-            // Cari atau buat KelasMapel
-            $kelasMapel = KelasMapel::firstOrCreate([
-                'kelas_id' => $request->kelas_id,
-                'mapel_id' => $request->mapel_id,
-            ]);
-
+            
+            // Handle file upload if any
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $filePath = $file->store('tugas', 'public');
+            }
+            
             // Buat tugas
             $tugas = Tugas::create([
-                'kelas_mapel_id' => $kelasMapel->id,
-                'name' => $request->name,
-                'content' => $request->content,
-                'due' => $request->due,
-                'tipe' => $request->tipe,
-                'isHidden' => 0,
+                'kelas_mapel_id' => $validated['kelas_mapel_id'],
+                'name' => $validated['name'],
+                'content' => $validated['content'],
+                'due' => $validated['due'],
+                'tipe' => $validated['tipe'],
+                'isHidden' => $request->has('isHidden') ? 1 : 0, // Checkbox logic - jika dicentang = hidden, jika tidak = visible
+                'file' => $filePath,
+                'created_by' => auth()->id()
             ]);
 
-            // Buat progress untuk semua siswa di kelas
-            $this->createProgressForStudents($tugas, $request->kelas_id);
+            // Buat progress untuk semua siswa di kelas (jika diperlukan)
+            // $this->createProgressForStudents($tugas, $request->kelas_id);
 
             // Handle berdasarkan tipe tugas
             switch ($request->tipe) {
                 case 1: // Pilihan Ganda
+                    // Validasi minimal ada 1 soal untuk pilihan ganda
+                    if (empty($request->questions) || count($request->questions) == 0) {
+                        throw new \Exception('Minimal harus ada 1 soal untuk tugas pilihan ganda');
+                    }
                     $this->createMultipleChoiceQuestions($tugas, $request->questions);
                     break;
                 case 2: // Esai
@@ -593,14 +776,23 @@ class TaskController extends Controller
             CacheService::clearUserTaskCaches($user->id);
             CacheService::clearTaskTypeStatsCache();
 
-            return redirect()->route('teacher.tasks.management')
+            // Determine redirect route based on role
+            if ($user->roles_id == 1) {
+                $route = 'superadmin.task-management';
+            } elseif ($user->roles_id == 2) {
+                $route = 'admin.task-management';
+            } else {
+                $route = 'teacher.tasks';
+            }
+
+            return redirect()->route($route)
                 ->with('success', 'Tugas berhasil dibuat!');
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()
-                ->with('error', 'Gagal membuat tugas: ' . $e->getMessage())
-                ->withInput();
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal membuat tugas: ' . $e->getMessage());
         }
     }
 
@@ -653,26 +845,13 @@ class TaskController extends Controller
                 'isHidden' => $request->has('is_hidden') ? 1 : 0,
                 'time_limit' => $request->time_limit,
                 'shuffle_questions' => $request->has('shuffle_questions') ? 1 : 0,
+                'created_by' => auth()->id()
             ]);
 
             // Create progress for all students in the class
             $this->createProgressForStudents($tugas, $kelasMapel->kelas_id);
 
-            // Create multiple choice questions
-            foreach ($request->questions as $questionData) {
-                $tugasMultiple = TugasMultiple::create([
-                    'tugas_id' => $tugas->id,
-                    'soal' => $questionData['question'],
-                    'a' => $questionData['options']['A'] ?? '',
-                    'b' => $questionData['options']['B'] ?? '',
-                    'c' => $questionData['options']['C'] ?? '',
-                    'd' => $questionData['options']['D'] ?? '',
-                    'e' => $questionData['options']['E'] ?? '',
-                    'jawaban' => $questionData['correct_answer'],
-                    'poin' => $questionData['points'],
-                    'kategori' => $questionData['category'] ?? 'medium',
-                ]);
-            }
+            // Create multiple choice questions - handled by createMultipleChoiceQuestions method
 
             DB::commit();
 
@@ -680,14 +859,24 @@ class TaskController extends Controller
             CacheService::clearUserTaskCaches($user->id);
             CacheService::clearTaskTypeStatsCache();
 
-            return redirect()->route('teacher.tasks.management')
+            return redirect()->route('teacher.tasks')
                 ->with('success', 'Tugas pilihan ganda berhasil dibuat dengan ' . count($request->questions) . ' soal!');
 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Log error untuk debugging
+            \Log::error('Failed to create task', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
+            // Simpan semua input termasuk array kompleks
             return redirect()->back()
                 ->with('error', 'Gagal membuat tugas: ' . $e->getMessage())
-                ->withInput();
+                ->withInput($request->all()); // Pastikan semua data tersimpan
         }
     }
 
@@ -700,7 +889,7 @@ class TaskController extends Controller
         
         $tugas = Tugas::with([
             'KelasMapel.Kelas.users' => function($query) {
-                $query->where('roles_id', 3); // Siswa saja
+                $query->where('roles_id', 4); // 4 = Siswa (Student)
             },
             'TugasProgress.user',
             'TugasFeedback',
@@ -709,10 +898,16 @@ class TaskController extends Controller
             'TugasQuiz'
         ])->findOrFail($id);
 
-        // Verifikasi bahwa guru memiliki akses ke tugas ini
-        $hasAccess = $tugas->KelasMapel->Kelas->users()
-            ->where('id', $user->id)
-            ->exists();
+        // Verifikasi akses
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $tugas->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
 
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini');
@@ -788,12 +983,55 @@ class TaskController extends Controller
     }
 
     /**
+     * Validate group task requirements
+     */
+    private function validateGroupTask($request)
+    {
+        $user = Auth::user();
+        
+        // Verify all selected groups are template groups from the same class
+        $selectedGroups = TugasKelompok::whereIn('id', $request->selected_groups)
+                                     ->where('is_template', true)
+                                     ->where('kelas_id', $request->kelas_id)
+                                     ->get();
+
+        if ($selectedGroups->count() != count($request->selected_groups)) {
+            throw new \Exception('Semua kelompok yang dipilih harus merupakan template kelompok dari kelas yang sama.');
+        }
+
+        // Verify user has access to these groups
+        if ($user->roles_id != 1) { // Not super admin
+            $accessibleGroups = TugasKelompok::whereIn('id', $request->selected_groups)
+                                           ->whereHas('kelas.users', function($query) use ($user) {
+                                               $query->where('id', $user->id);
+                                           })
+                                           ->count();
+
+            if ($accessibleGroups != count($request->selected_groups)) {
+                throw new \Exception('Anda tidak memiliki akses ke semua kelompok yang dipilih.');
+            }
+        }
+
+        // Verify all groups have members
+        foreach ($selectedGroups as $group) {
+            if ($group->anggotaTugasKelompok->count() < 2) {
+                throw new \Exception("Kelompok '{$group->name}' harus memiliki minimal 2 anggota.");
+            }
+
+            $hasLeader = $group->anggotaTugasKelompok->where('isKetua', 1)->count() > 0;
+            if (!$hasLeader) {
+                throw new \Exception("Kelompok '{$group->name}' harus memiliki ketua kelompok.");
+            }
+        }
+    }
+
+    /**
      * Buat progress untuk semua siswa di kelas
      */
     private function createProgressForStudents($tugas, $kelasId)
     {
         $students = User::where('kelas_id', $kelasId)
-            ->where('roles_id', 3)
+            ->where('roles_id', 4)  // 4 = Siswa (Student)
             ->get();
 
         foreach ($students as $student) {
@@ -811,20 +1049,67 @@ class TaskController extends Controller
      */
     private function createMultipleChoiceQuestions($tugas, $questions)
     {
-        foreach ($questions as $questionData) {
-            $question = TugasQuiz::create([
+        // Validasi data questions
+        if (empty($questions) || !is_array($questions)) {
+            throw new \Exception('Data soal tidak valid');
+        }
+
+        $questionNumber = 1; // Counter untuk nomor soal yang benar
+        
+        foreach ($questions as $index => $questionData) {
+            // Validasi setiap field yang required
+            if (empty($questionData['question'])) {
+                throw new \Exception("Soal nomor " . $questionNumber . " tidak boleh kosong");
+            }
+            
+            // Validasi ukuran data (max 50KB per soal)
+            $questionSize = strlen($questionData['question']);
+            if ($questionSize > 50000) {
+                $sizeKB = round($questionSize / 1024, 2);
+                throw new \Exception("Soal nomor " . $questionNumber . " terlalu besar ({$sizeKB}KB). Maksimal 50KB per soal. Silakan kompres gambar atau gunakan resolusi yang lebih rendah.");
+            }
+            
+            // Validasi ukuran opsi
+            foreach (['A', 'B', 'C', 'D', 'E'] as $option) {
+                if (isset($questionData['options'][$option])) {
+                    $optionSize = strlen($questionData['options'][$option]);
+                    if ($optionSize > 50000) {
+                        $sizeKB = round($optionSize / 1024, 2);
+                        throw new \Exception("Opsi jawaban $option pada soal nomor " . $questionNumber . " terlalu besar ({$sizeKB}KB). Maksimal 50KB per opsi. Silakan kompres gambar atau gunakan resolusi yang lebih rendah.");
+                    }
+                }
+            }
+            
+            if (empty($questionData['correct_answer'])) {
+                throw new \Exception("Jawaban benar untuk soal nomor " . $questionNumber . " harus dipilih");
+            }
+            if (empty($questionData['options']) || !is_array($questionData['options'])) {
+                throw new \Exception("Opsi jawaban untuk soal nomor " . $questionNumber . " tidak valid");
+            }
+
+            // Log untuk debugging
+            \Log::info('Creating TugasMultiple', [
                 'tugas_id' => $tugas->id,
-                'question' => $questionData['question'],
-                'points' => $questionData['points']
+                'question_number' => $questionNumber,
+                'question_index' => $index,
+                'question_data' => $questionData
             ]);
 
-            foreach ($questionData['options'] as $index => $option) {
-                TugasMultiple::create([
-                    'tugas_quiz_id' => $question->id,
-                    'option' => $option,
-                    'is_correct' => $index == $questionData['correct_answer']
-                ]);
-            }
+            // Buat TugasMultiple dengan struktur yang benar
+            TugasMultiple::create([
+                'tugas_id' => $tugas->id,
+                'soal' => $questionData['question'],
+                'a' => $questionData['options']['A'] ?? '',
+                'b' => $questionData['options']['B'] ?? '',
+                'c' => $questionData['options']['C'] ?? '',
+                'd' => $questionData['options']['D'] ?? '',
+                'e' => $questionData['options']['E'] ?? '',
+                'jawaban' => $questionData['correct_answer'],
+                'poin' => $questionData['points'] ?? 1,
+                'kategori' => $questionData['category'] ?? 'medium',
+            ]);
+            
+            $questionNumber++; // Increment counter
         }
     }
 
@@ -833,6 +1118,12 @@ class TaskController extends Controller
      */
     private function createEssayTask($tugas, $request)
     {
+        \Log::info('createEssayTask called', [
+            'tugas_id' => $tugas->id,
+            'has_essay_questions' => $request->has('essay_questions'),
+            'essay_questions_data' => $request->essay_questions
+        ]);
+        
         // Simpan konfigurasi tugas esai/mandiri
         $tugas->update([
             'content' => json_encode([
@@ -841,6 +1132,60 @@ class TaskController extends Controller
                 'file_types' => $request->file_types ?? ['pdf', 'docx', 'jpg', 'png']
             ])
         ]);
+        
+        // Simpan soal essay jika ada
+        if ($request->has('essay_questions')) {
+            $this->createEssayQuestions($tugas, $request->essay_questions);
+        }
+    }
+
+    /**
+     * Simpan soal essay/mandiri ke database
+     */
+    private function createEssayQuestions($tugas, $essayQuestions)
+    {
+        \Log::info('createEssayQuestions called', [
+            'tugas_id' => $tugas->id,
+            'essay_questions' => $essayQuestions
+        ]);
+        
+        if (!$essayQuestions) {
+            \Log::warning('No essay questions provided');
+            return;
+        }
+
+        foreach ($essayQuestions as $question) {
+            \Log::info('Creating essay question', $question);
+            TugasMandiri::create([
+                'tugas_id' => $tugas->id,
+                'pertanyaan' => $question['question'],
+                'poin' => $question['points'] ?? 10
+            ]);
+        }
+        
+        \Log::info('Essay questions created successfully');
+    }
+
+    /**
+     * Update soal essay yang sudah ada
+     */
+    private function updateEssayQuestions($tugas, $essayQuestions)
+    {
+        if (!$essayQuestions) {
+            return;
+        }
+
+        // Hapus soal lama
+        TugasMandiri::where('tugas_id', $tugas->id)->delete();
+        
+        // Simpan soal baru/yang diupdate
+        foreach ($essayQuestions as $question) {
+            TugasMandiri::create([
+                'tugas_id' => $tugas->id,
+                'pertanyaan' => $question['question'],
+                'poin' => $question['points'] ?? 10
+            ]);
+        }
     }
 
     /**
@@ -848,29 +1193,182 @@ class TaskController extends Controller
      */
     private function createGroupTask($tugas, $request)
     {
+        // Prepare rubric data (legacy)
+        $rubricItems = [];
+        if ($request->has('rubric') && is_array($request->rubric)) {
+            foreach ($request->rubric as $rubric) {
+                if (isset($rubric['name']) && isset($rubric['weight'])) {
+                    $rubricItems[] = [
+                        'name' => $rubric['name'],
+                        'weight' => $rubric['weight'],
+                        'description' => $rubric['description'] ?? null
+                    ];
+                }
+            }
+        }
+
+        // Build peer assessment scale configuration
+        $assessmentScale = [];
+        if ($request->has('enable_peer_assessment') && $request->enable_peer_assessment) {
+            $labels = $request->scale_labels ?? [];
+            $points = $request->scale_points ?? [];
+            
+            for ($i = 0; $i < count($labels); $i++) {
+                if (isset($labels[$i]) && isset($points[$i])) {
+                    $assessmentScale[] = [
+                        'label' => $labels[$i],
+                        'point' => (int)$points[$i]
+                    ];
+                }
+            }
+        }
+
         // Simpan konfigurasi tugas kelompok
         $tugas->update([
             'content' => json_encode([
                 'peer_assessment_due' => $request->peer_assessment_due,
-                'rubric_items' => $request->rubric_items ?? []
+                'rubric_items' => $rubricItems,
+                // New peer assessment configuration
+                'peer_assessment_enabled' => $request->has('enable_peer_assessment') ? 1 : 0,
+                'peer_assessment_due' => $request->peer_assessment_due,
+                'assessment_scale' => $assessmentScale,
+                'assessment_type' => 'peer', // ketua kelompok menilai kelompok lain
+                'assessment_rule' => 'exclude_own_group' // tidak menilai kelompok sendiri
             ])
         ]);
 
-        // Buat kelompok
-        foreach ($request->groups as $groupData) {
-            $group = TugasKelompok::create([
-                'tugas_id' => $tugas->id,
-                'name' => $groupData['name'],
-                'status' => 'active'
-            ]);
+        // Scenario 1: Link tugas dengan kelompok yang sudah ada (selected_groups)
+        if ($request->has('selected_groups') && is_array($request->selected_groups)) {
+            foreach ($request->selected_groups as $templateGroupId) {
+                // Get template group
+                $templateGroup = TugasKelompok::where('id', $templateGroupId)
+                                            ->where('is_template', true)
+                                            ->with('anggotaTugasKelompok')
+                                            ->first();
 
-            // Tambahkan anggota kelompok
-            foreach ($groupData['members'] as $memberId) {
-                AnggotaTugasKelompok::create([
-                    'tugas_kelompok_id' => $group->id,
-                    'user_id' => $memberId,
-                    'is_leader' => $memberId == $groupData['leader']
+                if ($templateGroup) {
+                    // Create task-specific group based on template
+                    $taskGroup = TugasKelompok::create([
+                        'tugas_id' => $tugas->id,
+                        'kelas_id' => $templateGroup->kelas_id,
+                        'name' => $templateGroup->name,
+                        'description' => $templateGroup->description,
+                        'status' => 'active',
+                        'is_template' => false,
+                        'created_by' => Auth::id()
+                    ]);
+
+                    // Copy members from template group
+                    foreach ($templateGroup->anggotaTugasKelompok as $templateMember) {
+                        AnggotaTugasKelompok::create([
+                            'tugas_kelompok_id' => $taskGroup->id,
+                            'user_id' => $templateMember->user_id,
+                            'tugas_id' => $tugas->id,
+                            'isKetua' => $templateMember->isKetua
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Scenario 2: Buat kelompok baru dari form (groups object)
+        elseif ($request->has('groups') && is_array($request->groups)) {
+            foreach ($request->groups as $groupData) {
+                // Create new group for this task
+                $taskGroup = TugasKelompok::create([
+                    'tugas_id' => $tugas->id,
+                    'kelas_id' => $request->kelas_id,
+                    'name' => $groupData['name'],
+                    'description' => null,
+                    'status' => 'active',
+                    'is_template' => false,
+                    'created_by' => Auth::id()
                 ]);
+
+                // Add leader as member with isKetua = 1
+                if (isset($groupData['leader'])) {
+                    AnggotaTugasKelompok::create([
+                        'tugas_kelompok_id' => $taskGroup->id,
+                        'user_id' => $groupData['leader'],
+                        'tugas_id' => $tugas->id,
+                        'isKetua' => 1
+                    ]);
+                }
+
+                // Add other members with isKetua = 0
+                if (isset($groupData['members']) && is_array($groupData['members'])) {
+                    foreach ($groupData['members'] as $memberId) {
+                        // Skip if already added as leader
+                        if ($memberId != $groupData['leader']) {
+                            AnggotaTugasKelompok::create([
+                                'tugas_kelompok_id' => $taskGroup->id,
+                                'user_id' => $memberId,
+                                'tugas_id' => $tugas->id,
+                                'isKetua' => 0
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Scenario 3: Handle multiple groups (is_new_group = 1)
+        elseif ($request->has('is_new_group') && $request->is_new_group) {
+            // Handle multiple groups
+            if ($request->has('group_names') && is_array($request->group_names)) {
+                foreach ($request->group_names as $index => $groupName) {
+                    $taskGroup = TugasKelompok::create([
+                        'tugas_id' => $tugas->id,
+                        'kelas_id' => $request->kelas_id,
+                        'name' => $groupName,
+                        'description' => null,
+                        'status' => 'active',
+                        'is_template' => false,
+                        'created_by' => Auth::id()
+                    ]);
+                    
+                    // Add members
+                    if (isset($request->group_members[$index])) {
+                        foreach ($request->group_members[$index] as $memberId) {
+                            $isKetua = ($memberId == $request->group_leaders[$index]) ? 1 : 0;
+                            
+                            AnggotaTugasKelompok::create([
+                                'tugas_kelompok_id' => $taskGroup->id,
+                                'user_id' => $memberId,
+                                'tugas_id' => $tugas->id,
+                                'isKetua' => $isKetua
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Scenario 4: Use existing group
+        elseif ($request->has('existing_group_id') && $request->existing_group_id) {
+            $existingGroup = TugasKelompok::with('AnggotaTugasKelompok')->find($request->existing_group_id);
+            
+            if ($existingGroup) {
+                // Create task-specific group based on existing group
+                $taskGroup = TugasKelompok::create([
+                    'tugas_id' => $tugas->id,
+                    'kelas_id' => $request->kelas_id,
+                    'name' => $existingGroup->name,
+                    'description' => $existingGroup->description,
+                    'status' => 'active',
+                    'is_template' => false,
+                    'created_by' => Auth::id()
+                ]);
+
+                // Copy members from existing group
+                foreach ($existingGroup->AnggotaTugasKelompok as $member) {
+                    AnggotaTugasKelompok::create([
+                        'tugas_kelompok_id' => $taskGroup->id,
+                        'user_id' => $member->user_id,
+                        'tugas_id' => $tugas->id,
+                        'isKetua' => $member->isKetua
+                    ]);
+                }
             }
         }
     }
@@ -881,12 +1379,25 @@ class TaskController extends Controller
     public function edit($id)
     {
         $user = Auth::user();
-        $tugas = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])->findOrFail($id);
+        $tugas = Tugas::with([
+            'KelasMapel.Kelas', 
+            'KelasMapel.Mapel',
+            'TugasQuiz',
+            'TugasMultiple',
+            'TugasKelompok.AnggotaTugasKelompok.User',
+            'TugasMandiri'
+        ])->findOrFail($id);
 
         // Verifikasi akses
-        $hasAccess = $tugas->KelasMapel->Kelas->users()
-            ->where('id', $user->id)
-            ->exists();
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $tugas->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
 
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini');
@@ -927,9 +1438,15 @@ class TaskController extends Controller
         $user = Auth::user();
 
         // Verifikasi akses
-        $hasAccess = $tugas->KelasMapel->Kelas->users()
-            ->where('id', $user->id)
-            ->exists();
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $tugas->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
 
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini');
@@ -946,7 +1463,7 @@ class TaskController extends Controller
         try {
             DB::beginTransaction();
 
-            // Update tugas
+            // Update tugas basic info
             $tugas->update([
                 'name' => $request->name,
                 'content' => $request->content,
@@ -963,6 +1480,20 @@ class TaskController extends Controller
                 ]);
 
                 $tugas->update(['kelas_mapel_id' => $kelasMapel->id]);
+            }
+
+            // Handle task type specific updates
+            switch ($tugas->tipe) {
+                case 1: // Multiple Choice
+                    $this->updateMultipleChoiceQuestions($tugas, $request);
+                    break;
+                case 2: // Essay
+                case 3: // Mandiri
+                    $this->updateEssayTask($tugas, $request);
+                    break;
+                case 4: // Kelompok
+                    $this->updateGroupTask($tugas, $request);
+                    break;
             }
 
             DB::commit();
@@ -983,6 +1514,91 @@ class TaskController extends Controller
     }
 
     /**
+     * Update multiple choice questions
+     */
+    private function updateMultipleChoiceQuestions($tugas, $request)
+    {
+        if (!$request->has('questions')) {
+            return;
+        }
+
+        // Delete existing questions and options
+        $tugas->TugasMultiple()->delete();
+
+        // Create new questions using the same structure as createMultipleChoiceQuestions
+        $questionNumber = 1;
+        foreach ($request->questions as $questionData) {
+            // Validasi data soal
+            if (empty($questionData['question'])) {
+                throw new \Exception("Pertanyaan untuk soal nomor " . $questionNumber . " tidak boleh kosong");
+            }
+            
+            // Validasi opsi jawaban
+            if (empty($questionData['options']) || !is_array($questionData['options'])) {
+                throw new \Exception("Opsi jawaban untuk soal nomor " . $questionNumber . " tidak valid");
+            }
+            
+            if (empty($questionData['correct_answer'])) {
+                throw new \Exception("Jawaban benar untuk soal nomor " . $questionNumber . " harus dipilih");
+            }
+
+            // Buat TugasMultiple dengan struktur yang sama seperti saat create
+            TugasMultiple::create([
+                'tugas_id' => $tugas->id,
+                'soal' => $questionData['question'],
+                'a' => $questionData['options']['a'] ?? '',
+                'b' => $questionData['options']['b'] ?? '',
+                'c' => $questionData['options']['c'] ?? '',
+                'd' => $questionData['options']['d'] ?? '',
+                'e' => $questionData['options']['e'] ?? '',
+                'jawaban' => $questionData['correct_answer'],
+                'poin' => $questionData['points'] ?? 1,
+                'kategori' => $questionData['category'] ?? 'medium',
+            ]);
+            
+            $questionNumber++;
+        }
+    }
+
+    /**
+     * Update essay/individual task
+     */
+    private function updateEssayTask($tugas, $request)
+    {
+        $config = [
+            'allow_file_upload' => $request->has('allow_file_upload'),
+            'allow_text_input' => $request->has('allow_text_input'),
+            'file_types' => $request->file_types ?? ['pdf', 'docx', 'jpg', 'png']
+        ];
+
+        $tugas->update([
+            'content' => json_encode($config)
+        ]);
+        
+        // Update soal essay jika ada
+        if ($request->has('essay_questions')) {
+            $this->updateEssayQuestions($tugas, $request->essay_questions);
+        }
+    }
+
+    /**
+     * Update group task
+     */
+    private function updateGroupTask($tugas, $request)
+    {
+        $config = [
+            'min_members' => $request->min_members ?? 2,
+            'max_members' => $request->max_members ?? 5,
+            'allow_peer_evaluation' => $request->has('allow_peer_evaluation'),
+            'evaluation_criteria' => $request->evaluation_criteria ?? []
+        ];
+
+        $tugas->update([
+            'content' => json_encode($config)
+        ]);
+    }
+
+    /**
      * Hapus tugas
      */
     public function destroy($id)
@@ -991,9 +1607,15 @@ class TaskController extends Controller
         $user = Auth::user();
 
         // Verifikasi akses
-        $hasAccess = $tugas->KelasMapel->Kelas->users()
-            ->where('id', $user->id)
-            ->exists();
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $tugas->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
 
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini');
@@ -1018,7 +1640,7 @@ class TaskController extends Controller
             CacheService::clearUserTaskCaches($user->id);
             CacheService::clearTaskTypeStatsCache();
 
-            return redirect()->route('teacher.tasks.management')
+            return redirect()->route('teacher.tasks')
                 ->with('success', 'Tugas berhasil dihapus!');
 
         } catch (\Exception $e) {
@@ -1049,6 +1671,33 @@ class TaskController extends Controller
     }
 
     /**
+     * Calculate auto score for multiple choice tasks
+     */
+    public function getAutoScore($tugasId, $studentId)
+    {
+        $tugas = Tugas::findOrFail($tugasId);
+        $student = User::findOrFail($studentId);
+
+        if ($tugas->tipe != 1) {
+            return response()->json(['error' => 'Not a multiple choice task'], 400);
+        }
+
+        // Get student answers
+        $answers = $tugas->TugasJawabanMultiple()->where('user_id', $studentId)->get();
+        
+        if ($answers->count() == 0) {
+            return response()->json(['score' => 0]);
+        }
+
+        // Calculate score
+        $totalQuestions = $answers->count();
+        $correctAnswers = $answers->where('nilai', '>', 0)->count();
+        $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+
+        return response()->json(['score' => $score]);
+    }
+
+    /**
      * Show task detail with student submissions and management
      */
     public function showTaskDetail($taskId)
@@ -1058,7 +1707,7 @@ class TaskController extends Controller
         // Get task with related data
         $task = Tugas::with([
             'KelasMapel.Kelas.users' => function($query) {
-                $query->where('roles_id', 3); // Only students
+                $query->where('roles_id', 4); // 4 = Siswa (Student)
             },
             'KelasMapel.Mapel',
             'TugasProgress' => function($query) {
@@ -1069,14 +1718,23 @@ class TaskController extends Controller
             }
         ])->findOrFail($taskId);
 
-        // Verify teacher has access to this task
-        $hasAccess = $task->KelasMapel->Kelas->users->contains('id', $user->id);
+        // Verifikasi akses
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $task->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
+
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke tugas ini.');
         }
 
         // Get all students in the class
-        $students = $task->KelasMapel->Kelas->users->where('roles_id', 3);
+        $students = $task->KelasMapel->Kelas->users->where('roles_id', 4);  // 4 = Siswa (Student)
         $totalStudents = $students->count();
 
         // Get submissions data
@@ -1123,12 +1781,21 @@ class TaskController extends Controller
         
         $task = Tugas::with([
             'KelasMapel.Kelas.users' => function($query) {
-                $query->where('roles_id', 3);
+                $query->where('roles_id', 4);  // 4 = Siswa (Student)
             }
         ])->findOrFail($taskId);
 
-        // Verify access
-        $hasAccess = $task->KelasMapel->Kelas->users->contains('id', $user->id);
+        // Verifikasi akses
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $task->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
+
         if (!$hasAccess) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -1170,8 +1837,17 @@ class TaskController extends Controller
         
         $task = Tugas::with('KelasMapel.Kelas.users')->findOrFail($taskId);
 
-        // Verify access
-        $hasAccess = $task->KelasMapel->Kelas->users->contains('id', $user->id);
+        // Verifikasi akses
+        if ($user->roles_id == 1 || $user->roles_id == 2) {
+            // Superadmin dan Admin: akses penuh
+            $hasAccess = true;
+        } elseif ($user->roles_id == 3) {
+            // Teacher: hanya tugas yang mereka buat
+            $hasAccess = $task->created_by == $user->id;
+        } else {
+            $hasAccess = false;
+        }
+
         if (!$hasAccess) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -1269,13 +1945,15 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        // Get classes where teacher is assigned
-        $kelasMapelIds = KelasMapel::whereHas('Kelas.users', function($query) use ($user) {
-            $query->where('id', $user->id);
-        })->pluck('id')->toArray();
+        // Get KelasMapel where teacher is assigned via EditorAccess
+        $kelasMapels = KelasMapel::whereHas('editorAccess', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->get();
         
         return [
-            'kelas_mapel_ids' => $kelasMapelIds
+            'kelas_mapel_ids' => $kelasMapels->pluck('id')->toArray(),
+            'kelas_ids' => $kelasMapels->pluck('kelas_id')->unique()->toArray(),
+            'mapel_ids' => $kelasMapels->pluck('mapel_id')->unique()->toArray(),
         ];
     }
 
@@ -1298,8 +1976,34 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         
-        return Mapel::whereHas('KelasMapel.Kelas.users', function($query) use ($user) {
+        return Mapel::whereHas('kelasMapel.kelas.users', function($query) use ($user) {
             $query->where('id', $user->id);
         })->get();
+    }
+    
+    /**
+     * Get students by class for AJAX request
+     */
+    public function getStudentsByClass($kelasId)
+    {
+        try {
+            $students = \App\Models\User::where('kelas_id', $kelasId)
+                ->where('roles_id', 4) // Student role
+                ->orderBy('name')
+                ->get()
+                ->map(function($student) {
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->name,
+                        'nis' => $student->nis_nip ?? 'N/A',
+                        'user_id' => $student->id,
+                        'email' => $student->email
+                    ];
+                });
+                
+            return response()->json($students);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to load students: ' . $e->getMessage()], 500);
+        }
     }
 }

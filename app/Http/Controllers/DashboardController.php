@@ -1872,9 +1872,18 @@ class DashboardController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Log error untuk debugging
+            \Log::error('Failed to create superadmin multiple choice exam', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
             return redirect()->back()
                 ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
-                ->withInput();
+                ->withInput($request->all()); // Pastikan semua data tersimpan
         }
     }
 
@@ -2008,9 +2017,17 @@ class DashboardController extends Controller
                 ->with('success', 'Ujian campuran berhasil dibuat!');
                 
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Failed to create superadmin mixed exam', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
             return redirect()->back()
                 ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
-                ->withInput();
+                ->withInput($request->all()); // Pastikan semua data tersimpan
         }
     }
 
@@ -2197,8 +2214,17 @@ class DashboardController extends Controller
                 ->with('success', 'Ujian berhasil dibuat!');
                 
         } catch (\Exception $e) {
-            return redirect()->route('superadmin.exam-management')
-                ->with('error', 'Gagal membuat ujian: ' . $e->getMessage());
+            // Log error untuk debugging
+            \Log::error('Failed to create superadmin exam', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Gagal membuat ujian: ' . $e->getMessage())
+                ->withInput($request->all()); // Pastikan semua data tersimpan
         }
     }
 
@@ -2334,7 +2360,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         
         // Get all classes
-        $classes = Kelas::withCount('students')
+        $classes = Kelas::withCount(['siswa', 'subjects'])
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -2421,20 +2447,21 @@ class DashboardController extends Controller
     public function createSuperAdminClass(Request $request)
     {
         $request->validate([
-            'class_name' => 'required|string|max:255',
-            'class_level' => 'required|string|in:x,xi,xii',
-            'class_description' => 'nullable|string|max:500',
-            'class_type' => 'nullable|string|in:ipa,ips,bahasa,agama',
-            'max_students' => 'nullable|integer|min:1|max:50',
-            'homeroom_teacher' => 'nullable|string',
-            'academic_year' => 'nullable|string|max:20',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50',
+            'level' => 'required|string|in:X,XI,XII',
+            'major' => 'required|string|in:IPA,IPS,Bahasa',
+            'description' => 'nullable|string|max:500',
         ]);
 
         try {
             Kelas::create([
-                'name' => $request->class_name,
-                'level' => $request->class_level,
-                'description' => $request->class_description,
+                'name' => $request->name,
+                'code' => $request->code,
+                'level' => $request->level,
+                'major' => $request->major,
+                'description' => $request->description,
+                'is_active' => true,
             ]);
 
             return redirect()->route('superadmin.class-management')
@@ -2442,6 +2469,176 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('superadmin.class-management')
                 ->with('error', 'Gagal membuat kelas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menampilkan detail kelas untuk Super Admin.
+     *
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function viewSuperAdminClassDetail($id)
+    {
+        $user = auth()->user();
+        
+        $class = Kelas::with(['students', 'kelasMapel.mapel', 'kelasMapel.editorAccess.user'])
+            ->findOrFail($id);
+        
+        // Get statistics
+        $totalStudents = $class->students->count();
+        $totalSubjects = $class->kelasMapel->count();
+        
+        return view('superadmin.class-detail', [
+            'title' => 'Detail Kelas - ' . $class->name,
+            'user' => $user,
+            'class' => $class,
+            'totalStudents' => $totalStudents,
+            'totalSubjects' => $totalSubjects,
+        ]);
+    }
+
+    /**
+     * Menampilkan form edit kelas untuk Super Admin.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function editSuperAdminClass($id)
+    {
+        try {
+            $class = Kelas::findOrFail($id);
+            
+            // Get all students
+            $allStudents = User::where('roles_id', 4)
+                ->orderBy('name')
+                ->get(['id', 'name', 'email', 'kelas_id']);
+            
+            // Get all subjects
+            $allSubjects = Mapel::orderBy('name')
+                ->get(['id', 'name', 'code']);
+            
+            // Get current class students (students assigned to this class)
+            $classStudentIds = $class->siswa()->pluck('id')->toArray();
+            
+            // Get current class subjects
+            $classSubjectIds = $class->kelasMapel()->pluck('mapel_id')->toArray();
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'class' => $class,
+                    'all_students' => $allStudents,
+                    'all_subjects' => $allSubjects,
+                    'class_student_ids' => $classStudentIds,
+                    'class_subject_ids' => $classSubjectIds
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load class data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update kelas untuk Super Admin.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateSuperAdminClass(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50',
+            'level' => 'required|string|in:X,XI,XII',
+            'major' => 'required|string|in:IPA,IPS,Bahasa',
+            'description' => 'nullable|string|max:500',
+            'is_active' => 'boolean',
+            'students' => 'nullable|array',
+            'students.*' => 'exists:users,id',
+            'subjects' => 'nullable|array',
+            'subjects.*' => 'exists:mapels,id'
+        ]);
+
+        try {
+            $class = Kelas::findOrFail($id);
+            
+            // Update class basic info
+            $class->update([
+                'name' => $request->name,
+                'code' => $request->code,
+                'level' => $request->level,
+                'major' => $request->major,
+                'description' => $request->description,
+                'is_active' => $request->has('is_active') ? true : false,
+            ]);
+
+            // Update students - assign selected students to this class
+            if ($request->has('students')) {
+                // Remove all previous students from this class
+                User::where('kelas_id', $class->id)->update(['kelas_id' => null]);
+                
+                // Assign new students to this class
+                User::whereIn('id', $request->students)->update(['kelas_id' => $class->id]);
+            }
+
+            // Update subjects - sync kelas_mapels
+            if ($request->has('subjects')) {
+                // Delete existing relationships
+                KelasMapel::where('kelas_id', $class->id)->delete();
+                
+                // Create new relationships
+                foreach ($request->subjects as $mapelId) {
+                    KelasMapel::create([
+                        'kelas_id' => $class->id,
+                        'mapel_id' => $mapelId
+                    ]);
+                }
+            }
+
+            return redirect()->route('superadmin.class-management')
+                ->with('success', 'Kelas berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->route('superadmin.class-management')
+                ->with('error', 'Gagal memperbarui kelas: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     * Hapus kelas untuk Super Admin.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteSuperAdminClass($id)
+    {
+        try {
+            $class = Kelas::findOrFail($id);
+            
+            // Check if class has students
+            if ($class->students()->count() > 0) {
+                return redirect()->route('superadmin.class-management')
+                    ->with('error', 'Tidak dapat menghapus kelas yang memiliki siswa. Pindahkan siswa terlebih dahulu.');
+            }
+            
+            // Check if class has subjects
+            if ($class->kelasMapel()->count() > 0) {
+                return redirect()->route('superadmin.class-management')
+                    ->with('error', 'Tidak dapat menghapus kelas yang memiliki mata pelajaran. Hapus mata pelajaran terlebih dahulu.');
+            }
+            
+            $class->delete();
+
+            return redirect()->route('superadmin.class-management')
+                ->with('success', 'Kelas berhasil dihapus!');
+        } catch (\Exception $e) {
+            return redirect()->route('superadmin.class-management')
+                ->with('error', 'Gagal menghapus kelas: ' . $e->getMessage());
         }
     }
 
@@ -2686,7 +2883,6 @@ class DashboardController extends Controller
             'status' => 'required|in:draft,published',
             'file' => 'nullable|file|mimes:pdf,mp4,jpg,jpeg,png,doc,docx,ppt,pptx|max:10240',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'youtube_url' => 'nullable|url',
         ]);
 
         try {
@@ -2734,8 +2930,16 @@ class DashboardController extends Controller
                 ->with('success', 'Materi berhasil dibuat!');
                 
         } catch (\Exception $e) {
+            // Log error untuk debugging
+            \Log::error('Failed to create superadmin material', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'password']),
+                'user_id' => auth()->id()
+            ]);
+            
             return redirect()->back()
-                ->withInput()
+                ->withInput($request->all()) // Pastikan semua data tersimpan
                 ->with('error', 'Gagal membuat materi: ' . $e->getMessage());
         }
     }
@@ -3225,7 +3429,6 @@ class DashboardController extends Controller
             'status' => 'required|in:draft,published',
             'file' => 'nullable|file|mimes:pdf,mp4,jpg,jpeg,png,doc,docx,ppt,pptx|max:10240',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'youtube_url' => 'nullable|url',
         ]);
 
         try {
@@ -3808,11 +4011,9 @@ class DashboardController extends Controller
         $unreadNotifications = Notification::where('is_read', false)->count();
         $urgentNotifications = Notification::where('type', 'error')->count();
 
-        return view('admin.push-notification', [
+        return view('superadmin.push-notification', [
             'title' => 'Push Notifikasi Admin',
             'user' => $user,
-            'stats' => $stats,
-            'recentNotifications' => $recentNotifications,
             'notifications' => $notifications,
             'totalNotifications' => $totalNotifications,
             'readNotifications' => $readNotifications,
@@ -4018,19 +4219,15 @@ class DashboardController extends Controller
             ->select('id', 'name', 'email', 'roles_id')
             ->get();
         
-        return view('admin.push-notification', [
+        return view('superadmin.push-notification', [
             'title' => 'Push Notifikasi Admin',
             'user' => $user,
-            'recentNotifications' => $recentNotifications,
             'notifications' => $notifications,
             'totalNotifications' => $totalNotifications,
             'readNotifications' => $readNotifications,
             'unreadNotifications' => $unreadNotifications,
             'urgentNotifications' => $urgentNotifications,
-            'unreadCount' => $unreadCount,
-            'todayNotifications' => $todayNotifications,
-            'users' => $users,
-            'filters' => $filters
+            'users' => $users
         ]);
     }
 
@@ -4290,7 +4487,7 @@ class DashboardController extends Controller
             ->get();
         
         // Prepare chart data
-        $chartData = $this->prepareChartData($sensorDataForCharts);
+        $chartData = $this->prepareSensorChartData($sensorDataForCharts);
         
         // Get status distribution
         $statusDistribution = \App\Models\ResearchProject::selectRaw('status, count(*) as count')
@@ -4321,7 +4518,7 @@ class DashboardController extends Controller
     /**
      * Prepare chart data for sensor trends
      */
-    private function prepareChartData($sensorData)
+    private function prepareSensorChartData($sensorData)
     {
         $labels = [];
         $temperatureData = [];
@@ -4425,7 +4622,7 @@ class DashboardController extends Controller
         }
         
         // Prepare chart data
-        $chartData = $this->prepareChartData($sensorDataForCharts);
+        $chartData = $this->prepareSensorChartData($sensorDataForCharts);
         
         // Get status distribution
         $statusDistribution = \App\Models\ResearchProject::selectRaw('status, count(*) as count')
@@ -4611,25 +4808,36 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         
-        // Hitung statistik per tipe tugas untuk admin
-        $stats = [
-            'multiple_choice' => Tugas::where('tipe', 1)->count(),
-            'essay' => Tugas::where('tipe', 2)->count(),
-            'individual' => Tugas::where('tipe', 3)->count(),
-            'group' => Tugas::where('tipe', 4)->count(),
-        ];
+        // Statistik tugas (sesuai dengan yang dibutuhkan view)
+        $totalTugas = Tugas::count();
+        $activeTasks = Tugas::where('isHidden', 0)->count();
+        $completedTasks = Tugas::where('due', '<', now())->count();
+        $activeClasses = Kelas::whereHas('KelasMapel.Tugas')->count();
         
-        // Ambil tugas terbaru untuk admin
-        $recentTasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
+        // Hitung per tipe tugas
+        $tugasPilihanGanda = Tugas::where('tipe', 1)->count();
+        $tugasEssay = Tugas::where('tipe', 2)->count();
+        $tugasMandiri = Tugas::where('tipe', 3)->count();
+        $tugasKelompok = Tugas::where('tipe', 4)->count();
+        
+        // Tugas terbaru
+        $tugasTerbaru = Tugas::with(['KelasMapel.Mapel', 'KelasMapel.Kelas'])
             ->orderBy('created_at', 'desc')
-            ->limit(8)
+            ->limit(10)
             ->get();
-
-        // Ambil data kelas dan mata pelajaran untuk filter
-        $classes = \App\Models\Kelas::all();
-        $subjects = \App\Models\Mapel::all();
         
-        // Ambil semua tugas untuk ditampilkan
+        // Progress siswa
+        $progressSiswa = TugasProgress::with(['user', 'tugas'])
+            ->where('status', 'submitted')
+            ->orderBy('submitted_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        // Data untuk filter
+        $classes = Kelas::all();
+        $subjects = Mapel::all();
+        
+        // Semua tugas
         $tasks = Tugas::with(['KelasMapel.Kelas', 'KelasMapel.Mapel'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -4637,11 +4845,21 @@ class DashboardController extends Controller
         return view('admin.task-management', [
             'title' => 'Manajemen Tugas',
             'user' => $user,
-            'stats' => $stats,
-            'recentTasks' => $recentTasks,
-            'classes' => $classes,
+            'totalTasks' => $totalTugas,
+            'activeTasks' => $activeTasks,
+            'completedTasks' => $completedTasks,
+            'activeClasses' => $activeClasses,
+            'totalTugas' => $totalTugas,
+            'tugasPilihanGanda' => $tugasPilihanGanda,
+            'tugasEssay' => $tugasEssay,
+            'tugasMandiri' => $tugasMandiri,
+            'tugasKelompok' => $tugasKelompok,
+            'tugasTerbaru' => $tugasTerbaru,
+            'progressSiswa' => $progressSiswa,
             'subjects' => $subjects,
-            'tasks' => $tasks
+            'classes' => $classes,
+            'tasks' => $tasks,
+            'filters' => []
         ]);
     }
 
@@ -4806,9 +5024,31 @@ class DashboardController extends Controller
     public function viewAdminClassManagement()
     {
         $user = auth()->user();
+        
+        // Get all classes
+        $classes = Kelas::withCount('students')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Calculate statistics per level
+        $stats = [
+            'sd' => $classes->where('level', 'SD')->count(),
+            'smp' => $classes->where('level', 'SMP')->count(),
+            'sma' => $classes->where('level', 'SMA')->count(),
+            'smk' => $classes->where('level', 'SMK')->count(),
+        ];
+        
+        // Ambil kelas terbaru
+        $recentClasses = $classes->take(8);
+        
         return view('admin.kelas-management', [
             'title' => 'Manajemen Kelas Admin',
-            'user' => $user
+            'user' => $user,
+            'classes' => $classes,
+            'totalClasses' => $classes->count(),
+            'totalStudents' => $classes->sum('students_count'),
+            'totalSubjects' => \App\Models\Mapel::count(),
+            'totalTeachers' => \App\Models\User::where('roles_id', 3)->count()
         ]);
     }
 
@@ -4820,9 +5060,30 @@ class DashboardController extends Controller
      */
     public function createAdminClass(Request $request)
     {
-        // Implementation for creating classes
-        return redirect()->route('admin.class-management')
-            ->with('success', 'Kelas berhasil dibuat');
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50',
+            'level' => 'required|string|in:X,XI,XII',
+            'major' => 'required|string|in:IPA,IPS,Bahasa',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            Kelas::create([
+                'name' => $request->name,
+                'code' => $request->code,
+                'level' => $request->level,
+                'major' => $request->major,
+                'description' => $request->description,
+                'is_active' => true,
+            ]);
+
+            return redirect()->route('admin.class-management')
+                ->with('success', 'Kelas berhasil dibuat!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.class-management')
+                ->with('error', 'Gagal membuat kelas: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -4834,10 +5095,50 @@ class DashboardController extends Controller
     public function filterAdminClasses(Request $request)
     {
         $user = auth()->user();
+        
+        // Get filter parameters
+        $filters = $request->only(['filter_level', 'filter_grade', 'filter_status', 'filter_date_from', 'filter_date_to']);
+        
+        // Build query for classes
+        $query = Kelas::query();
+        
+        // Apply filters
+        if (!empty($filters['filter_level'])) {
+            $query->where('level', $filters['filter_level']);
+        }
+        
+        if (!empty($filters['filter_grade'])) {
+            $query->where('grade', $filters['filter_grade']);
+        }
+        
+        if (!empty($filters['filter_status'])) {
+            if ($filters['filter_status'] === 'active') {
+                $query->where('is_active', true);
+            } elseif ($filters['filter_status'] === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+        
+        if (!empty($filters['filter_date_from'])) {
+            $query->whereDate('created_at', '>=', $filters['filter_date_from']);
+        }
+        
+        if (!empty($filters['filter_date_to'])) {
+            $query->whereDate('created_at', '<=', $filters['filter_date_to']);
+        }
+        
+        // Get filtered classes
+        $classes = $query->orderBy('created_at', 'desc')->get();
+        
         return view('admin.kelas-management', [
             'title' => 'Manajemen Kelas Admin',
             'user' => $user,
-            'filters' => $request->all()
+            'classes' => $classes,
+            'totalClasses' => $classes->count(),
+            'totalStudents' => $classes->sum('students_count'),
+            'totalSubjects' => \App\Models\Mapel::count(),
+            'totalTeachers' => \App\Models\User::where('roles_id', 3)->count(),
+            'filters' => $filters
         ]);
     }
 
@@ -4989,7 +5290,6 @@ class DashboardController extends Controller
             'status' => 'required|in:draft,published',
             'file' => 'nullable|file|mimes:pdf,mp4,jpg,jpeg,png,doc,docx,ppt,pptx|max:10240',
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'youtube_url' => 'nullable|url',
         ]);
 
         try {
@@ -5416,7 +5716,7 @@ class DashboardController extends Controller
         }
         
         if ($request->filled('filter_search')) {
-            $query->where('device_name', 'like', '%' . $request->filter_search . '%')
+            $query->where('name', 'like', '%' . $request->filter_search . '%')
                   ->orWhere('device_id', 'like', '%' . $request->filter_search . '%');
         }
         
@@ -5930,6 +6230,130 @@ class DashboardController extends Controller
     }
 
     /**
+     * Export teacher reports to Excel
+     */
+    public function exportTeacherReports(Request $request)
+    {
+        $user = auth()->user();
+        $assignedData = $this->getTeacherAssignedData($request);
+        
+        if (!$assignedData || empty($assignedData['kelas_mapel_ids'])) {
+            return redirect()->back()->with('error', 'No data available for export.');
+        }
+
+        $filters = [
+            'kelas' => $request->get('kelas', []),
+            'mapel' => $request->get('mapel', []),
+            'date_from' => $request->get('date_from'),
+            'date_to' => $request->get('date_to')
+        ];
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\TeacherReportsExport($assignedData, $filters),
+            'teacher_reports_' . now()->format('Y-m-d_H-i-s') . '.xlsx'
+        );
+    }
+
+    /**
+     * View teacher task detail
+     */
+    public function viewTeacherTaskDetail($id)
+    {
+        $user = auth()->user();
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        $task = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel', 'userTugas.user'])
+            ->findOrFail($id);
+
+        $submissions = $task->userTugas()->with('user')->get();
+
+        return view('teacher.task-detail', [
+            'title' => 'Task Detail - ' . $task->name,
+            'user' => $user,
+            'task' => $task,
+            'submissions' => $submissions
+        ]);
+    }
+
+    /**
+     * View teacher exam detail
+     */
+    public function viewTeacherExamDetail($id)
+    {
+        $user = auth()->user();
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        $exam = Ujian::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel', 'userUjian.user'])
+            ->findOrFail($id);
+
+        $participants = $exam->userUjian()->with('user')->get();
+
+        return view('teacher.exam-detail', [
+            'title' => 'Exam Detail - ' . $exam->name,
+            'user' => $user,
+            'exam' => $exam,
+            'participants' => $participants
+        ]);
+    }
+
+    /**
+     * View teacher student detail
+     */
+    public function viewTeacherStudentDetail($id)
+    {
+        $user = auth()->user();
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        $student = User::whereIn('kelas_id', $assignedData['kelas_ids'])
+            ->where('roles_id', 4)
+            ->with('kelas')
+            ->findOrFail($id);
+
+        $tasks = UserTugas::where('user_id', $student->id)
+            ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+            })
+            ->with('tugas.kelasMapel.kelas', 'tugas.kelasMapel.mapel')
+            ->get();
+
+        $exams = UserUjian::where('user_id', $student->id)
+            ->whereHas('ujian.kelasMapel', function($q) use ($assignedData) {
+                $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+            })
+            ->with('ujian.kelasMapel.kelas', 'ujian.kelasMapel.mapel')
+            ->get();
+
+        return view('teacher.student-detail', [
+            'title' => 'Student Detail - ' . $student->name,
+            'user' => $user,
+            'student' => $student,
+            'tasks' => $tasks,
+            'exams' => $exams
+        ]);
+    }
+
+    /**
+     * Get teacher's assigned data (classes and subjects)
+     */
+    private function getTeacherAssignedData(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Get KelasMapel where teacher is assigned via EditorAccess
+        $kelasMapels = \App\Models\KelasMapel::whereHas('editorAccess', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->get();
+        
+        return [
+            'kelas_mapel_ids' => $kelasMapels->pluck('id')->toArray(),
+            'kelas_ids' => $kelasMapels->pluck('kelas_id')->unique()->toArray(),
+            'mapel_ids' => $kelasMapels->pluck('mapel_id')->unique()->toArray(),
+        ];
+    }
+
+    /**
      * View teacher help.
      *
      * @return \Illuminate\View\View
@@ -5963,29 +6387,14 @@ class DashboardController extends Controller
         $totalTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
         $totalExams = Ujian::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
         
-        // Get top performing students
-        $topStudents = collect([
-            (object)['name' => 'Ahmad Rizki', 'class_name' => 'Kelas A', 'avg_score' => 95],
-            (object)['name' => 'Siti Nurhaliza', 'class_name' => 'Kelas B', 'avg_score' => 92],
-            (object)['name' => 'Budi Santoso', 'class_name' => 'Kelas A', 'avg_score' => 88],
-            (object)['name' => 'Dewi Lestari', 'class_name' => 'Kelas C', 'avg_score' => 85]
-        ]);
+        // Calculate average score from user_tugas and user_ujian
+        $avgScore = $this->calculateAverageScore($assignedData);
         
-        // Get recent tasks
-        $recentTasks = Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
-            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
-            ->latest()
-            ->limit(5)
-            ->get()
-            ->map(function($task) {
-                return (object)[
-                    'title' => $task->judul,
-                    'type' => $task->tipe,
-                    'submission_count' => rand(15, 30),
-                    'total_students' => 30,
-                    'status' => $task->deadline > now() ? 'pending' : 'completed'
-                ];
-            });
+        // Get top performing students with real data
+        $topStudents = $this->getTopPerformingStudents($assignedData);
+        
+        // Get recent tasks with real submission data
+        $recentTasks = $this->getRecentTasksWithSubmissions($assignedData);
         
         return view('teacher.analytics', [
             'title' => 'Analytics Teacher',
@@ -5993,10 +6402,221 @@ class DashboardController extends Controller
             'totalStudents' => $totalStudents,
             'totalTasks' => $totalTasks,
             'totalExams' => $totalExams,
-            'avgScore' => 87,
+            'avgScore' => $avgScore,
             'topStudents' => $topStudents,
             'recentTasks' => $recentTasks
         ]);
+    }
+
+    /**
+     * Calculate average score from user_tugas and user_ujian
+     */
+    private function calculateAverageScore($assignedData)
+    {
+        // Get average from user_tugas
+        $avgTugas = \App\Models\UserTugas::whereHas('tugas', function($query) use ($assignedData) {
+            $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        })->whereNotNull('nilai')->avg('nilai');
+
+        // Get average from user_ujian
+        $avgUjian = \App\Models\UserUjian::whereHas('ujian', function($query) use ($assignedData) {
+            $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        })->whereNotNull('nilai')->avg('nilai');
+
+        // Calculate overall average
+        $scores = array_filter([$avgTugas, $avgUjian]);
+        return $scores ? round(array_sum($scores) / count($scores), 1) : 0;
+    }
+
+    /**
+     * Get top performing students with real data
+     */
+    private function getTopPerformingStudents($assignedData)
+    {
+        $students = \App\Models\User::whereIn('kelas_id', $assignedData['kelas_ids'])
+            ->where('roles_id', 4)
+            ->with(['kelas'])
+            ->get()
+            ->map(function($student) use ($assignedData) {
+                // Calculate average score for this student
+                $avgTugas = \App\Models\UserTugas::where('user_id', $student->id)
+                    ->whereHas('tugas', function($query) use ($assignedData) {
+                        $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+                    })
+                    ->whereNotNull('nilai')
+                    ->avg('nilai');
+
+                $avgUjian = \App\Models\UserUjian::where('user_id', $student->id)
+                    ->whereHas('ujian', function($query) use ($assignedData) {
+                        $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+                    })
+                    ->whereNotNull('nilai')
+                    ->avg('nilai');
+
+                $scores = array_filter([$avgTugas, $avgUjian]);
+                $avgScore = $scores ? round(array_sum($scores) / count($scores), 1) : 0;
+
+                return (object)[
+                    'name' => $student->name,
+                    'class_name' => $student->kelas->name ?? 'Unknown',
+                    'avg_score' => $avgScore
+                ];
+            })
+            ->filter(function($student) {
+                return $student->avg_score > 0;
+            })
+            ->sortByDesc('avg_score')
+            ->take(4);
+
+        return $students;
+    }
+
+    /**
+     * Get recent tasks with real submission data
+     */
+    private function getRecentTasksWithSubmissions($assignedData)
+    {
+        return \App\Models\Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])
+            ->with(['kelasMapel.kelas', 'kelasMapel.mapel'])
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(function($task) {
+                // Get real submission count
+                $submissionCount = \App\Models\UserTugas::where('tugas_id', $task->id)
+                    ->whereIn('status', ['submitted', 'completed', 'graded'])
+                    ->count();
+
+                // Get total students in the class
+                $totalStudents = \App\Models\User::where('kelas_id', $task->kelasMapel->kelas_id)
+                    ->where('roles_id', 4)
+                    ->count();
+
+                return (object)[
+                    'title' => $task->name,
+                    'type' => $this->getTaskTypeName($task->tipe),
+                    'submission_count' => $submissionCount,
+                    'total_students' => $totalStudents,
+                    'status' => $task->due > now() ? 'pending' : 'completed'
+                ];
+            });
+    }
+
+    /**
+     * Get task type name
+     */
+    private function getTaskTypeName($tipe)
+    {
+        $types = [
+            1 => 'multiple_choice',
+            2 => 'essay',
+            3 => 'mandiri',
+            4 => 'kelompok'
+        ];
+        return $types[$tipe] ?? 'unknown';
+    }
+
+    /**
+     * API endpoint for real-time analytics data
+     */
+    public function getTeacherAnalyticsData()
+    {
+        $user = auth()->user();
+        
+        // Get teacher's assigned classes and subjects
+        $assignedData = $this->getTeacherAssignedData(request());
+        
+        // Calculate all analytics data
+        $totalStudents = \App\Models\User::whereIn('kelas_id', $assignedData['kelas_ids'])
+            ->where('roles_id', 4)
+            ->count();
+            
+        $totalTasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        $totalExams = \App\Models\Ujian::whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids'])->count();
+        
+        $avgScore = $this->calculateAverageScore($assignedData);
+        $topStudents = $this->getTopPerformingStudents($assignedData);
+        $recentTasks = $this->getRecentTasksWithSubmissions($assignedData);
+        
+        // Get grade distribution
+        $gradeDistribution = $this->getGradeDistribution($assignedData);
+        
+        // Get class performance
+        $classPerformance = $this->getClassPerformance($assignedData);
+        
+        return response()->json([
+            'totalStudents' => $totalStudents,
+            'totalTasks' => $totalTasks,
+            'totalExams' => $totalExams,
+            'avgScore' => $avgScore,
+            'topStudents' => $topStudents,
+            'recentTasks' => $recentTasks,
+            'gradeDistribution' => $gradeDistribution,
+            'classPerformance' => $classPerformance,
+            'lastUpdated' => now()->format('H:i:s')
+        ]);
+    }
+
+    /**
+     * Get grade distribution (A, B, C, D, E)
+     */
+    private function getGradeDistribution($assignedData)
+    {
+        // Get all scores from user_tugas
+        $tugasScores = \App\Models\UserTugas::whereHas('tugas', function($query) use ($assignedData) {
+            $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        })->whereNotNull('nilai')->pluck('nilai');
+
+        // Get all scores from user_ujian
+        $ujianScores = \App\Models\UserUjian::whereHas('ujian', function($query) use ($assignedData) {
+            $query->whereIn('kelas_mapel_id', $assignedData['kelas_mapel_ids']);
+        })->whereNotNull('nilai')->pluck('nilai');
+
+        $allScores = $tugasScores->merge($ujianScores);
+        
+        $distribution = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0];
+        
+        foreach ($allScores as $score) {
+            if ($score >= 90) $distribution['A']++;
+            elseif ($score >= 80) $distribution['B']++;
+            elseif ($score >= 70) $distribution['C']++;
+            elseif ($score >= 60) $distribution['D']++;
+            else $distribution['E']++;
+        }
+        
+        return $distribution;
+    }
+
+    /**
+     * Get class performance data
+     */
+    private function getClassPerformance($assignedData)
+    {
+        $classes = \App\Models\Kelas::whereIn('id', $assignedData['kelas_ids'])->get();
+        
+        return $classes->map(function($class) use ($assignedData) {
+            // Get class-specific kelas_mapel_ids
+            $classKelasMapelIds = \App\Models\KelasMapel::where('kelas_id', $class->id)
+                ->whereIn('id', $assignedData['kelas_mapel_ids'])
+                ->pluck('id');
+
+            // Calculate average score for this class
+            $avgTugas = \App\Models\UserTugas::whereHas('tugas', function($query) use ($classKelasMapelIds) {
+                $query->whereIn('kelas_mapel_id', $classKelasMapelIds);
+            })->whereNotNull('nilai')->avg('nilai');
+
+            $avgUjian = \App\Models\UserUjian::whereHas('ujian', function($query) use ($classKelasMapelIds) {
+                $query->whereIn('kelas_mapel_id', $classKelasMapelIds);
+            })->whereNotNull('nilai')->avg('nilai');
+
+            $scores = array_filter([$avgTugas, $avgUjian]);
+            $avgScore = $scores ? round(array_sum($scores) / count($scores), 1) : 0;
+
+            return [
+                'class_name' => $class->name,
+                'avg_score' => $avgScore
+            ];
+        });
     }
 
     // Student Management Methods (Matching Superadmin)
@@ -6147,8 +6767,8 @@ class DashboardController extends Controller
     public function viewStudentIotManagement()
     {
         $user = auth()->user();
-        return view('student.iot-management', [
-            'title' => 'Manajemen IoT Student',
+        return view('student.iot', [
+            'title' => 'Penelitian IoT',
             'user' => $user
         ]);
     }
@@ -6174,9 +6794,58 @@ class DashboardController extends Controller
     public function viewStudentTaskManagement()
     {
         $user = auth()->user();
+        
+        // Get student's tasks
+        $tasks = collect(); // Initialize empty collection
+        $totalTasks = 0;
+        $pendingTasks = 0;
+        $completedTasks = 0;
+        $overdueTasks = 0;
+        $subjects = collect();
+        
+        try {
+            // Get student's class and subjects
+            if ($user->KelasMapel) {
+                $subjects = $user->KelasMapel->map(function($kelasMapel) {
+                    return $kelasMapel->Mapel;
+                })->unique('id');
+                
+                // Get tasks for student's subjects
+                $taskIds = $user->KelasMapel->pluck('id');
+                $tasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $taskIds)
+                    ->where('isHidden', 0)
+                    ->with(['KelasMapel.Kelas', 'KelasMapel.Mapel', 'submissions' => function($query) use ($user) {
+                        $query->where('user_id', $user->id);
+                    }])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                
+                $totalTasks = $tasks->count();
+                $pendingTasks = $tasks->filter(function($task) {
+                    return $task->submissions->count() == 0 && (!$task->due || $task->due > now());
+                })->count();
+                $completedTasks = $tasks->filter(function($task) {
+                    return $task->submissions->count() > 0;
+                })->count();
+                $overdueTasks = $tasks->filter(function($task) {
+                    return $task->submissions->count() == 0 && $task->due && $task->due < now();
+                })->count();
+            }
+        } catch (\Exception $e) {
+            // Handle error gracefully
+            \Log::error('Error in viewStudentTaskManagement: ' . $e->getMessage());
+        }
+        
         return view('student.task-management', [
             'title' => 'Manajemen Tugas Student',
-            'user' => $user
+            'user' => $user,
+            'tasks' => $tasks,
+            'subjects' => $subjects,
+            'totalTasks' => $totalTasks,
+            'pendingTasks' => $pendingTasks,
+            'completedTasks' => $completedTasks,
+            'overdueTasks' => $overdueTasks,
+            'filters' => request()->only(['filter_subject', 'filter_status', 'filter_difficulty'])
         ]);
     }
 
@@ -6790,6 +7459,464 @@ class DashboardController extends Controller
             'recentSensorData' => $recentSensorData,
             'recentReadings' => $recentReadings
         ]);
+    }
+
+    /**
+     * ESP8266 Status Views for All Roles
+     */
+    public function viewSuperAdminEsp8266Status()
+    {
+        $user = auth()->user();
+        return view('components.esp8266-status', compact('user'));
+    }
+
+    public function viewAdminEsp8266Status()
+    {
+        $user = auth()->user();
+        return view('components.esp8266-status', compact('user'));
+    }
+
+    public function viewTeacherEsp8266Status()
+    {
+        $user = auth()->user();
+        return view('components.esp8266-status', compact('user'));
+    }
+
+    public function viewStudentEsp8266Status()
+    {
+        $user = auth()->user();
+        return view('components.esp8266-status', compact('user'));
+    }
+
+    /**
+     * Edit Teacher Material
+     */
+    public function editTeacherMaterial($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        
+        // Check if teacher owns this material or has access
+        if ($material->teacher_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit materi ini');
+        }
+        
+        // Get available subjects and classes for the teacher
+        $subjects = $this->getTeacherAvailableSubjects(request());
+        $classes = $this->getTeacherAvailableClasses(request());
+        
+        return view('material-edit', [
+            'title' => 'Edit Materi',
+            'user' => $user,
+            'userRole' => 'teacher',
+            'material' => $material,
+            'subjects' => $subjects,
+            'classes' => $classes
+        ]);
+    }
+
+    /**
+     * Update Teacher Material
+     */
+    public function updateTeacherMaterial(Request $request, $id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        
+        // Check if teacher owns this material
+        if ($material->teacher_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit materi ini');
+        }
+        
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'subject_id' => 'required|exists:mapels,id',
+            'class_id' => 'required|exists:kelas,id',
+            'content' => 'required|string',
+            'description' => 'nullable|string',
+            'type' => 'required|in:document,video,image,text',
+            'status' => 'required|in:draft,published',
+            'file' => 'nullable|file|mimes:pdf,mp4,jpg,jpeg,png,doc,docx,ppt,pptx|max:10240',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'youtube_url' => 'nullable|url',
+        ]);
+
+        try {
+            // Handle file upload
+            $filePath = $material->file_path;
+            $fileName = $material->file_name;
+            $fileSize = $material->file_size;
+            $fileType = $material->file_type;
+            
+            if ($request->hasFile('file')) {
+                // Delete old file if exists
+                if ($material->file_path) {
+                    \Storage::disk('public')->delete($material->file_path);
+                }
+                
+                $file = $request->file('file');
+                $fileName = $file->getClientOriginalName();
+                $fileSize = $file->getSize();
+                $fileType = $file->getMimeType();
+                $filePath = $file->store('materials', 'public');
+            }
+
+            // Handle thumbnail upload
+            $thumbnailPath = $material->thumbnail_path;
+            if ($request->hasFile('thumbnail')) {
+                // Delete old thumbnail if exists
+                if ($material->thumbnail_path) {
+                    \Storage::disk('public')->delete($material->thumbnail_path);
+                }
+                
+                $thumbnail = $request->file('thumbnail');
+                $thumbnailPath = $thumbnail->store('thumbnails', 'public');
+            }
+
+            // Update the material
+            $material->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'description' => $request->description,
+                'type' => $request->type,
+                'file_path' => $filePath,
+                'file_name' => $fileName,
+                'file_size' => $fileSize,
+                'file_type' => $fileType,
+                'thumbnail_path' => $thumbnailPath,
+                'youtube_url' => $request->youtube_url,
+                'class_id' => $request->class_id,
+                'subject_id' => $request->subject_id,
+                'status' => $request->status,
+            ]);
+
+            return redirect()->route('teacher.material-management')
+                ->with('success', 'Materi berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui materi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete Teacher Material
+     */
+    public function deleteTeacherMaterial($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        
+        // Check if teacher owns this material
+        if ($material->teacher_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus materi ini');
+        }
+        
+        try {
+            // Delete files
+            if ($material->file_path) {
+                \Storage::disk('public')->delete($material->file_path);
+            }
+            if ($material->thumbnail_path) {
+                \Storage::disk('public')->delete($material->thumbnail_path);
+            }
+
+            $material->delete();
+
+            return redirect()->route('teacher.material-management')
+                ->with('success', 'Materi berhasil dihapus!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus materi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Edit Super Admin Material
+     */
+    public function editSuperAdminMaterial($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        $subjects = \App\Models\Mapel::all();
+        $classes = \App\Models\Kelas::all();
+        
+        return view('material-edit', [
+            'title' => 'Edit Materi',
+            'user' => $user,
+            'userRole' => 'superadmin',
+            'material' => $material,
+            'subjects' => $subjects,
+            'classes' => $classes
+        ]);
+    }
+
+    /**
+     * Update Super Admin Material
+     */
+    public function updateSuperAdminMaterial(Request $request, $id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'subject_id' => 'required|exists:mapels,id',
+            'class_id' => 'required|exists:kelas,id',
+            'content' => 'required|string',
+            'description' => 'nullable|string',
+            'type' => 'required|in:document,video,image,text',
+            'status' => 'required|in:draft,published',
+            'file' => 'nullable|file|mimes:pdf,mp4,jpg,jpeg,png,doc,docx,ppt,pptx|max:10240',
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'youtube_url' => 'nullable|url',
+        ]);
+
+        try {
+            // Handle file upload
+            $filePath = $material->file_path;
+            $fileName = $material->file_name;
+            $fileSize = $material->file_size;
+            $fileType = $material->file_type;
+            
+            if ($request->hasFile('file')) {
+                // Delete old file if exists
+                if ($material->file_path) {
+                    \Storage::disk('public')->delete($material->file_path);
+                }
+                
+                $file = $request->file('file');
+                $fileName = $file->getClientOriginalName();
+                $fileSize = $file->getSize();
+                $fileType = $file->getMimeType();
+                $filePath = $file->store('materials', 'public');
+            }
+
+            // Handle thumbnail upload
+            $thumbnailPath = $material->thumbnail_path;
+            if ($request->hasFile('thumbnail')) {
+                // Delete old thumbnail if exists
+                if ($material->thumbnail_path) {
+                    \Storage::disk('public')->delete($material->thumbnail_path);
+                }
+                
+                $thumbnail = $request->file('thumbnail');
+                $thumbnailPath = $thumbnail->store('thumbnails', 'public');
+            }
+
+            // Update the material
+            $material->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'description' => $request->description,
+                'type' => $request->type,
+                'file_path' => $filePath,
+                'file_name' => $fileName,
+                'file_size' => $fileSize,
+                'file_type' => $fileType,
+                'thumbnail_path' => $thumbnailPath,
+                'youtube_url' => $request->youtube_url,
+                'class_id' => $request->class_id,
+                'subject_id' => $request->subject_id,
+                'status' => $request->status,
+            ]);
+
+            return redirect()->route('superadmin.material-management')
+                ->with('success', 'Materi berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui materi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete Super Admin Material
+     */
+    public function deleteSuperAdminMaterial($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::findOrFail($id);
+        
+        try {
+            // Delete files
+            if ($material->file_path) {
+                \Storage::disk('public')->delete($material->file_path);
+            }
+            if ($material->thumbnail_path) {
+                \Storage::disk('public')->delete($material->thumbnail_path);
+            }
+
+            $material->delete();
+
+            return redirect()->route('superadmin.material-management')
+                ->with('success', 'Materi berhasil dihapus!');
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus materi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * View Super Admin Material Detail
+     */
+    public function viewSuperAdminMaterialDetail($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::with(['class', 'subject', 'creator'])->findOrFail($id);
+        
+        // Get users who have read this material (without year/student filter)
+        $readers = \DB::table('material_views')
+            ->join('users', 'material_views.user_id', '=', 'users.id')
+            ->join('roles', 'users.roles_id', '=', 'roles.id')
+            ->where('material_views.material_id', $id)
+            ->select('users.*', 'roles.name as role_name', 'material_views.created_at as read_at')
+            ->orderBy('material_views.created_at', 'desc')
+            ->get();
+
+        return view('superadmin.material-detail', compact('material', 'readers', 'user'));
+    }
+
+    /**
+     * View Admin Material Detail
+     */
+    public function viewAdminMaterialDetail($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::with(['class', 'subject', 'creator'])->findOrFail($id);
+        
+        // Get users who have read this material (without year/student filter)
+        $readers = \DB::table('material_views')
+            ->join('users', 'material_views.user_id', '=', 'users.id')
+            ->join('roles', 'users.roles_id', '=', 'roles.id')
+            ->where('material_views.material_id', $id)
+            ->select('users.*', 'roles.name as role_name', 'material_views.created_at as read_at')
+            ->orderBy('material_views.created_at', 'desc')
+            ->get();
+
+        return view('admin.material-detail', compact('material', 'readers', 'user'));
+    }
+
+    /**
+     * View Teacher Material Detail
+     */
+    public function viewTeacherMaterialDetail($id)
+    {
+        $user = auth()->user();
+        $material = \App\Models\Material::with(['class', 'subject', 'creator'])->findOrFail($id);
+        
+        // Get users who have read this material (without year/student filter)
+        $readers = \DB::table('material_views')
+            ->join('users', 'material_views.user_id', '=', 'users.id')
+            ->join('roles', 'users.roles_id', '=', 'roles.id')
+            ->where('material_views.material_id', $id)
+            ->select('users.*', 'roles.name as role_name', 'material_views.created_at as read_at')
+            ->orderBy('material_views.created_at', 'desc')
+            ->get();
+
+        return view('teacher.material-detail', compact('material', 'readers', 'user'));
+    }
+
+    /**
+     * Prepare chart data for teacher reports analytics
+     */
+    private function prepareTeacherReportChartData($assignedData, $filters)
+    {
+        // Monthly trend data (6 months)
+        $monthlyTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd = $date->copy()->endOfMonth();
+            
+            $avgScore = \App\Models\UserTugas::whereIn('status', ['completed', 'graded'])
+                ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                    $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+                })
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->avg('nilai') ?? 0;
+            
+            $monthlyTrend[] = [
+                'month' => $date->format('M Y'),
+                'avg_score' => round($avgScore, 1)
+            ];
+        }
+
+        // Completion rate by subject
+        $completionBySubject = \App\Models\Mapel::whereIn('id', $assignedData['mapel_ids'])
+            ->with(['kelasMapel' => function($q) use ($assignedData) {
+                $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+            }])
+            ->get()
+            ->map(function($subject) {
+                $totalTasks = \App\Models\Tugas::whereIn('kelas_mapel_id', $subject->kelasMapel->pluck('id'))->count();
+                $completedTasks = \App\Models\UserTugas::whereIn('status', ['completed', 'graded'])
+                    ->whereHas('tugas.kelasMapel', function($q) use ($subject) {
+                        $q->where('mapel_id', $subject->id);
+                    })
+                    ->count();
+                
+                return [
+                    'subject' => $subject->nama_mapel,
+                    'completion_rate' => $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 1) : 0
+                ];
+            });
+
+        // Task status distribution
+        $taskStatusDistribution = [
+            'submitted' => \App\Models\UserTugas::whereIn('status', ['submitted', 'completed', 'graded'])
+                ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                    $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+                })
+                ->count(),
+            'pending' => \App\Models\UserTugas::where('status', 'pending')
+                ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                    $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+                })
+                ->count(),
+            'late' => \App\Models\UserTugas::where('status', 'pending')
+                ->whereHas('tugas', function($q) {
+                    $q->where('due', '<', now());
+                })
+                ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                    $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+                })
+                ->count()
+        ];
+
+        // Top 10 students
+        $topStudents = \App\Models\User::whereIn('kelas_id', $assignedData['kelas_ids'])
+            ->where('roles_id', 4)
+            ->with('kelas')
+            ->get()
+            ->map(function($student) use ($assignedData) {
+                $avgScore = \App\Models\UserTugas::where('user_id', $student->id)
+                    ->whereIn('status', ['completed', 'graded'])
+                    ->whereHas('tugas.kelasMapel', function($q) use ($assignedData) {
+                        $q->whereIn('id', $assignedData['kelas_mapel_ids']);
+                    })
+                    ->avg('nilai') ?? 0;
+                
+                return [
+                    'name' => $student->name,
+                    'class' => $student->kelas->nama_kelas ?? 'N/A',
+                    'avg_score' => round($avgScore, 1)
+                ];
+            })
+            ->sortByDesc('avg_score')
+            ->take(10)
+            ->values();
+
+        return [
+            'monthly_trend' => $monthlyTrend,
+            'completion_by_subject' => $completionBySubject,
+            'task_status_distribution' => $taskStatusDistribution,
+            'top_students' => $topStudents
+        ];
     }
 }
 

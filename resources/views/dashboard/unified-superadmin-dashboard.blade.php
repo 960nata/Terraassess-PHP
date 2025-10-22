@@ -30,7 +30,7 @@
     <!-- Push Notifikasi -->
     <a href="{{ route('superadmin.push-notification') }}" class="card">
         <div class="card-icon blue">
-            <i class="ph-bell"></i>
+            <i class="fas fa-bell"></i>
         </div>
         <h3 class="card-title">Push Notifikasi</h3>
         <p class="card-description">
@@ -38,16 +38,6 @@
         </p>
     </a>
 
-    <!-- Manajemen IoT -->
-    <a href="{{ route('superadmin.iot-management') }}" class="card">
-        <div class="card-icon green">
-            <i class="ph-wifi"></i>
-        </div>
-        <h3 class="card-title">Manajemen IoT</h3>
-        <p class="card-description">
-            Kelola seluruh sistem IoT. Monitor perangkat dan konfigurasi global.
-        </p>
-    </a>
 
     <!-- Tugas Saya -->
     <a href="{{ route('superadmin.tugas.index') }}" class="card">

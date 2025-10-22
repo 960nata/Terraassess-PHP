@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contacts', function (Blueprint $table) {
-            $table->foreignid('user_id');
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('no_telp')->nullable();
             $table->timestamps();
         });

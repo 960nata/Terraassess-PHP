@@ -11,11 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mapels', function (Blueprint $table) {
-            $table->string('kategori')->default('akademik')->after('deskripsi');
-            $table->string('code')->nullable()->unique()->after('kategori');
-            $table->boolean('is_active')->default(true)->after('code');
-        });
+        // Check if table exists before modifying
+        if (Schema::hasTable('mapels')) {
+            Schema::table('mapels', function (Blueprint $table) {
+                // Check if columns don't already exist
+                if (!Schema::hasColumn('mapels', 'kategori')) {
+                    $table->string('kategori')->default('akademik')->after('deskripsi');
+                }
+                if (!Schema::hasColumn('mapels', 'code')) {
+                    $table->string('code')->nullable()->unique()->after('kategori');
+                }
+                if (!Schema::hasColumn('mapels', 'is_active')) {
+                    $table->boolean('is_active')->default(true)->after('code');
+                }
+            });
+        }
     }
 
     /**

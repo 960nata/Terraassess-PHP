@@ -391,15 +391,42 @@ function displayProjectData(project, sensorData) {
 
 // Edit project
 function editProject(projectId) {
-    // TODO: Implement edit functionality
-    alert('Fitur edit akan segera tersedia');
+    // Implement edit functionality
+    try {
+        // Redirect to edit project page
+        window.location.href = `/teacher/iot/research-projects/${projectId}/edit`;
+    } catch (error) {
+        console.error('Error navigating to edit project:', error);
+        alert('Terjadi kesalahan saat membuka halaman edit proyek');
+    }
 }
 
 // Complete project
 async function completeProject(projectId) {
     if (confirm('Apakah Anda yakin ingin menyelesaikan proyek ini?')) {
-        // TODO: Implement complete functionality
-        alert('Fitur selesai proyek akan segera tersedia');
+        try {
+            // Send completion request to server
+            const response = await fetch(`/teacher/iot/research-projects/${projectId}/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Proyek berhasil diselesaikan!');
+                // Reload the page to reflect changes
+                location.reload();
+            } else {
+                alert('Gagal menyelesaikan proyek: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        } catch (error) {
+            console.error('Error completing project:', error);
+            alert('Terjadi kesalahan saat menyelesaikan proyek');
+        }
     }
 }
 </script>

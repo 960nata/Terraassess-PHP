@@ -843,7 +843,7 @@
     top: 52px;
     right: 0;
     width: 240px;
-    background: #ffffff;
+    background: transparent;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);

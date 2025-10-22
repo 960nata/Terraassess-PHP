@@ -17,9 +17,14 @@ use App\Http\Controllers\TugasController;
 use App\Http\Controllers\UjianController;
 use App\Http\Controllers\TeacherAssignmentController;
 use App\Http\Controllers\GroupTaskController;
+use App\Http\Controllers\GroupManagementController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\RubrikController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\NpkSensorController;
+use App\Http\Controllers\Student\ComplaintController;
+use App\Http\Controllers\SuperAdmin\ComplaintManagementController;
+use App\Http\Controllers\Admin\ComplaintManagementController as AdminComplaintManagementController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -85,6 +90,12 @@ Route::get('/debug-csrf', function() {
         'timestamp' => now()
     ]);
 })->name('debug.csrf');
+
+// IoT Debug Routes (No Authentication Required)
+Route::get('/iot-debug', [App\Http\Controllers\IotDebugController::class, 'index'])->name('iot.debug');
+Route::post('/api/iot-debug/store-data', [App\Http\Controllers\IotDebugController::class, 'storeSensorData'])->name('api.iot.debug.store');
+Route::get('/api/iot-debug/sensor-data', [App\Http\Controllers\IotDebugController::class, 'getSensorData'])->name('api.iot.debug.get');
+Route::delete('/api/iot-debug/clear-data', [App\Http\Controllers\IotDebugController::class, 'clearDebugData'])->name('api.iot.debug.clear');
 
 // Debug route for user authentication and role
 Route::get('/debug-user', function() {
@@ -165,7 +176,7 @@ Route::controller(DashboardController::class)->group(function () {
     // Role-based dashboards
     Route::get('/superadmin/dashboard', 'viewSuperAdminDashboard')->middleware(['auth', 'role:superadmin'])->name('superadmin.dashboard');
     Route::get('/admin/dashboard', 'viewAdminDashboard')->middleware(['auth', 'role:admin'])->name('admin.dashboard');
-    Route::get('/teacher/dashboard', 'viewTeacherDashboard')->middleware(['auth', 'role:teacher'])->name('teacher.dashboard');
+    Route::get('/teacher/dashboard', 'viewTeacherDashboard')->middleware(['auth'])->name('teacher.dashboard');
     Route::get('/student/dashboard', 'viewStudentDashboard')->middleware(['auth', 'role:student'])->name('student.dashboard');
 
     // API Routes for Charts
@@ -184,7 +195,6 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/superadmin/iot-management', 'viewSuperAdminIotManagement')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-management');
     Route::get('/superadmin/iot-management/filter', 'filterSuperAdminIotManagement')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-management.filter');
     Route::post('/superadmin/iot-management/register', 'registerIotDevice')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-management.register');
-    Route::get('/superadmin/iot-dashboard', 'viewSuperAdminIotDashboard')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-dashboard');
     Route::get('/superadmin/task-management', [App\Http\Controllers\SuperAdminTugasController::class, 'index'])->middleware(['auth', 'role:superadmin'])->name('superadmin.task-management');
     Route::get('/superadmin/task-management/filter', 'filterSuperAdminTasks')->middleware(['auth', 'role:superadmin'])->name('superadmin.task-management.filter');
     Route::get('/superadmin/material-management', 'viewSuperAdminMaterialManagement')->middleware(['auth', 'role:superadmin'])->name('superadmin.material-management');
@@ -218,6 +228,7 @@ Route::controller(DashboardController::class)->group(function () {
         Route::get('/create/essay', [App\Http\Controllers\Teacher\TaskController::class, 'createEssay'])->name('superadmin.tasks.create.essay');
         Route::get('/create/individual', [App\Http\Controllers\Teacher\TaskController::class, 'createIndividual'])->name('superadmin.tasks.create.individual');
         Route::get('/create/group', [App\Http\Controllers\Teacher\TaskController::class, 'createGroup'])->name('superadmin.tasks.create.group');
+        Route::post('/', [App\Http\Controllers\Teacher\TaskController::class, 'store'])->name('superadmin.tasks.store');
     });
     
     // New comprehensive task management routes
@@ -231,6 +242,20 @@ Route::controller(DashboardController::class)->group(function () {
     Route::post('/superadmin/tugas/feedback', [App\Http\Controllers\SuperAdminTugasController::class, 'storeFeedback'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('superadmin.tugas.feedback');
     Route::get('/superadmin/tugas/{id}/penilaian-kelompok', [App\Http\Controllers\SuperAdminTugasController::class, 'penilaianKelompok'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('superadmin.tugas.penilaian-kelompok');
     Route::post('/superadmin/tugas/penilaian-kelompok', [App\Http\Controllers\SuperAdminTugasController::class, 'storePenilaianKelompok'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('superadmin.tugas.store-penilaian-kelompok');
+    
+    // API routes for AJAX
+    Route::get('/superadmin/api/students-by-class/{kelasId}', [App\Http\Controllers\SuperAdminTugasController::class, 'getStudentsByClass'])->middleware(['auth', 'granular.rbac:task-management,create'])->name('superadmin.api.students-by-class');
+    
+    // SuperAdmin Complaint Management Routes
+    Route::get('/superadmin/complaints', [ComplaintManagementController::class, 'index'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.index');
+    Route::get('/superadmin/complaints/{complaint}', [ComplaintManagementController::class, 'show'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.show');
+    Route::put('/superadmin/complaints/{complaint}', [ComplaintManagementController::class, 'update'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.update');
+    Route::post('/superadmin/complaints/{complaint}/reply', [ComplaintManagementController::class, 'reply'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.reply');
+    Route::delete('/superadmin/complaints/{complaint}', [ComplaintManagementController::class, 'destroy'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.destroy');
+    Route::get('/superadmin/complaints/statistics', [ComplaintManagementController::class, 'statistics'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.statistics');
+    
+    // SuperAdmin Attachment Routes
+    Route::get('/superadmin/complaints/attachments/{attachment}/download', [ComplaintManagementController::class, 'downloadAttachment'])->middleware(['auth', 'role:superadmin'])->name('superadmin.complaints.attachments.download');
     
     // Editor Image Upload
     Route::post('/upload-editor-image', [App\Http\Controllers\FileController::class, 'uploadEditorImage'])->middleware(['auth'])->name('upload.editor.image');
@@ -261,6 +286,7 @@ Route::controller(DashboardController::class)->group(function () {
     Route::post('/superadmin/exam-management/create-mixed', 'createSuperAdminMixedExam')->middleware(['auth', 'granular.rbac:exam-management,create'])->name('superadmin.exam-management.create-mixed.store');
     Route::get('/superadmin/exam-management/filter', 'filterSuperAdminExams')->middleware(['auth', 'granular.rbac:exam-management,view'])->name('superadmin.exam-management.filter');
     Route::get('/superadmin/exam-management/{id}/edit', 'editSuperAdminExam')->middleware(['auth', 'granular.rbac:exam-management,edit'])->name('superadmin.exam-management.edit');
+    Route::put('/superadmin/exam-management/{id}', 'updateSuperAdminExam')->middleware(['auth', 'granular.rbac:exam-management,edit'])->name('superadmin.exam-management.update');
     Route::get('/superadmin/exam-management/{id}/view', 'viewSuperAdminExam')->middleware(['auth', 'granular.rbac:exam-management,view'])->name('superadmin.exam-management.view');
     Route::get('/superadmin/exam-management/{id}/results', 'viewSuperAdminExamResults')->middleware(['auth', 'granular.rbac:exam-management,view'])->name('superadmin.exam-management.results');
     Route::delete('/superadmin/exam-management/{id}/delete', 'deleteSuperAdminExam')->middleware(['auth', 'granular.rbac:exam-management,delete'])->name('superadmin.exam-management.delete');
@@ -268,6 +294,10 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/superadmin/class-management', 'viewSuperAdminClassManagement')->middleware(['auth'])->name('superadmin.class-management');
     Route::post('/superadmin/class-management/create', 'createSuperAdminClass')->middleware(['auth'])->name('superadmin.class-management.create');
     Route::get('/superadmin/class-management/filter', 'filterSuperAdminClasses')->middleware(['auth'])->name('superadmin.class-management.filter');
+    Route::get('/superadmin/class-management/{id}', 'viewSuperAdminClassDetail')->middleware(['auth'])->name('superadmin.class-management.view');
+    Route::get('/superadmin/class-management/{id}/edit', 'editSuperAdminClass')->middleware(['auth'])->name('superadmin.class-management.edit');
+    Route::put('/superadmin/class-management/{id}', 'updateSuperAdminClass')->middleware(['auth'])->name('superadmin.class-management.update');
+    Route::delete('/superadmin/class-management/{id}', 'deleteSuperAdminClass')->middleware(['auth'])->name('superadmin.class-management.delete');
     Route::get('/superadmin/subject-management', 'viewSuperAdminSubjectManagement')->middleware(['auth'])->name('superadmin.subject-management');
     Route::post('/superadmin/subject-management/create', 'createSuperAdminSubject')->middleware(['auth'])->name('superadmin.subject-management.create');
     Route::get('/superadmin/subject-management/filter', 'filterSuperAdminSubjects')->middleware(['auth'])->name('superadmin.subject-management.filter');
@@ -294,6 +324,10 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/superadmin/material-management/filter', 'filterSuperAdminMaterials')->middleware(['auth', 'granular.rbac:material-management,view'])->name('superadmin.material-management.filter');
     Route::get('/superadmin/material-management/create', 'viewSuperAdminMaterialCreate')->middleware(['auth', 'granular.rbac:material-management,create'])->name('superadmin.material-management.create');
     Route::post('/superadmin/material-management/store', 'createSuperAdminMaterial')->middleware(['auth', 'granular.rbac:material-management,create'])->name('superadmin.material-management.store');
+    Route::get('/superadmin/material-management/{id}', 'viewSuperAdminMaterialDetail')->middleware(['auth', 'granular.rbac:material-management,view'])->name('superadmin.material-management.show');
+    Route::get('/superadmin/material-management/{id}/edit', 'editSuperAdminMaterial')->middleware(['auth', 'granular.rbac:material-management,edit'])->name('superadmin.material-management.edit');
+    Route::put('/superadmin/material-management/{id}', 'updateSuperAdminMaterial')->middleware(['auth', 'granular.rbac:material-management,edit'])->name('superadmin.material-management.update');
+    Route::delete('/superadmin/material-management/{id}', 'deleteSuperAdminMaterial')->middleware(['auth', 'granular.rbac:material-management,delete'])->name('superadmin.material-management.delete');
     Route::get('/superadmin/reports', 'viewSuperAdminReports')->middleware(['auth'])->name('superadmin.reports');
     Route::get('/superadmin/reports/filter', 'filterSuperAdminReports')->middleware(['auth'])->name('superadmin.reports.filter');
     Route::get('/superadmin/help', 'viewSuperAdminHelp')->middleware(['auth', 'role:superadmin'])->name('superadmin.help');
@@ -301,8 +335,6 @@ Route::controller(DashboardController::class)->group(function () {
     
     // IoT Tasks and Research Routes
     Route::get('/superadmin/iot-tasks', 'viewSuperAdminIotTasks')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-tasks');
-    Route::get('/superadmin/iot-research', 'viewSuperAdminIotResearch')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-research');
-    Route::get('/superadmin/iot-research/filter', 'filterSuperAdminIotResearch')->middleware(['auth', 'role:superadmin'])->name('superadmin.iot-research.filter');
     
     // Admin Management Routes (Matching Superadmin)
     Route::get('/admin/profile', 'viewAdminProfile')->middleware(['auth', 'role:admin'])->name('admin.profile');
@@ -311,10 +343,10 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/admin/push-notification', 'viewAdminPushNotification')->middleware(['auth'])->name('admin.push-notification');
     Route::post('/admin/push-notification/send', 'sendAdminPushNotification')->middleware(['auth'])->name('admin.push-notification.send');
     Route::get('/admin/push-notification/filter', 'filterAdminPushNotifications')->middleware(['auth'])->name('admin.push-notification.filter');
+    Route::get('/admin/iot-dashboard', 'viewAdminIotDashboard')->middleware(['auth', 'role:admin'])->name('admin.iot-dashboard');
     Route::get('/admin/iot-management', 'viewAdminIotManagement')->middleware(['auth', 'role:admin'])->name('admin.iot-management');
     Route::get('/admin/iot-management/filter', 'filterAdminIotManagement')->middleware(['auth', 'role:admin'])->name('admin.iot-management.filter');
     Route::post('/admin/iot-management/register', 'registerAdminIotDevice')->middleware(['auth', 'role:admin'])->name('admin.iot-management.register');
-    Route::get('/admin/iot-dashboard', 'viewAdminIotDashboard')->middleware(['auth', 'role:admin'])->name('admin.iot-dashboard');
     Route::get('/admin/task-management', 'viewAdminTaskManagement')->middleware(['auth', 'role:admin'])->name('admin.task-management');
     Route::post('/admin/task-management/create', 'createAdminTask')->middleware(['auth', 'role:admin'])->name('admin.task-management.create');
     Route::get('/admin/task-management/filter', 'filterAdminTasks')->middleware(['auth', 'role:admin'])->name('admin.task-management.filter');
@@ -338,30 +370,44 @@ Route::controller(DashboardController::class)->group(function () {
     Route::post('/admin/logout/all', 'adminLogoutAll')->middleware(['auth', 'role:admin'])->name('admin.logout.all');
     Route::delete('/admin/account/delete', 'adminAccountDelete')->middleware(['auth', 'role:admin'])->name('admin.account.delete');
     
-    // Admin Task Management Routes (Same as Super Admin)
-    Route::get('/admin/tugas', [App\Http\Controllers\SuperAdminTugasController::class, 'index'])->middleware(['auth', 'role:admin'])->name('admin.tugas.index');
-    Route::get('/admin/tugas/create/{tipe}', [App\Http\Controllers\SuperAdminTugasController::class, 'create'])->middleware(['auth', 'role:admin'])->name('admin.tugas.create');
-    Route::post('/admin/tugas', [App\Http\Controllers\SuperAdminTugasController::class, 'store'])->middleware(['auth', 'role:admin'])->name('admin.tugas.store');
-    Route::get('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'show'])->middleware(['auth', 'role:admin'])->name('admin.tugas.show');
-    Route::get('/admin/tugas/{id}/edit', [App\Http\Controllers\SuperAdminTugasController::class, 'edit'])->middleware(['auth', 'role:admin'])->name('admin.tugas.edit');
-    Route::put('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'update'])->middleware(['auth', 'role:admin'])->name('admin.tugas.update');
-    Route::delete('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'destroy'])->middleware(['auth', 'role:admin'])->name('admin.tugas.destroy');
-    Route::post('/admin/tugas/feedback', [App\Http\Controllers\SuperAdminTugasController::class, 'storeFeedback'])->middleware(['auth', 'role:admin'])->name('admin.tugas.feedback');
-    Route::get('/admin/tugas/{id}/penilaian-kelompok', [App\Http\Controllers\SuperAdminTugasController::class, 'penilaianKelompok'])->middleware(['auth', 'role:admin'])->name('admin.tugas.penilaian-kelompok');
+    // Admin Task Management Routes (Same as Super Admin) - Fixed
+    Route::get('/admin/tugas', [App\Http\Controllers\SuperAdminTugasController::class, 'index'])->middleware(['auth', 'granular.rbac:task-management,view'])->name('admin.tugas.index');
+    Route::get('/admin/tugas/create/{tipe}', [App\Http\Controllers\SuperAdminTugasController::class, 'create'])->middleware(['auth', 'granular.rbac:task-management,create'])->name('admin.tugas.create');
+    Route::post('/admin/tugas', [App\Http\Controllers\SuperAdminTugasController::class, 'store'])->middleware(['auth', 'granular.rbac:task-management,create'])->name('admin.tugas.store');
+    Route::get('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'show'])->middleware(['auth', 'granular.rbac:task-management,view'])->name('admin.tugas.show');
+    Route::get('/admin/tugas/{id}/edit', [App\Http\Controllers\SuperAdminTugasController::class, 'edit'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('admin.tugas.edit');
+    Route::put('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'update'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('admin.tugas.update');
+    Route::delete('/admin/tugas/{id}', [App\Http\Controllers\SuperAdminTugasController::class, 'destroy'])->middleware(['auth', 'granular.rbac:task-management,delete'])->name('admin.tugas.destroy');
+    Route::post('/admin/tugas/feedback', [App\Http\Controllers\SuperAdminTugasController::class, 'storeFeedback'])->middleware(['auth', 'granular.rbac:task-management,edit'])->name('admin.tugas.feedback');
+    Route::get('/admin/tugas/{id}/penilaian-kelompok', [App\Http\Controllers\SuperAdminTugasController::class, 'penilaianKelompok'])->middleware(['auth', 'granular.rbac:task-management,view'])->name('admin.tugas.penilaian-kelompok');
     Route::post('/admin/tugas/penilaian-kelompok', [App\Http\Controllers\SuperAdminTugasController::class, 'storePenilaianKelompok'])->middleware(['auth', 'role:admin'])->name('admin.tugas.store-penilaian-kelompok');
     
-    // Admin Task Management Routes (New)
-    Route::prefix('admin/tasks')->middleware(['auth', 'role:admin'])->group(function () {
+    // API routes for AJAX
+    Route::get('/admin/api/students-by-class/{kelasId}', [App\Http\Controllers\SuperAdminTugasController::class, 'getStudentsByClass'])->middleware(['auth', 'granular.rbac:task-management,create'])->name('admin.api.students-by-class');
+    
+    // Admin Complaint Management Routes
+    Route::get('/admin/complaints', [AdminComplaintManagementController::class, 'index'])->middleware(['auth', 'role:admin'])->name('admin.complaints.index');
+    Route::get('/admin/complaints/{complaint}', [AdminComplaintManagementController::class, 'show'])->middleware(['auth', 'role:admin'])->name('admin.complaints.show');
+    Route::put('/admin/complaints/{complaint}', [AdminComplaintManagementController::class, 'update'])->middleware(['auth', 'role:admin'])->name('admin.complaints.update');
+    Route::post('/admin/complaints/{complaint}/reply', [AdminComplaintManagementController::class, 'reply'])->middleware(['auth', 'role:admin'])->name('admin.complaints.reply');
+    Route::delete('/admin/complaints/{complaint}', [AdminComplaintManagementController::class, 'destroy'])->middleware(['auth', 'role:admin'])->name('admin.complaints.destroy');
+    Route::get('/admin/complaints/statistics', [AdminComplaintManagementController::class, 'statistics'])->middleware(['auth', 'role:admin'])->name('admin.complaints.statistics');
+    
+    // Admin Attachment Routes
+    Route::get('/admin/complaints/attachments/{attachment}/download', [AdminComplaintManagementController::class, 'downloadAttachment'])->middleware(['auth', 'role:admin'])->name('admin.complaints.attachments.download');
+    
+    // Admin Task Management Routes (New) - Fixed
+    Route::prefix('admin/tasks')->middleware(['auth', 'granular.rbac:task-management,create'])->group(function () {
         Route::get('/create/{tipe}', [App\Http\Controllers\Teacher\TaskController::class, 'create'])->name('admin.tasks.create');
         Route::get('/create/multiple-choice', [App\Http\Controllers\Teacher\TaskController::class, 'createMultipleChoice'])->name('admin.tasks.create.multiple-choice');
         Route::get('/create/essay', [App\Http\Controllers\Teacher\TaskController::class, 'createEssay'])->name('admin.tasks.create.essay');
         Route::get('/create/individual', [App\Http\Controllers\Teacher\TaskController::class, 'createIndividual'])->name('admin.tasks.create.individual');
         Route::get('/create/group', [App\Http\Controllers\Teacher\TaskController::class, 'createGroup'])->name('admin.tasks.create.group');
         Route::post('/', [App\Http\Controllers\Teacher\TaskController::class, 'store'])->name('admin.tasks.store');
-        Route::get('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'show'])->name('admin.tasks.show');
-        Route::get('/{id}/edit', [App\Http\Controllers\Teacher\TaskController::class, 'edit'])->name('admin.tasks.edit');
-        Route::put('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'update'])->name('admin.tasks.update');
-        Route::delete('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'destroy'])->name('admin.tasks.destroy');
+        Route::get('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'show'])->middleware(['granular.rbac:task-management,view'])->name('admin.tasks.show');
+        Route::get('/{id}/edit', [App\Http\Controllers\Teacher\TaskController::class, 'edit'])->middleware(['granular.rbac:task-management,edit'])->name('admin.tasks.edit');
+        Route::put('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'update'])->middleware(['granular.rbac:task-management,edit'])->name('admin.tasks.update');
+        Route::delete('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'destroy'])->middleware(['granular.rbac:task-management,delete'])->name('admin.tasks.destroy');
     });
     // Admin exam management routes removed - admin should use superadmin routes for consistency
     // Admin management routes removed - admin should use superadmin routes for consistency
@@ -379,8 +425,14 @@ Route::controller(DashboardController::class)->group(function () {
     // Teacher routes removed - using superadmin routes instead
     // Teacher management routes removed - using superadmin routes instead
     Route::get('/teacher/reports', 'viewTeacherReports')->middleware(['auth', 'role:teacher'])->name('teacher.reports');
+    Route::get('/teacher/reports/filter', 'viewTeacherReports')->middleware(['auth', 'role:teacher'])->name('teacher.reports.filter');
+    Route::get('/teacher/reports/export', 'exportTeacherReports')->middleware(['auth', 'role:teacher'])->name('teacher.reports.export');
+    Route::get('/teacher/reports/task/{id}', 'viewTeacherTaskDetail')->middleware(['auth', 'role:teacher'])->name('teacher.reports.task.detail');
+    Route::get('/teacher/reports/exam/{id}', 'viewTeacherExamDetail')->middleware(['auth', 'role:teacher'])->name('teacher.reports.exam.detail');
+    Route::get('/teacher/reports/student/{id}', 'viewTeacherStudentDetail')->middleware(['auth', 'role:teacher'])->name('teacher.reports.student.detail');
     Route::get('/teacher/help', 'viewTeacherHelp')->middleware(['auth', 'role:teacher'])->name('teacher.help');
     Route::get('/teacher/analytics', 'viewTeacherAnalytics')->middleware(['auth', 'role:teacher'])->name('teacher.analytics');
+    Route::get('/api/teacher/analytics-data', 'getTeacherAnalyticsData')->middleware(['auth', 'role:teacher'])->name('api.teacher.analytics-data');
     
     // Student Management Routes (Matching Superadmin)
     Route::get('/student/profile', 'viewStudentProfile')->middleware(['auth', 'role:student'])->name('student.profile');
@@ -392,8 +444,8 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/student/tasks', 'viewStudentTaskManagement')->middleware(['auth', 'role:student'])->name('student.tasks');
     Route::get('/student/exams', 'viewStudentExamManagement')->middleware(['auth', 'role:student'])->name('student.exams');
     Route::get('/student/materials', 'viewStudentMaterialManagement')->middleware(['auth', 'role:student'])->name('student.materials');
-    Route::get('/student/iot-research', 'viewStudentIotManagement')->middleware(['auth', 'role:student'])->name('student.iot-research');
     Route::get('/student/iot-data', 'viewStudentIotManagement')->middleware(['auth', 'role:student'])->name('student.iot-data');
+    Route::get('/student/iot-research', 'viewStudentIotManagement')->middleware(['auth', 'role:student'])->name('student.iot-research');
     Route::get('/student/grades', 'viewStudentReports')->middleware(['auth', 'role:student'])->name('student.grades');
     Route::get('/student/schedule', 'viewStudentClassManagement')->middleware(['auth', 'role:student'])->name('student.schedule');
     Route::get('/student/assignments', 'viewStudentTaskManagement')->middleware(['auth', 'role:student'])->name('student.assignments');
@@ -460,6 +512,8 @@ Route::controller(AdminController::class)->middleware(['auth', 'role:admin'])->g
     
     // Material Management
     Route::post('/admin/material', 'storeMaterial')->name('admin.material.store');
+    Route::get('/admin/material-management/{id}', 'viewAdminMaterialDetail')->name('admin.material-management.show');
+    Route::get('/admin/material-management/{id}/edit', 'editAdminMaterial')->name('admin.material-management.edit');
     Route::put('/admin/material/{id}', 'updateMaterial')->name('admin.material.update');
     Route::delete('/admin/material/{id}', 'deleteMaterial')->name('admin.material.delete');
     
@@ -485,6 +539,10 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     Route::get('/teacher/material-management/create', [DashboardController::class, 'viewTeacherMaterialCreate'])->name('teacher.material-management.create');
     Route::post('/teacher/material-management/store', [DashboardController::class, 'createTeacherMaterial'])->name('teacher.material-management.store');
     Route::get('/teacher/material-management/filter', [DashboardController::class, 'filterTeacherMaterials'])->name('teacher.material-management.filter');
+    Route::get('/teacher/material-management/{id}', [DashboardController::class, 'viewTeacherMaterialDetail'])->name('teacher.material-management.show');
+    Route::get('/teacher/material-management/{id}/edit', [DashboardController::class, 'editTeacherMaterial'])->name('teacher.material-management.edit');
+    Route::put('/teacher/material-management/{id}', [DashboardController::class, 'updateTeacherMaterial'])->name('teacher.material-management.update');
+    Route::delete('/teacher/material-management/{id}', [DashboardController::class, 'deleteTeacherMaterial'])->name('teacher.material-management.delete');
 });
 
 // Teacher IoT Routes
@@ -503,19 +561,21 @@ Route::controller(App\Http\Controllers\IotClassController::class)->middleware(['
     // Teacher Task Management Routes
     Route::prefix('teacher/tasks')->middleware(['auth', 'role:teacher'])->group(function () {
         Route::get('/', [App\Http\Controllers\Teacher\TaskController::class, 'dashboard'])->name('teacher.tasks');
-        Route::get('/management', [App\Http\Controllers\Teacher\TaskController::class, 'management'])->name('teacher.tasks.management');
         Route::get('/filter', [App\Http\Controllers\Teacher\TaskController::class, 'filter'])->name('teacher.tasks.filter');
         Route::get('/list', [App\Http\Controllers\Teacher\TaskController::class, 'list'])->name('teacher.tasks.list');
         
-        // Create routes for specific task types
-        Route::get('/create/{tipe}', [App\Http\Controllers\Teacher\TaskController::class, 'create'])->name('teacher.tasks.create');
+        // Create routes for specific task types - specific routes MUST come before generic route
         Route::get('/create/multiple-choice', [App\Http\Controllers\Teacher\TaskController::class, 'createMultipleChoice'])->name('teacher.tasks.create.multiple-choice');
-        Route::get('/multiple-choice/demo', function() {
-            return view('teacher.multiple-choice-demo');
-        })->name('teacher.multiple-choice.demo');
         Route::get('/create/essay', [App\Http\Controllers\Teacher\TaskController::class, 'createEssay'])->name('teacher.tasks.create.essay');
         Route::get('/create/individual', [App\Http\Controllers\Teacher\TaskController::class, 'createIndividual'])->name('teacher.tasks.create.individual');
         Route::get('/create/group', [App\Http\Controllers\Teacher\TaskController::class, 'createGroup'])->name('teacher.tasks.create.group');
+        Route::get('/create/{tipe}', [App\Http\Controllers\Teacher\TaskController::class, 'create'])->name('teacher.tasks.create');
+        
+        // API routes for AJAX
+        Route::get('/api/students-by-class/{kelasId}', [App\Http\Controllers\Teacher\TaskController::class, 'getStudentsByClass'])->name('teacher.api.students-by-class');
+        Route::get('/multiple-choice/demo', function() {
+            return view('teacher.multiple-choice-demo');
+        })->name('teacher.multiple-choice.demo');
         
         Route::post('/', [App\Http\Controllers\Teacher\TaskController::class, 'store'])->name('teacher.tasks.store');
         Route::post('/multiple-choice', [App\Http\Controllers\Teacher\TaskController::class, 'storeMultipleChoice'])->name('teacher.tasks.store.multiple-choice');
@@ -526,6 +586,7 @@ Route::controller(App\Http\Controllers\IotClassController::class)->middleware(['
         Route::delete('/{id}', [App\Http\Controllers\Teacher\TaskController::class, 'destroy'])->name('teacher.tasks.destroy');
         Route::post('/{id}/grade', [App\Http\Controllers\Teacher\TaskController::class, 'grade'])->name('teacher.tasks.grade');
         Route::get('/{id}/student-work/{studentId}', [App\Http\Controllers\Teacher\TaskController::class, 'getStudentWork'])->name('teacher.tasks.student-work');
+        Route::get('/{id}/auto-score/{studentId}', [App\Http\Controllers\Teacher\TaskController::class, 'getAutoScore'])->name('teacher.tasks.auto-score');
         
         // Task management routes
         Route::get('/{taskId}/submission/{studentId}', [App\Http\Controllers\Teacher\TaskController::class, 'getSubmissionDetails'])->name('teacher.tasks.submission.details');
@@ -652,7 +713,7 @@ Route::controller(UjianController::class)->group(function () {
 });
 
 // Enhanced Exam Management
-Route::prefix('teacher/enhanced-exam-management')->name('teacher.enhanced-exam-management.')->middleware(['auth', 'role:teacher'])->group(function () {
+    Route::prefix('teacher/enhanced-exam-management')->name('teacher.enhanced-exam-management.')->middleware(['auth', 'role:teacher'])->group(function () {
     Route::get('/', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'index'])->name('index');
     Route::post('/', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'create'])->name('create');
     Route::get('/{id}', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'show'])->name('show');
@@ -663,6 +724,24 @@ Route::prefix('teacher/enhanced-exam-management')->name('teacher.enhanced-exam-m
     Route::put('/{id}/status', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'updateStatus'])->name('update-status');
     Route::delete('/{id}', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/export', [App\Http\Controllers\Teacher\EnhancedExamController::class, 'exportResults'])->name('export');
+});
+
+// Group Management Routes
+Route::prefix('teacher/groups')->middleware(['auth', 'role:teacher'])->group(function () {
+    Route::get('/', [GroupManagementController::class, 'index'])->name('teacher.groups.index');
+    Route::get('/create/{kelas_id}', [GroupManagementController::class, 'create'])->name('teacher.groups.create');
+    Route::post('/store', [GroupManagementController::class, 'store'])->name('teacher.groups.store');
+    Route::get('/{id}/edit', [GroupManagementController::class, 'edit'])->name('teacher.groups.edit');
+    Route::put('/{id}', [GroupManagementController::class, 'update'])->name('teacher.groups.update');
+    Route::delete('/{id}', [GroupManagementController::class, 'destroy'])->name('teacher.groups.destroy');
+    Route::get('/get-students/{kelas_id}', [GroupManagementController::class, 'getStudents'])->name('teacher.groups.get-students');
+    Route::get('/get-groups/{kelas_id}', [GroupManagementController::class, 'getGroups'])->name('teacher.groups.get-groups');
+});
+
+// Group Management Routes - Accessible by Superadmin, Admin, and Teacher
+Route::prefix('groups')->middleware(['auth'])->group(function () {
+    Route::get('/get-students/{kelas_id}', [GroupManagementController::class, 'getStudents'])->name('groups.get-students');
+    Route::get('/get-groups/{kelas_id}', [GroupManagementController::class, 'getGroups'])->name('groups.get-groups');
 });
 
 // Materi
@@ -986,3 +1065,93 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/class-report/{kelasId}', [App\Services\ReportService::class, 'generateClassReport'])->name('class.report');
     Route::get('/teacher-report/{teacherId}', [App\Services\ReportService::class, 'generateTeacherReport'])->name('teacher.report');
 });
+
+// ThingsBoard NPK Sensor Routes
+Route::middleware(['auth'])->group(function () {
+    // Dashboard sensor NPK
+    Route::get('/sensor/dashboard', [NpkSensorController::class, 'showDashboard'])->name('sensor.dashboard');
+    
+    // API endpoints untuk AJAX calls
+    Route::get('/api/sensor/data', [NpkSensorController::class, 'getSensorData'])->name('api.sensor.data');
+    Route::get('/api/sensor/refresh', [NpkSensorController::class, 'refreshData'])->name('api.sensor.refresh');
+    Route::get('/api/sensor/test-connection', [NpkSensorController::class, 'testConnection'])->name('api.sensor.test-connection');
+    Route::get('/api/sensor/device-info', [NpkSensorController::class, 'getDeviceInfo'])->name('api.sensor.device-info');
+});
+
+// Public NPK Sensor Test Routes (no authentication required)
+Route::get('/sensor/test', [NpkSensorController::class, 'showPublicTest'])->name('sensor.test');
+Route::get('/api/sensor/public-data', [NpkSensorController::class, 'getPublicSensorData'])->name('api.sensor.public-data');
+
+// Public ESP8266 Status Routes (no authentication required)
+Route::get('/iot/esp8266-status', function () {
+    return view('iot.esp8266-status');
+})->name('iot.esp8266-status.public');
+
+// Public WiFi Config Routes (no authentication required)
+Route::get('/iot/wifi-config', [App\Http\Controllers\WifiConfigController::class, 'index'])->name('iot.wifi-config.public');
+Route::post('/iot/wifi-config/detect-ports', [App\Http\Controllers\WifiConfigController::class, 'detectPorts'])->name('iot.wifi-config.detect-ports');
+
+// Public Device Dashboard Routes (no authentication required)
+Route::get('/iot/device/{deviceId}', [App\Http\Controllers\IotDeviceController::class, 'showDeviceDashboard'])
+    ->name('iot.device.dashboard');
+
+
+// Auto WiFi Sync routes removed - using manual WiFi config only
+
+// ESP8266 Status Routes for All Roles
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/superadmin/esp8266-status', [App\Http\Controllers\DashboardController::class, 'viewSuperAdminEsp8266Status'])
+        ->name('superadmin.esp8266-status');
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/esp8266-status', [App\Http\Controllers\DashboardController::class, 'viewAdminEsp8266Status'])
+        ->name('admin.esp8266-status');
+});
+
+Route::middleware(['auth', 'role:teacher'])->group(function () {
+    Route::get('/teacher/esp8266-status', [App\Http\Controllers\DashboardController::class, 'viewTeacherEsp8266Status'])
+        ->name('teacher.esp8266-status');
+});
+
+Route::middleware(['auth', 'role:student'])->group(function () {
+    Route::get('/student/esp8266-status', [App\Http\Controllers\DashboardController::class, 'viewStudentEsp8266Status'])
+        ->name('student.esp8266-status');
+    
+        // Student Complaint Routes
+        Route::resource('student/complaints', ComplaintController::class)->names([
+            'index' => 'student.complaints.index',
+            'create' => 'student.complaints.create',
+            'store' => 'student.complaints.store',
+            'show' => 'student.complaints.show',
+            'edit' => 'student.complaints.edit',
+            'update' => 'student.complaints.update',
+            'destroy' => 'student.complaints.destroy',
+        ]);
+        
+        // Student Attachment Routes
+        Route::delete('/student/complaints/{complaint}/attachments/{attachment}', [ComplaintController::class, 'deleteAttachment'])->name('student.complaints.attachments.delete');
+        Route::get('/student/complaints/attachments/{attachment}/download', [ComplaintController::class, 'downloadAttachment'])->name('student.complaints.attachments.download');
+});
+
+// IoT Device Status API Routes (no authentication required for ESP8266)
+Route::prefix('api/iot')->group(function () {
+    Route::post('/device-status', [App\Http\Controllers\IotDeviceStatusController::class, 'updateStatus'])
+        ->name('api.iot.device-status.update');
+    Route::get('/device-status/{deviceId}', [App\Http\Controllers\IotDeviceStatusController::class, 'getStatus'])
+        ->name('api.iot.device-status.get');
+    Route::get('/devices-status', [App\Http\Controllers\IotDeviceStatusController::class, 'getAllDevicesStatus'])
+        ->name('api.iot.devices-status.all');
+});
+
+// ESP8266 Device Status Route (bypass CSRF for IoT devices)
+Route::post('/esp8266/device-status', [App\Http\Controllers\Esp8266Controller::class, 'updateDeviceStatus'])
+    ->withoutMiddleware([\App\Http\Middleware\HandleCsrfError::class])
+    ->name('esp8266.device-status.update');
+
+// ESP8266 Sensor Data Routes (bypass CSRF for IoT devices)
+Route::post('/esp8266/sensor-data', [App\Http\Controllers\SensorDataController::class, 'store'])
+    ->name('esp8266.sensor-data.store')
+    ->withoutMiddleware([\App\Http\Middleware\HandleCsrfError::class]);
+Route::get('/esp8266/sensor-data/export', [App\Http\Controllers\SensorDataController::class, 'export'])
+    ->name('esp8266.sensor-data.export');

@@ -198,13 +198,26 @@
                     contentType: false,
                     success: function(response) {
                         // Berhasil, lakukan sesuatu dengan respons dari server jika diperlukan
-                        // console.log(response);
+                        console.log(response);
+                        if (response.message) {
+                            // Tampilkan pesan sukses
+                            alert(response.message);
+                        }
                         uploadFiles();
                     },
-                    error: function(error) {
+                    error: function(xhr, status, error) {
                         // Terjadi kesalahan, tangani kesalahan jika diperlukan
-                        console.log(error);
-                        // Di sini Anda dapat menambahkan logika lain atau menampilkan pesan kesalahan kepada pengguna.
+                        console.log('Error:', xhr.responseText);
+                        var errorMessage = 'Terjadi kesalahan saat memperbarui materi';
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            // Jika tidak bisa parse JSON, gunakan pesan default
+                        }
+                        alert(errorMessage);
                     }
                 });
             });
@@ -228,18 +241,17 @@
             }
         });
 
-        // Fungsi untuk memeriksa apakah konten TinyMCE tidak kosong
+        // Fungsi untuk memeriksa apakah konten TinyMCE valid (opsional)
         function validateTinyMCE() {
-            var content = tinymce.get("tinymce").getContent();
-            if (!content.trim()) {
-                alert("Konten tidak boleh kosong.");
-                return false; // Membatalkan pengiriman formulir jika konten kosong
+            try {
+                var content = tinymce.get("tinymce").getContent();
+                // Konten opsional, jadi selalu return true
+                return true;
+            } catch (e) {
+                // Jika TinyMCE belum diinisialisasi, tetap lanjutkan
+                return true;
             }
-            return true; // Lanjutkan pengiriman formulir jika konten tidak kosong
         }
-        $("form").on("submit", function() {
-            return validateTinyMCE();
-        });
 
         var totalFilesToUpload = 0; // Total file yang diharapkan diunggah
         var completedFiles = 0; // Jumlah file yang sudah selesai diunggah

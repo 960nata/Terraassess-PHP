@@ -42,11 +42,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Terra Assessment - ' . $roleTitle)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Fallback Font Awesome CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.0.0/css/all.css';">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/skeleton-loader.css') }}" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -59,6 +62,8 @@
         }
     </script>
     <link href="{{ asset('css/superadmin-dashboard.css') }}" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('styles')
 </head>
@@ -175,6 +180,27 @@
     </main>
 
     <script src="{{ asset('js/superadmin-dashboard.js') }}"></script>
+    
+    <script>
+        // Check if Font Awesome is loaded and add fallback if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const testIcon = document.querySelector('.fas.fa-bell');
+                if (testIcon) {
+                    const computedStyle = window.getComputedStyle(testIcon, '::before');
+                    const content = computedStyle.content;
+                    
+                    // If Font Awesome is not loaded (content is 'none' or empty), add fallback class
+                    if (content === 'none' || content === '""' || content === '') {
+                        console.warn('Font Awesome not loaded, using emoji fallbacks');
+                        document.body.classList.add('fontawesome-fallback');
+                    } else {
+                        console.log('Font Awesome loaded successfully');
+                    }
+                }
+            }, 1000);
+        });
+    </script>
     
     <script>
         // Toggle sidebar for mobile - using the same logic as external JS
@@ -527,6 +553,140 @@
         // Initialize mobile behavior
         handleMobileDropdowns();
         window.addEventListener('resize', handleMobileDropdowns);
+    </script>
+    
+    <!-- Page Loader Component -->
+    @include('components.page-loader')
+    
+    <!-- Page Loader JavaScript -->
+    <script>
+        // Page Loader Controller
+        class PageLoader {
+            constructor() {
+                this.loader = document.getElementById('pageLoader');
+                this.minDisplayTime = 500; // Minimum display time in ms
+                this.startTime = null;
+                this.isVisible = false;
+                this.init();
+            }
+            
+            init() {
+                // Set theme based on user role
+                this.setTheme('{{ $roleColor }}');
+                
+                // Attach to all internal links
+                this.attachToLinks();
+                
+                // Handle browser back/forward
+                window.addEventListener('popstate', () => {
+                    this.show();
+                });
+                
+                // Hide loader when page is fully loaded
+                window.addEventListener('load', () => {
+                    this.hide();
+                });
+            }
+            
+            setTheme(color) {
+                if (this.loader) {
+                    this.loader.className = `page-loader theme-${color}`;
+                }
+            }
+            
+            show() {
+                if (this.loader && !this.isVisible) {
+                    this.isVisible = true;
+                    this.startTime = Date.now();
+                    this.loader.classList.add('show');
+                    this.loader.style.display = 'flex';
+                    
+                    // Animate progress bar
+                    this.animateProgress();
+                }
+            }
+            
+            hide() {
+                if (this.loader && this.isVisible) {
+                    const elapsed = Date.now() - this.startTime;
+                    const remaining = Math.max(0, this.minDisplayTime - elapsed);
+                    
+                    setTimeout(() => {
+                        this.loader.classList.remove('show');
+                        this.loader.style.display = 'none';
+                        this.isVisible = false;
+                    }, remaining);
+                }
+            }
+            
+            animateProgress() {
+                const progressBar = this.loader.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.animation = 'none';
+                    progressBar.offsetHeight; // Trigger reflow
+                    progressBar.style.animation = 'progress 2s ease-in-out infinite';
+                }
+            }
+            
+            attachToLinks() {
+                // Attach to all internal navigation links
+                const links = document.querySelectorAll('a[href^="/"], a[href^="./"], a[href^="../"]');
+                links.forEach(link => {
+                    // Skip external links, mailto, tel, etc.
+                    if (link.href.includes('mailto:') || 
+                        link.href.includes('tel:') || 
+                        link.href.includes('javascript:') ||
+                        link.target === '_blank') {
+                        return;
+                    }
+                    
+                    link.addEventListener('click', (e) => {
+                        // Don't show loader for hash links
+                        if (link.getAttribute('href').startsWith('#')) {
+                            return;
+                        }
+                        
+                        this.show();
+                    });
+                });
+                
+                // Attach to form submissions
+                const forms = document.querySelectorAll('form');
+                forms.forEach(form => {
+                    form.addEventListener('submit', () => {
+                        this.show();
+                    });
+                });
+            }
+        }
+        
+        // Initialize page loader when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            window.pageLoader = new PageLoader();
+        });
+        
+        // Global functions for manual control
+        function showPageLoader() {
+            if (window.pageLoader) {
+                window.pageLoader.show();
+            }
+        }
+        
+        function hidePageLoader() {
+            if (window.pageLoader) {
+                window.pageLoader.hide();
+            }
+        }
+        
+        // AJAX helper for showing loader during requests
+        function fetchWithLoader(url, options = {}) {
+            showPageLoader();
+            
+            return fetch(url, options)
+                .finally(() => {
+                    hidePageLoader();
+                });
+        }
     </script>
     
     @yield('scripts')

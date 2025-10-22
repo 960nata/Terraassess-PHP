@@ -52,6 +52,14 @@
                                 @enderror
                             </div>
 
+                            {{-- DEBUG INFO --}}
+                            <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                                <strong>DEBUG INFO:</strong><br>
+                                Kelas Mapel ID: {{ $tugas->kelas_mapel_id }}<br>
+                                Kelas ID: {{ $tugas->KelasMapel->kelas_id ?? 'NULL' }}<br>
+                                Mapel ID: {{ $tugas->KelasMapel->mapel_id ?? 'NULL' }}<br>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Kelas Tujuan *</label>
@@ -59,7 +67,7 @@
                                         <option value="">Pilih Kelas</option>
                                         @foreach($kelas as $k)
                                             <option value="{{ $k->id }}" 
-                                                    {{ old('kelas_id', $tugas->KelasMapel->kelas_id) == $k->id ? 'selected' : '' }}>
+                                                    {{ (old('kelas_id') ?? ($tugas->KelasMapel->kelas_id ?? null)) == $k->id ? 'selected' : '' }}>
                                                 {{ $k->name }} - {{ $k->level }}
                                             </option>
                                         @endforeach
@@ -75,7 +83,7 @@
                                         <option value="">Pilih Mata Pelajaran</option>
                                         @foreach($mapel as $m)
                                             <option value="{{ $m->id }}" 
-                                                    {{ old('mapel_id', $tugas->KelasMapel->mapel_id) == $m->id ? 'selected' : '' }}>
+                                                    {{ (old('mapel_id') ?? ($tugas->KelasMapel->mapel_id ?? null)) == $m->id ? 'selected' : '' }}>
                                                 {{ $m->name }}
                                             </option>
                                         @endforeach
@@ -107,7 +115,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="questionsContainer">
-                                    @foreach($tugas->TugasQuiz as $index => $question)
+                                    @foreach($tugas->TugasMultiple as $index => $question)
                                         <div class="question-block" id="question-{{ $index + 1 }}">
                                             <div class="flex justify-between items-center mb-4">
                                                 <h4 class="text-lg font-medium text-white">Soal {{ $index + 1 }}</h4>
@@ -119,19 +127,39 @@
                                             <div class="space-y-4">
                                                 <div>
                                                     <label class="form-label">Pertanyaan</label>
-                                                    <textarea name="questions[{{ $index + 1 }}][question]" class="form-textarea" rows="3" required>{{ $question->question }}</textarea>
+                                                    <div class="border border-gray-600 rounded-lg p-4 bg-gray-900 mb-2">
+                                                        <div class="text-white">{!! $question->soal !!}</div>
+                                                    </div>
+                                                    <div id="quill-editor-question-{{ $index + 1 }}" class="quill-editor-dark" style="height: 120px;"></div>
+                                                    <textarea name="questions[{{ $index + 1 }}][question]" id="quill-textarea-question-{{ $index + 1 }}" style="display: none;" required>{{ $question->soal }}</textarea>
                                                 </div>
                                                 
                                                 <div>
                                                     <label class="form-label">Pilihan Jawaban</label>
                                                     <div id="options-{{ $index + 1 }}">
-                                                        @foreach($question->TugasMultiple as $optionIndex => $option)
-                                                            <div class="flex items-center space-x-2 mb-2">
-                                                                <input type="radio" name="questions[{{ $index + 1 }}][correct_answer]" 
-                                                                       value="{{ $optionIndex }}" {{ $option->is_correct ? 'checked' : '' }} required>
-                                                                <input type="text" name="questions[{{ $index + 1 }}][options][]" 
-                                                                       class="form-input flex-1" value="{{ $option->option }}" required>
-                                                            </div>
+                                                        @php
+                                                            $options = [
+                                                                'a' => $question->a,
+                                                                'b' => $question->b,
+                                                                'c' => $question->c,
+                                                                'd' => $question->d,
+                                                                'e' => $question->e
+                                                            ];
+                                                            $correctAnswer = $question->jawaban;
+                                                        @endphp
+                                                        @foreach($options as $key => $value)
+                                                            @if($value)
+                                                                <div class="flex items-center space-x-2 mb-2">
+                                                                    <input type="radio" name="questions[{{ $index + 1 }}][correct_answer]" 
+                                                                           value="{{ $key }}" {{ $correctAnswer == $key ? 'checked' : '' }} required>
+                                                                    <div class="flex-1">
+                                                                        <div id="quill-editor-option-{{ strtoupper($key) }}-{{ $index + 1 }}" class="quill-editor-dark" style="height: 60px;"></div>
+                                                                        <textarea name="questions[{{ $index + 1 }}][options][{{ $key }}]" 
+                                                                                  id="quill-textarea-option-{{ strtoupper($key) }}-{{ $index + 1 }}" 
+                                                                                  style="display: none;" required>{{ $value }}</textarea>
+                                                                    </div>
+                                                                </div>
+                                                            @endif
                                                         @endforeach
                                                     </div>
                                                     <button type="button" onclick="addOption({{ $index + 1 }})" class="btn btn-outline btn-sm mt-2">
@@ -144,7 +172,7 @@
                                                     <div>
                                                         <label class="form-label">Poin</label>
                                                         <input type="number" name="questions[{{ $index + 1 }}][points]" 
-                                                               class="form-input" value="{{ $question->points }}" min="1" required>
+                                                               class="form-input" value="{{ $question->poin }}" min="1" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -159,6 +187,57 @@
                             </div>
                         </div>
                     @elseif($tipe == 2 || $tipe == 3)
+                        <!-- Essay Questions -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Soal {{ $tipe == 2 ? 'Essay' : 'Mandiri' }}</h3>
+                                <p class="text-sm text-gray-400">Edit soal yang sudah ada atau tambah soal baru</p>
+                            </div>
+                            <div class="card-body">
+                                @if($tugas->TugasMandiri->count() == 0)
+                                    <div class="alert alert-info mb-4" style="background: #3b82f6; color: white; padding: 1rem; border-radius: 8px;">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Belum ada soal untuk tugas ini. Tugas ini mungkin dibuat sebelum fitur soal essay ditambahkan.
+                                        Silakan tambah soal baru dengan klik tombol "Tambah Soal" di bawah.
+                                    </div>
+                                @endif
+                                <div id="essayQuestionsContainer">
+                                    @foreach($tugas->TugasMandiri as $index => $question)
+                                        <div class="question-block" id="essay-question-{{ $index + 1 }}">
+                                            <div class="flex justify-between items-center mb-4">
+                                                <h4 class="text-lg font-medium text-white">Soal {{ $index + 1 }}</h4>
+                                                <button type="button" onclick="removeEssayQuestion({{ $index + 1 }})" class="text-red-400 hover:text-red-300">
+                                                    <i class="ph-trash"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label class="form-label">Pertanyaan</label>
+                                                    <div class="border border-gray-600 rounded-lg p-4 bg-gray-900 mb-2">
+                                                        <div class="text-white">{!! $question->pertanyaan !!}</div>
+                                                    </div>
+                                                    <div id="quill-editor-essay-{{ $index + 1 }}" class="quill-editor-dark" style="height: 150px;"></div>
+                                                    <textarea name="essay_questions[{{ $index + 1 }}][question]" id="quill-textarea-essay-{{ $index + 1 }}" style="display: none;" required>{{ $question->pertanyaan }}</textarea>
+                                                </div>
+                                                
+                                                <div>
+                                                    <label class="form-label">Poin</label>
+                                                    <input type="number" name="essay_questions[{{ $index + 1 }}][points]" 
+                                                           class="form-input" value="{{ $question->poin }}" min="1" max="100" required style="max-width: 150px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                
+                                <button type="button" onclick="addEssayQuestion()" class="btn btn-primary btn-sm mt-4">
+                                    <i class="ph-plus mr-1"></i>
+                                    Tambah Soal
+                                </button>
+                            </div>
+                        </div>
+                    
                         <!-- Essay/Individual Task Options -->
                         <div class="card">
                             <div class="card-header">
@@ -167,6 +246,9 @@
                             <div class="card-body space-y-4">
                                 @php
                                     $taskConfig = json_decode($tugas->content, true);
+                                    if (!$taskConfig) {
+                                        $taskConfig = [];
+                                    }
                                 @endphp
                                 
                                 <div class="flex items-center space-x-4">
@@ -212,6 +294,9 @@
                             <div class="card-body space-y-4">
                                 @php
                                     $taskConfig = json_decode($tugas->content, true);
+                                    if (!$taskConfig) {
+                                        $taskConfig = [];
+                                    }
                                 @endphp
                                 
                                 <div>
@@ -398,13 +483,79 @@
     padding: 1rem;
     margin-bottom: 1rem;
 }
+
+/* Quill Editor Styles */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-dark .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 60px;
+}
+
+.quill-editor-dark .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-dark .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
 </style>
 
 <script>
-let questionCount = {{ $tugas->TugasQuiz->count() }};
+let questionCount = {{ $tugas->TugasMultiple->count() }};
 let rubricCount = {{ isset($taskConfig['rubric_items']) ? count($taskConfig['rubric_items']) : 0 }};
+let quillEditors = {};
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Pre-select dropdown values from database
+    const kelasSelect = document.querySelector('select[name="kelas_id"]');
+    const mapelSelect = document.querySelector('select[name="mapel_id"]');
+    
+    // Set kelas value from database
+    const kelasId = '{{ $tugas->KelasMapel->kelas_id ?? "" }}';
+    if (kelasId && kelasSelect) {
+        kelasSelect.value = kelasId;
+        console.log('Set kelas_id to:', kelasId);
+    }
+    
+    // Set mapel value from database
+    const mapelId = '{{ $tugas->KelasMapel->mapel_id ?? "" }}';
+    if (mapelId && mapelSelect) {
+        mapelSelect.value = mapelId;
+        console.log('Set mapel_id to:', mapelId);
+    }
+
     // Handle file upload checkbox
     const fileUploadCheckbox = document.querySelector('input[name="allow_file_upload"]');
     const fileTypesContainer = document.getElementById('fileTypesContainer');
@@ -418,7 +569,158 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Initialize existing Quill editors
+    initializeExistingQuillEditors();
 });
+
+// Initialize Quill editors for existing questions
+function initializeExistingQuillEditors() {
+    @if($tipe == 1)
+        @foreach($tugas->TugasMultiple as $index => $question)
+            initializeQuillEditors({{ $index + 1 }});
+        @endforeach
+    @elseif($tipe == 2 || $tipe == 3)
+        @foreach($tugas->TugasMandiri as $index => $question)
+            initializeEssayQuillEditor({{ $index + 1 }});
+        @endforeach
+    @endif
+}
+
+// Initialize Quill editors for a question
+function initializeQuillEditors(questionNum) {
+    // Question editor
+    const questionEditorId = `quill-editor-question-${questionNum}`;
+    const questionTextareaId = `quill-textarea-question-${questionNum}`;
+    
+    if (document.getElementById(questionEditorId)) {
+        const isMobile = window.innerWidth <= 768;
+        const questionEditor = new Quill(`#${questionEditorId}`, {
+            theme: 'snow',
+            modules: {
+                toolbar: isMobile ? [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ] : [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'align': [] }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Tuliskan pertanyaan di sini...'
+        });
+        
+        quillEditors[questionEditorId] = questionEditor;
+        
+        // Set initial content
+        const textarea = document.getElementById(questionTextareaId);
+        if (textarea && textarea.value) {
+            questionEditor.root.innerHTML = textarea.value;
+        }
+        
+        // Update textarea when editor content changes
+        questionEditor.on('text-change', function() {
+            textarea.value = questionEditor.root.innerHTML;
+        });
+        
+        // Custom image handler
+        questionEditor.getModule('toolbar').addHandler('image', async function() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+            
+            input.onchange = async function() {
+                const file = input.files[0];
+                if (file) {
+                    // Compress and insert image
+                    const compressedFile = await compressImage(file);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const range = questionEditor.getSelection();
+                        questionEditor.insertEmbed(range.index, 'image', e.target.result);
+                    };
+                    reader.readAsDataURL(compressedFile);
+                }
+            };
+        });
+    }
+    
+    // Option editors
+    ['A', 'B', 'C', 'D', 'E'].forEach(option => {
+        const optionEditorId = `quill-editor-option-${option}-${questionNum}`;
+        const optionTextareaId = `quill-textarea-option-${option}-${questionNum}`;
+        
+        if (document.getElementById(optionEditorId)) {
+            const optionEditor = new Quill(`#${optionEditorId}`, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        ['link'],
+                        ['clean']
+                    ]
+                },
+                placeholder: `Pilihan ${option}...`
+            });
+            
+            quillEditors[optionEditorId] = optionEditor;
+            
+            // Set initial content
+            const textarea = document.getElementById(optionTextareaId);
+            if (textarea && textarea.value) {
+                optionEditor.root.innerHTML = textarea.value;
+            }
+            
+            // Update textarea when editor content changes
+            optionEditor.on('text-change', function() {
+                textarea.value = optionEditor.root.innerHTML;
+            });
+        }
+    });
+}
+
+// Image compression function
+async function compressImage(file) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = img;
+            
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(resolve, 'image/jpeg', 0.8);
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
+}
 
 // Multiple Choice Functions
 function addQuestion() {
@@ -437,19 +739,40 @@ function addQuestion() {
             <div class="space-y-4">
                 <div>
                     <label class="form-label">Pertanyaan</label>
-                    <textarea name="questions[${questionCount}][question]" class="form-textarea" rows="3" required></textarea>
+                    <div id="quill-editor-question-${questionCount}" class="quill-editor-dark" style="height: 120px;"></div>
+                    <textarea name="questions[${questionCount}][question]" id="quill-textarea-question-${questionCount}" style="display: none;" required></textarea>
                 </div>
                 
                 <div>
                     <label class="form-label">Pilihan Jawaban</label>
                     <div id="options-${questionCount}">
                         <div class="flex items-center space-x-2 mb-2">
-                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="0" required>
-                            <input type="text" name="questions[${questionCount}][options][]" class="form-input flex-1" placeholder="Pilihan A" required>
+                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="a" required>
+                            <div class="flex-1">
+                                <div id="quill-editor-option-A-${questionCount}" class="quill-editor-dark" style="height: 60px;"></div>
+                                <textarea name="questions[${questionCount}][options][a]" id="quill-textarea-option-A-${questionCount}" style="display: none;" required></textarea>
+                            </div>
                         </div>
                         <div class="flex items-center space-x-2 mb-2">
-                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="1" required>
-                            <input type="text" name="questions[${questionCount}][options][]" class="form-input flex-1" placeholder="Pilihan B" required>
+                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="b" required>
+                            <div class="flex-1">
+                                <div id="quill-editor-option-B-${questionCount}" class="quill-editor-dark" style="height: 60px;"></div>
+                                <textarea name="questions[${questionCount}][options][b]" id="quill-textarea-option-B-${questionCount}" style="display: none;" required></textarea>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 mb-2">
+                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="c" required>
+                            <div class="flex-1">
+                                <div id="quill-editor-option-C-${questionCount}" class="quill-editor-dark" style="height: 60px;"></div>
+                                <textarea name="questions[${questionCount}][options][c]" id="quill-textarea-option-C-${questionCount}" style="display: none;" required></textarea>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 mb-2">
+                            <input type="radio" name="questions[${questionCount}][correct_answer]" value="d" required>
+                            <div class="flex-1">
+                                <div id="quill-editor-option-D-${questionCount}" class="quill-editor-dark" style="height: 60px;"></div>
+                                <textarea name="questions[${questionCount}][options][d]" id="quill-textarea-option-D-${questionCount}" style="display: none;" required></textarea>
+                            </div>
                         </div>
                     </div>
                     <button type="button" onclick="addOption(${questionCount})" class="btn btn-outline btn-sm mt-2">
@@ -469,6 +792,9 @@ function addQuestion() {
     `;
     
     container.insertAdjacentHTML('beforeend', questionHTML);
+    
+    // Initialize Quill editors for the new question
+    initializeQuillEditors(questionCount);
 }
 
 function removeQuestion(id) {
@@ -478,15 +804,45 @@ function removeQuestion(id) {
 function addOption(questionId) {
     const container = document.getElementById(`options-${questionId}`);
     const optionCount = container.children.length;
+    const optionLetter = String.fromCharCode(97 + optionCount); // a, b, c, d, e
     
     const optionHTML = `
         <div class="flex items-center space-x-2 mb-2">
-            <input type="radio" name="questions[${questionId}][correct_answer]" value="${optionCount}" required>
-            <input type="text" name="questions[${questionId}][options][]" class="form-input flex-1" placeholder="Pilihan ${String.fromCharCode(65 + optionCount)}" required>
+            <input type="radio" name="questions[${questionId}][correct_answer]" value="${optionLetter}" required>
+            <div class="flex-1">
+                <div id="quill-editor-option-${optionLetter.toUpperCase()}-${questionId}" class="quill-editor-dark" style="height: 60px;"></div>
+                <textarea name="questions[${questionId}][options][${optionLetter}]" id="quill-textarea-option-${optionLetter.toUpperCase()}-${questionId}" style="display: none;" required></textarea>
+            </div>
         </div>
     `;
     
     container.insertAdjacentHTML('beforeend', optionHTML);
+    
+    // Initialize Quill editor for the new option
+    const optionEditorId = `quill-editor-option-${optionLetter.toUpperCase()}-${questionId}`;
+    const optionTextareaId = `quill-textarea-option-${optionLetter.toUpperCase()}-${questionId}`;
+    
+    if (document.getElementById(optionEditorId)) {
+        const optionEditor = new Quill(`#${optionEditorId}`, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    ['link'],
+                    ['clean']
+                ]
+            },
+            placeholder: `Pilihan ${optionLetter.toUpperCase()}...`
+        });
+        
+        quillEditors[optionEditorId] = optionEditor;
+        
+        // Update textarea when editor content changes
+        optionEditor.on('text-change', function() {
+            const textarea = document.getElementById(optionTextareaId);
+            textarea.value = optionEditor.root.innerHTML;
+        });
+    }
 }
 
 // Rubric Functions
@@ -536,6 +892,115 @@ function removeRubricItem(id) {
 function updateRubricType(id) {
     // This function can be expanded to show different options based on rubric type
     console.log('Rubric type updated for item', id);
+}
+
+// Essay Question Functions
+let essayQuestionCount = {{ $tipe == 2 || $tipe == 3 ? $tugas->TugasMandiri->count() : 0 }};
+
+function initializeEssayQuillEditor(questionNum) {
+    const editorId = `quill-editor-essay-${questionNum}`;
+    const textareaId = `quill-textarea-essay-${questionNum}`;
+    
+    if (document.getElementById(editorId)) {
+        const isMobile = window.innerWidth <= 768;
+        const editor = new Quill(`#${editorId}`, {
+            theme: 'snow',
+            modules: {
+                toolbar: isMobile ? [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ] : [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'align': [] }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Tuliskan pertanyaan essay di sini...'
+        });
+        
+        quillEditors[editorId] = editor;
+        
+        // Set initial content
+        const textarea = document.getElementById(textareaId);
+        if (textarea && textarea.value) {
+            editor.root.innerHTML = textarea.value;
+        }
+        
+        // Update textarea when editor content changes
+        editor.on('text-change', function() {
+            textarea.value = editor.root.innerHTML;
+        });
+        
+        // Custom image handler
+        editor.getModule('toolbar').addHandler('image', async function() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+            
+            input.onchange = async function() {
+                const file = input.files[0];
+                if (file) {
+                    const compressedFile = await compressImage(file);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const range = editor.getSelection();
+                        editor.insertEmbed(range.index, 'image', e.target.result);
+                    };
+                    reader.readAsDataURL(compressedFile);
+                }
+            };
+        });
+    }
+}
+
+function addEssayQuestion() {
+    essayQuestionCount++;
+    const container = document.getElementById('essayQuestionsContainer');
+    
+    const questionHTML = `
+        <div class="question-block" id="essay-question-${essayQuestionCount}">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-medium text-white">Soal ${essayQuestionCount}</h4>
+                <button type="button" onclick="removeEssayQuestion(${essayQuestionCount})" class="text-red-400 hover:text-red-300">
+                    <i class="ph-trash"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Pertanyaan</label>
+                    <div id="quill-editor-essay-${essayQuestionCount}" class="quill-editor-dark" style="height: 150px;"></div>
+                    <textarea name="essay_questions[${essayQuestionCount}][question]" id="quill-textarea-essay-${essayQuestionCount}" style="display: none;" required></textarea>
+                </div>
+                
+                <div>
+                    <label class="form-label">Poin</label>
+                    <input type="number" name="essay_questions[${essayQuestionCount}][points]" 
+                           class="form-input" value="10" min="1" max="100" required style="max-width: 150px;">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', questionHTML);
+    
+    // Initialize Quill editor for the new question
+    initializeEssayQuillEditor(essayQuestionCount);
+}
+
+function removeEssayQuestion(id) {
+    const element = document.getElementById(`essay-question-${id}`);
+    if (element) {
+        element.remove();
+    }
 }
 </script>
 @endsection

@@ -418,7 +418,7 @@ body {
     position: absolute;
     top: 100%;
     right: 0;
-    background: rgba(30, 41, 59, 0.95);
+    background: transparent;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(51, 65, 85, 0.5);
     border-radius: 0.75rem;

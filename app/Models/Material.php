@@ -38,6 +38,11 @@ class Material extends Model
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
     public function class(): BelongsTo
     {
         return $this->belongsTo(Kelas::class, 'class_id');

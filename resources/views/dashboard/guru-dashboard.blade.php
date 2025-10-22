@@ -200,7 +200,7 @@
 </div>
 
 <!-- Modals -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'createTaskModal',
     'title' => 'Buat Tugas Baru',
     'icon' => 'fas fa-tasks',

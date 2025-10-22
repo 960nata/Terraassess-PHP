@@ -9,13 +9,6 @@
         <p class="card-description">Kirim notifikasi ke pengguna dan kelas</p>
     </a>
 
-    <a href="{{ route('superadmin.iot-management') }}" class="card">
-        <div class="card-icon green">
-            <i class="fas fa-wifi"></i>
-        </div>
-        <h3 class="card-title">Manajemen IoT</h3>
-        <p class="card-description">Monitor perangkat IoT dan data sensor</p>
-    </a>
 
     <a href="{{ route('superadmin.task-management') }}" class="card">
         <div class="card-icon purple">
@@ -57,21 +50,7 @@
         <p class="card-description">Tambah dan kelola mata pelajaran</p>
     </a>
 
-    <a href="{{ route('iot.tugas') }}" class="card">
-        <div class="card-icon blue">
-            <i class="fas fa-server"></i>
-        </div>
-        <h3 class="card-title">Tugas IoT</h3>
-        <p class="card-description">Kelola tugas penelitian IoT</p>
-    </a>
 
-    <a href="{{ route('iot.research-projects') }}" class="card">
-        <div class="card-icon purple">
-            <i class="fas fa-wave-square"></i>
-        </div>
-        <h3 class="card-title">Penelitian IoT</h3>
-        <p class="card-description">Lihat hasil penelitian IoT siswa</p>
-    </a>
 
     <a href="{{ route('superadmin.material-management') }}" class="card">
         <div class="card-icon green">

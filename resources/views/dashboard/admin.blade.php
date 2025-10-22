@@ -6,7 +6,7 @@
     <title>Terra Assessment - Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     @vite(['resources/css/app.css'])
     <script>
@@ -428,13 +428,6 @@
                 <p class="card-description">Kirim notifikasi ke semua pengguna, kelas, atau pengguna spesifik</p>
             </a>
 
-            <a href="{{ route('admin.iot-management') }}" class="card">
-                <div class="card-icon green">
-                    <i class="fas fa-wifi"></i>
-                </div>
-                <h3 class="card-title">Manajemen IoT</h3>
-                <p class="card-description">Daftarkan perangkat IoT, test konektivitas, dan monitor data sensor</p>
-            </a>
 
             <!-- Row 2 -->
             <a href="{{ route('admin.task-management') }}" class="card">
@@ -479,22 +472,8 @@
                 <p class="card-description">Tambah dan kelola mata pelajaran</p>
             </a>
 
-            <a href="{{ route('iot.tugas') }}" class="card">
-                <div class="card-icon blue">
-                    <i class="fas fa-server"></i>
-                </div>
-                <h3 class="card-title">Tugas IoT</h3>
-                <p class="card-description">Buat dan kelola tugas penelitian IoT</p>
-            </a>
 
             <!-- Row 5 -->
-            <a href="{{ route('iot.research-projects') }}" class="card">
-                <div class="card-icon purple">
-                    <i class="fas fa-wave-square"></i>
-                </div>
-                <h3 class="card-title">Penelitian IoT</h3>
-                <p class="card-description">Lihat hasil penelitian IoT siswa</p>
-            </a>
 
             <a href="{{ route('admin.material-management') }}" class="card">
                 <div class="card-icon green">

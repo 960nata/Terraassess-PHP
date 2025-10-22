@@ -192,7 +192,7 @@
 ])
 
 <!-- Detail Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'pengajarDetailModal',
     'title' => 'Detail Pengajar',
     'icon' => 'fas fa-user',

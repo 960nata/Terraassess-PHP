@@ -2,6 +2,18 @@
 
 @section('title', 'Terra Assessment - Tugas')
 
+@php
+function getTaskTypeInfo($tipe) {
+    $types = [
+        1 => ['name' => 'Pilihan Ganda', 'icon' => 'ph-check-circle', 'color' => 'blue'],
+        2 => ['name' => 'Essay', 'icon' => 'ph-article', 'color' => 'purple'],
+        3 => ['name' => 'Mandiri', 'icon' => 'ph-user', 'color' => 'green'],
+        4 => ['name' => 'Kelompok', 'icon' => 'ph-users-three', 'color' => 'orange']
+    ];
+    return $types[$tipe] ?? ['name' => 'Tugas', 'icon' => 'ph-clipboard', 'color' => 'gray'];
+}
+@endphp
+
 @section('styles')
 <style>
 /* Dark Theme Base */
@@ -655,6 +667,28 @@ html, body {
         font-size: 1.1rem;
     }
 }
+
+/* Task Type Badge Colors */
+.badge-blue { 
+    background: #3b82f6; 
+    color: white; 
+}
+.badge-purple { 
+    background: #8b5cf6; 
+    color: white; 
+}
+.badge-green { 
+    background: #10b981; 
+    color: white; 
+}
+.badge-orange { 
+    background: #f59e0b; 
+    color: white; 
+}
+.badge-gray { 
+    background: #6b7280; 
+    color: white; 
+}
 </style>
 @endsection
 
@@ -678,6 +712,17 @@ html, body {
                 <option value="submitted">Sudah Dikumpulkan</option>
                 <option value="graded">Sudah Dinilai</option>
                 <option value="overdue">Terlambat</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="typeFilter" class="filter-label">Filter Tipe:</label>
+            <select id="typeFilter" class="filter-select" onchange="filterTasks()">
+                <option value="">Semua Tipe</option>
+                <option value="1">Pilihan Ganda</option>
+                <option value="2">Essay</option>
+                <option value="3">Mandiri</option>
+                <option value="4">Kelompok</option>
             </select>
         </div>
         
@@ -729,7 +774,13 @@ html, body {
                     <div class="task-header">
                         <h2 class="task-title">{{ $tugasItem->name }}</h2>
                         <div class="task-badges">
-                            <span class="badge badge-individual">Tugas Individual</span>
+                            @php
+                                $typeInfo = getTaskTypeInfo($tugasItem->tipe);
+                            @endphp
+                            <span class="badge badge-{{ $typeInfo['color'] }}">
+                                <i class="{{ $typeInfo['icon'] }}"></i>
+                                {{ $typeInfo['name'] }}
+                            </span>
                             <span class="task-status {{ $statusClass }}">
                                 @if($status === 'pending')
                                     @if($isOverdue)
@@ -814,7 +865,7 @@ html, body {
                         
                         <div class="stat-item">
                             <div class="stat-label">Tipe</div>
-                            <div class="stat-value">{{ ucfirst($tugasItem->tipe ?? 'Essay') }}</div>
+                            <div class="stat-value">{{ $typeInfo['name'] }}</div>
                         </div>
                     </div>
 
@@ -852,7 +903,13 @@ html, body {
                     <div class="task-header">
                         <h2 class="task-title">{{ $tugasItem->name }}</h2>
                         <div class="task-badges">
-                            <span class="badge badge-group">Tugas Kelompok</span>
+                            @php
+                                $typeInfo = getTaskTypeInfo($tugasItem->tipe);
+                            @endphp
+                            <span class="badge badge-{{ $typeInfo['color'] }}">
+                                <i class="{{ $typeInfo['icon'] }}"></i>
+                                {{ $typeInfo['name'] }}
+                            </span>
                             <span class="task-status {{ $statusClass }}">
                                 @if($status === 'pending')
                                     @if($isOverdue)
@@ -937,7 +994,7 @@ html, body {
                         
                         <div class="stat-item">
                             <div class="stat-label">Tipe</div>
-                            <div class="stat-value">Tugas Kelompok (Lama)</div>
+                            <div class="stat-value">{{ $typeInfo['name'] }}</div>
                         </div>
                     </div>
 
@@ -1068,9 +1125,19 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (statusText.includes('Sudah Dinilai')) status = 'graded';
         else if (statusText.includes('Terlambat')) status = 'overdue';
         
+        // Get task type from badge
+        const typeBadge = card.querySelector('.badge');
+        const typeText = typeBadge ? typeBadge.textContent.trim() : '';
+        let type = '';
+        if (typeText.includes('Pilihan Ganda')) type = '1';
+        else if (typeText.includes('Essay')) type = '2';
+        else if (typeText.includes('Mandiri')) type = '3';
+        else if (typeText.includes('Kelompok')) type = '4';
+        
         return {
             element: card,
             status: status,
+            type: type,
             title: card.querySelector('.task-title').textContent,
             subject: card.querySelector('.meta-text').textContent,
             deadline: card.querySelector('.meta-text:last-child').textContent
@@ -1082,10 +1149,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function filterTasks() {
     const statusFilter = document.getElementById('statusFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
     
     filteredTasks = allTasks.filter(task => {
-        if (!statusFilter) return true;
-        return task.status === statusFilter;
+        let statusMatch = true;
+        let typeMatch = true;
+        
+        if (statusFilter) {
+            statusMatch = task.status === statusFilter;
+        }
+        
+        if (typeFilter) {
+            typeMatch = task.type === typeFilter;
+        }
+        
+        return statusMatch && typeMatch;
     });
     
     updateTaskDisplay();

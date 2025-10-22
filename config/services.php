@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'thingsboard' => [
+        'host' => env('THINGSBOARD_HOST', 'https://demo.thingsboard.io'),
+        'api_token' => env('THINGSBOARD_API_TOKEN'),
+        'device_tokens' => json_decode(env('THINGSBOARD_DEVICE_TOKENS', '[]'), true),
+        'sync_interval' => env('THINGSBOARD_SYNC_INTERVAL', 30),
+    ],
+
 ];

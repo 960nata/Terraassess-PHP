@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tugas_multiples', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("tugas_id");
+            $table->foreignId("tugas_id")->constrained('tugas')->onDelete('cascade');
             $table->text("soal");
             $table->text("a");
             $table->text("b");

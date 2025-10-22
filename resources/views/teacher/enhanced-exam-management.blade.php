@@ -429,19 +429,19 @@
 @section('scripts')
 <script>
 function viewExam(examId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.show', '') }}/" + examId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + examId;
 }
 
 function viewProgress(examId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.progress', '') }}/" + examId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + examId + "/progress";
 }
 
 function viewResults(examId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.results', '') }}/" + examId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + examId + "/results";
 }
 
 function editExam(examId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.edit', '') }}/" + examId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + examId + "/edit";
 }
 
 function deleteExam(examId) {
@@ -449,7 +449,7 @@ function deleteExam(examId) {
         // Create form and submit
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = "{{ route('teacher.enhanced-exam-management.destroy', '') }}/" + examId;
+        form.action = "{{ url('teacher/enhanced-exam-management') }}/" + examId;
         
         const csrfToken = document.createElement('input');
         csrfToken.type = 'hidden';

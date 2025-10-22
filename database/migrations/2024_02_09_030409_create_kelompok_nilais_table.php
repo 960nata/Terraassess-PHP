@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('kelompok_nilais', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("tugas_kelompok_id");
+            $table->foreignId("tugas_kelompok_id")->constrained('tugas_kelompoks')->onDelete('cascade');
             $table->bigInteger("to_kelompok");
             $table->bigInteger("nilai")->nullable();
             $table->timestamps();

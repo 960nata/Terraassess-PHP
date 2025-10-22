@@ -202,7 +202,7 @@
 ])
 
 <!-- Detail Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'kelasDetailModal',
     'title' => 'Detail Kelas',
     'icon' => 'fas fa-building',
@@ -220,7 +220,7 @@
 @endcomponent
 
 <!-- Statistics Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'statisticsModal',
     'title' => 'Statistik Kelas',
     'icon' => 'fas fa-chart-bar',

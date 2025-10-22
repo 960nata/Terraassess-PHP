@@ -571,5 +571,362 @@ new Chart(classComparisonCtx, {
         }
     }
 });
+
+// Global variables for charts
+let classPerformanceChart, gradeDistributionChart, classComparisonChart;
+let isLoading = false;
+
+// Initialize charts with empty data
+function initializeCharts() {
+    // Class Performance Chart
+    const classPerformanceCtx = document.getElementById('classPerformanceChart').getContext('2d');
+    classPerformanceChart = new Chart(classPerformanceCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Rata-rata Nilai',
+                data: [],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(245, 158, 11, 0.8)'
+                ],
+                borderColor: [
+                    '#3b82f6',
+                    '#10b981',
+                    '#8b5cf6',
+                    '#f59e0b'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Grade Distribution Chart
+    const gradeDistributionCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+    gradeDistributionChart = new Chart(gradeDistributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['A (90-100)', 'B (80-89)', 'C (70-79)', 'D (60-69)', 'E (<60)'],
+            datasets: [{
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(107, 114, 128, 0.8)'
+                ],
+                borderColor: [
+                    '#10b981',
+                    '#3b82f6',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#6b7280'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'white',
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+
+    // Class Comparison Chart
+    const classComparisonCtx = document.getElementById('classComparisonChart').getContext('2d');
+    classComparisonChart = new Chart(classComparisonCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Tugas', 'Ujian', 'Partisipasi', 'Kehadiran', 'Proyek'],
+            datasets: [{
+                label: 'Kelas A',
+                data: [0, 0, 0, 0, 0],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderWidth: 2
+            }, {
+                label: 'Kelas B',
+                data: [0, 0, 0, 0, 0],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    pointLabels: {
+                        color: 'white'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Fetch analytics data from API
+async function fetchAnalyticsData() {
+    if (isLoading) return;
+    
+    isLoading = true;
+    showLoadingIndicator();
+    
+    try {
+        const response = await fetch('/api/teacher/analytics-data', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        updateAllData(data);
+        hideLoadingIndicator();
+        
+    } catch (error) {
+        console.error('Error fetching analytics data:', error);
+        showErrorNotification('Gagal memuat data analytics');
+        hideLoadingIndicator();
+    } finally {
+        isLoading = false;
+    }
+}
+
+// Update all data on the page
+function updateAllData(data) {
+    updateOverviewCards(data);
+    updateCharts(data);
+    updateTopStudents(data);
+    updateRecentTasks(data);
+    updateLastUpdatedTime(data.lastUpdated);
+}
+
+// Update overview cards
+function updateOverviewCards(data) {
+    document.querySelector('.overview-card:nth-child(1) .overview-number').textContent = data.totalStudents || 0;
+    document.querySelector('.overview-card:nth-child(2) .overview-number').textContent = data.totalTasks || 0;
+    document.querySelector('.overview-card:nth-child(3) .overview-number').textContent = data.totalExams || 0;
+    document.querySelector('.overview-card:nth-child(4) .overview-number').textContent = (data.avgScore || 0) + '%';
+}
+
+// Update charts
+function updateCharts(data) {
+    // Update class performance chart
+    if (data.classPerformance && data.classPerformance.length > 0) {
+        classPerformanceChart.data.labels = data.classPerformance.map(c => c.class_name);
+        classPerformanceChart.data.datasets[0].data = data.classPerformance.map(c => c.avg_score);
+        classPerformanceChart.update();
+    }
+    
+    // Update grade distribution chart
+    if (data.gradeDistribution) {
+        gradeDistributionChart.data.datasets[0].data = [
+            data.gradeDistribution.A || 0,
+            data.gradeDistribution.B || 0,
+            data.gradeDistribution.C || 0,
+            data.gradeDistribution.D || 0,
+            data.gradeDistribution.E || 0
+        ];
+        gradeDistributionChart.update();
+    }
+}
+
+// Update top students list
+function updateTopStudents(data) {
+    const performanceList = document.querySelector('.performance-list');
+    if (!performanceList) return;
+    
+    if (data.topStudents && data.topStudents.length > 0) {
+        performanceList.innerHTML = data.topStudents.map(student => `
+            <div class="performance-item">
+                <div class="performance-info">
+                    <h4 class="performance-name">${student.name}</h4>
+                    <p class="performance-detail">${student.class_name}</p>
+                </div>
+                <div class="performance-score">
+                    <span class="score-value">${student.avg_score}%</span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${student.avg_score}%"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        performanceList.innerHTML = `
+            <div class="performance-item">
+                <div class="performance-info">
+                    <h4 class="performance-name">Belum ada data</h4>
+                    <p class="performance-detail">Data performa siswa akan muncul di sini</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Update recent tasks list
+function updateRecentTasks(data) {
+    const taskList = document.querySelector('.task-list');
+    if (!taskList) return;
+    
+    if (data.recentTasks && data.recentTasks.length > 0) {
+        taskList.innerHTML = data.recentTasks.map(task => `
+            <div class="task-item">
+                <div class="task-icon">
+                    <i class="fas fa-${getTaskIcon(task.type)}"></i>
+                </div>
+                <div class="task-content">
+                    <h4 class="task-title">${task.title}</h4>
+                    <p class="task-detail">${task.submission_count} dari ${task.total_students} siswa mengumpulkan</p>
+                </div>
+                <div class="task-status">
+                    <span class="status-badge ${task.status === 'completed' ? 'completed' : 'pending'}">
+                        ${task.status === 'completed' ? 'Selesai' : 'Berlangsung'}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        taskList.innerHTML = `
+            <div class="task-item">
+                <div class="task-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="task-content">
+                    <h4 class="task-title">Belum ada tugas</h4>
+                    <p class="task-detail">Tugas terbaru akan muncul di sini</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Get task icon based on type
+function getTaskIcon(type) {
+    const icons = {
+        'multiple_choice': 'list',
+        'essay': 'file-alt',
+        'mandiri': 'user',
+        'kelompok': 'users',
+        'unknown': 'question'
+    };
+    return icons[type] || 'question';
+}
+
+// Show loading indicator
+function showLoadingIndicator() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'analytics-loading';
+    loadingDiv.innerHTML = `
+        <div style="position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999;">
+            <i class="fas fa-spinner fa-spin"></i> Memuat data...
+        </div>
+    `;
+    document.body.appendChild(loadingDiv);
+}
+
+// Hide loading indicator
+function hideLoadingIndicator() {
+    const loadingDiv = document.getElementById('analytics-loading');
+    if (loadingDiv) {
+        loadingDiv.remove();
+    }
+}
+
+// Show error notification
+function showErrorNotification(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.innerHTML = `
+        <div style="position: fixed; top: 20px; right: 20px; background: rgba(239, 68, 68, 0.9); color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>
+    `;
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 5000);
+}
+
+// Update last updated time
+function updateLastUpdatedTime(time) {
+    let lastUpdatedDiv = document.getElementById('last-updated');
+    if (!lastUpdatedDiv) {
+        lastUpdatedDiv = document.createElement('div');
+        lastUpdatedDiv.id = 'last-updated';
+        lastUpdatedDiv.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 9999;';
+        document.body.appendChild(lastUpdatedDiv);
+    }
+    lastUpdatedDiv.innerHTML = `<i class="fas fa-clock"></i> Terakhir update: ${time}`;
+}
+
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    fetchAnalyticsData();
+    
+    // Set up auto-refresh every 5 seconds
+    setInterval(fetchAnalyticsData, 5000);
+});
 </script>
 @endsection

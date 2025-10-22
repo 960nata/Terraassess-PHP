@@ -541,8 +541,38 @@ function giveFeedback(ujianId, userId) {
 }
 
 function viewFeedback(ujianId, userId) {
-    // TODO: Implement view feedback modal
-    alert('Fitur lihat feedback akan segera tersedia');
+    // Implement view feedback modal
+    try {
+        // Set current user ID
+        currentUserId = userId;
+        
+        // Fetch existing feedback from server
+        fetch(`/teacher/exam-results/${ujianId}/feedback/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Populate modal with existing feedback
+                    document.getElementById('feedbackText').value = data.feedback || '';
+                    document.getElementById('feedbackScore').value = data.score || '';
+                    
+                    // Show modal
+                    document.getElementById('feedbackModal').style.display = 'block';
+                    
+                    // Update modal title
+                    document.querySelector('#feedbackModal .modal-title').textContent = 
+                        `Lihat Feedback - ${data.studentName || 'Siswa'}`;
+                } else {
+                    alert('Tidak dapat memuat feedback: ' + (data.message || 'Terjadi kesalahan'));
+                }
+            })
+            .catch(error => {
+                console.error('Error loading feedback:', error);
+                alert('Terjadi kesalahan saat memuat feedback');
+            });
+    } catch (error) {
+        console.error('Error in viewFeedback:', error);
+        alert('Terjadi kesalahan saat membuka feedback');
+    }
 }
 
 function closeFeedbackModal() {
@@ -605,8 +635,32 @@ function filterResults() {
 }
 
 function exportResults() {
-    // TODO: Implement export functionality
-    alert('Fitur export akan segera tersedia');
+    // Export exam results to CSV
+    try {
+        // Get current exam ID from the page
+        const examId = currentUjianId;
+        
+        if (!examId) {
+            alert('Tidak dapat menemukan ID ujian');
+            return;
+        }
+        
+        // Create export URL
+        const exportUrl = `/teacher/exam-results/${examId}/export`;
+        
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.href = exportUrl;
+        link.download = `hasil-ujian-${examId}-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Export exam results initiated');
+    } catch (error) {
+        console.error('Error exporting exam results:', error);
+        alert('Terjadi kesalahan saat mengexport data. Silakan coba lagi.');
+    }
 }
 
 // Close modal when clicking outside

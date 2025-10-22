@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('tugas_jawaban_multiples', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("tugas_multiple_id")->nullable();
-            $table->foreignId("tugas_quiz_id")->nullable();
-            $table->foreignId("user_id");
+            $table->foreignId("tugas_multiple_id")->nullable()->constrained('tugas_multiples')->onDelete('cascade');
+            $table->foreignId("tugas_quiz_id")->nullable()->constrained('tugas_quizzes')->onDelete('cascade');
+            $table->foreignId("user_id")->constrained('users')->onDelete('cascade');
             $table->string("user_jawaban");
             $table->bigInteger("nilai")->nullable();
-            $table->text("koreksi")->nullable()->default('-');
-            $table->foreignId("tugas_kelompok_quiz_id")->nullable();
+            $table->text("koreksi")->nullable();
+            $table->foreignId("tugas_kelompok_quiz_id")->nullable()->constrained('tugas_kelompok_quizzes')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -11,7 +11,7 @@
                 <h1 class="text-3xl font-bold text-white">{{ $title }}</h1>
                 <p class="mt-2 text-gray-300">Buat tugas {{ strtolower($tipeTugas) }} untuk siswa Anda</p>
             </div>
-            <a href="{{ route('teacher.tasks.dashboard') }}" class="btn btn-outline">
+            <a href="{{ route('teacher.tasks') }}" class="btn btn-outline">
                 <i class="ph-arrow-left mr-2"></i>
                 Kembali
             </a>
@@ -43,7 +43,7 @@
 
                             <div>
                                 <label class="form-label">Deskripsi/Instruksi *</label>
-                                @include('components.rich-text-editor', [
+                                @include('components.modern-quill-editor', [
                                     'name' => 'content',
                                     'content' => old('content'),
                                     'placeholder' => 'Tuliskan instruksi yang jelas untuk siswa...',
@@ -55,36 +55,56 @@
                                 @enderror
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="form-label">Kelas Tujuan *</label>
-                                    <select name="kelas_id" class="form-select" required>
-                                        <option value="">Pilih Kelas</option>
-                                        @foreach($kelas as $k)
-                                            <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
-                                                {{ $k->name }} - {{ $k->level }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('kelas_id')
-                                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
 
-                                <div>
-                                    <label class="form-label">Mata Pelajaran *</label>
-                                    <select name="mapel_id" class="form-select" required>
-                                        <option value="">Pilih Mata Pelajaran</option>
-                                        @foreach($mapel as $m)
-                                            <option value="{{ $m->id }}" {{ old('mapel_id') == $m->id ? 'selected' : '' }}>
-                                                {{ $m->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('mapel_id')
-                                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                            {{-- Success/Error Messages --}}
+                            @if(session('success'))
+                            <div class="alert alert-success" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <strong>✓ Berhasil!</strong> {{ session('success') }}
+                            </div>
+                            @endif
+
+                            @if(session('error'))
+                            <div class="alert alert-danger" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <strong>✗ Error!</strong> {{ session('error') }}
+                            </div>
+                            @endif
+
+                            @if($errors->any())
+                            <div class="alert alert-danger" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <strong>✗ Validasi Gagal!</strong>
+                                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            @endif
+
+                            <div>
+                                <label class="form-label">Kelas & Mata Pelajaran *</label>
+                                <select id="kelas_mapel_id" name="kelas_mapel_id" class="form-select" required>
+                                    <option value="">-- Pilih Kelas & Mata Pelajaran --</option>
+                                    @forelse($kelasMapels ?? [] as $km)
+                                        <option value="{{ $km->id }}" {{ old('kelas_mapel_id') == $km->id ? 'selected' : '' }}>
+                                            {{ $km->kelas->name ?? 'N/A' }} - {{ $km->mapel->name ?? 'N/A' }}
+                                            @if($km->pengajar)
+                                                ({{ $km->pengajar->name }})
+                                            @endif
+                                        </option>
+                                    @empty
+                                        <option value="" disabled>Tidak ada kelas mapel tersedia</option>
+                                    @endforelse
+                                </select>
+                                <small class="form-help">
+                                    @if(empty($kelasMapels))
+                                        <span style="color: #ef4444;">⚠️ Tidak ada kelas mapel. Hubungi admin untuk assign kelas mapel.</span>
+                                    @else
+                                        Pilih kombinasi kelas dan mata pelajaran untuk tugas ini
+                                    @endif
+                                </small>
+                                @error('kelas_mapel_id')
+                                    <span class="error-message">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <div>
@@ -238,7 +258,7 @@
                             Buat Tugas
                         </button>
                         
-                        <a href="{{ route('teacher.tasks.dashboard') }}" class="btn btn-outline w-full">
+                        <a href="{{ route('teacher.tasks') }}" class="btn btn-outline w-full">
                             <i class="ph-x mr-2"></i>
                             Batal
                         </a>
@@ -557,7 +577,7 @@ function addMember(groupId) {
         <div class="flex items-center space-x-2">
             <select name="groups[${groupId}][members][]" class="form-select flex-1" onchange="updateLeaderOptions(${groupId})" required>
                 <option value="">Pilih Siswa</option>
-                @foreach($kelas->first()->users()->where('roles_id', 3)->get() as $student)
+                @foreach($kelas->first()->users()->where('roles_id', 4)->get() as $student)
                     <option value="{{ $student->id }}">{{ $student->name }}</option>
                 @endforeach
             </select>
@@ -640,5 +660,114 @@ function updateRubricType(id) {
     // This function can be expanded to show different options based on rubric type
     console.log('Rubric type updated for item', id);
 }
+
+// Real-time validation functions
+function validateTaskForm() {
+    let isValid = true;
+    let errors = [];
+    
+    // Validate Judul
+    const title = document.querySelector('input[name="name"]').value.trim();
+    if (title === '' || title.length < 3) {
+        showError('name', 'Judul tugas wajib diisi (minimal 3 karakter)');
+        errors.push('Judul tugas');
+        isValid = false;
+    } else {
+        hideError('name');
+    }
+    
+    // Validate Kelas Mapel - Perbaikan validasi yang lebih toleran
+    const kelasMapelSelect = document.getElementById('kelas_mapel_id');
+    const kelasMapel = kelasMapelSelect ? kelasMapelSelect.value : '';
+    
+    // Debug logging untuk troubleshooting
+    console.log('Validasi Kelas Mapel - Value:', kelasMapel, 'Type:', typeof kelasMapel);
+    
+    if (!kelasMapel || kelasMapel === '' || kelasMapel === 'null' || kelasMapel === 'undefined') {
+        showError('kelas_mapel_id', 'Kelas & Mata Pelajaran wajib dipilih');
+        errors.push('Kelas & Mata Pelajaran');
+        isValid = false;
+    } else {
+        hideError('kelas_mapel_id');
+    }
+    
+    // Validate Konten (Quill editor)
+    if (typeof quill !== 'undefined') {
+        const content = quill.getText().trim();
+        if (content === '' || content.length < 10) {
+            showError('content', 'Konten tugas wajib diisi (minimal 10 karakter)');
+            errors.push('Konten tugas');
+            isValid = false;
+        } else {
+            hideError('content');
+        }
+    }
+    
+    // Validate Deadline
+    const deadline = document.querySelector('input[name="due"]').value;
+    if (deadline === '') {
+        showError('due', 'Deadline wajib diisi');
+        errors.push('Deadline');
+        isValid = false;
+    } else {
+        hideError('due');
+    }
+    
+    // Show summary error if invalid
+    if (!isValid) {
+        alert('Form belum lengkap! Mohon lengkapi:\n\n' + errors.map((e, i) => `${i+1}. ${e}`).join('\n'));
+    }
+    
+    return isValid;
+}
+
+function showError(fieldId, message) {
+    const field = document.getElementById(fieldId) || document.querySelector(`input[name="${fieldId}"]`) || document.querySelector(`select[name="${fieldId}"]`);
+    if (!field) return;
+    
+    field.style.borderColor = '#ef4444';
+    
+    let errorSpan = document.getElementById(fieldId + '-error');
+    if (!errorSpan) {
+        errorSpan = document.createElement('span');
+        errorSpan.id = fieldId + '-error';
+        errorSpan.className = 'validation-error';
+        errorSpan.style.display = 'block';
+        errorSpan.style.marginTop = '0.25rem';
+        errorSpan.style.color = '#ef4444';
+        errorSpan.style.fontSize = '0.875rem';
+        field.parentNode.appendChild(errorSpan);
+    }
+    errorSpan.textContent = message;
+}
+
+function hideError(fieldId) {
+    const field = document.getElementById(fieldId) || document.querySelector(`input[name="${fieldId}"]`) || document.querySelector(`select[name="${fieldId}"]`);
+    if (!field) return;
+    
+    field.style.borderColor = '';
+    
+    const errorSpan = document.getElementById(fieldId + '-error');
+    if (errorSpan) {
+        errorSpan.remove();
+    }
+}
+
+// Form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('taskForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateTaskForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+    
+    // Hapus real-time validation yang terlalu agresif
+    // Validasi hanya dilakukan saat submit form untuk menghindari error prematur
+    console.log('Form teacher task-create loaded - validation hanya pada submit');
+});
 </script>
 @endsection

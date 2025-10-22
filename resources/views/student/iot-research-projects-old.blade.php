@@ -7,7 +7,7 @@
     <title>Terra Assessment - Research Projects</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     @vite(['resources/css/app.css'])
     <script>
@@ -398,7 +398,7 @@
             position: absolute;
             top: 100%;
             right: 0;
-            background: rgba(15, 23, 42, 0.95);
+            background: transparent;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;

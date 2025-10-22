@@ -161,7 +161,7 @@ class StudentController extends Controller
         $tugas = Tugas::whereHas('kelasMapel', function($query) use ($user) {
             $query->where('kelas_id', $user->kelas_id);
         })
-        ->with(['kelasMapel.mapel', 'kelasMapel.pengajar'])
+        ->with(['kelasMapel.mapel', 'kelasMapel.pengajar', 'TugasQuiz', 'TugasMultiple'])
         ->findOrFail($id);
         
         $userTugas = UserTugas::where('tugas_id', $id)
@@ -176,27 +176,58 @@ class StudentController extends Controller
      */
     public function submitTugas(Request $request, $id)
     {
-        $request->validate([
-            'jawaban' => 'required|string',
-            'file_jawaban' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
-        ]);
-        
         $user = Auth::user();
-        $tugas = Tugas::findOrFail($id);
+        $tugas = Tugas::with(['TugasMultiple'])->findOrFail($id);
         
-        $data = [
-            'user_id' => $user->id,
-            'tugas_id' => $id,
-            'jawaban' => $request->jawaban,
-            'status' => 'submitted',
-            'submitted_at' => now()
-        ];
-        
-        if ($request->hasFile('file_jawaban')) {
-            $file = $request->file('file_jawaban');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('tugas/jawaban', $filename, 'public');
-            $data['file_jawaban'] = $path;
+        // Handle different task types
+        if ($tugas->tipe == 1) {
+            // Multiple choice task
+            $request->validate([
+                'answers' => 'required|array',
+                'answers.*' => 'required|string'
+            ]);
+            
+            $answers = $request->answers;
+            $score = 0;
+            $totalQuestions = $tugas->TugasMultiple->count();
+            
+            // Calculate score
+            foreach ($tugas->TugasMultiple as $question) {
+                if (isset($answers[$question->id]) && $answers[$question->id] == $question->jawaban) {
+                    $score += $question->poin ?? 1;
+                }
+            }
+            
+            $data = [
+                'user_id' => $user->id,
+                'tugas_id' => $id,
+                'jawaban' => json_encode($answers),
+                'nilai' => $score,
+                'status' => 'completed',
+                'submitted_at' => now()
+            ];
+            
+        } else {
+            // Essay/Mandiri task
+            $request->validate([
+                'jawaban' => 'required|string',
+                'file_jawaban' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
+            ]);
+            
+            $data = [
+                'user_id' => $user->id,
+                'tugas_id' => $id,
+                'jawaban' => $request->jawaban,
+                'status' => 'submitted',
+                'submitted_at' => now()
+            ];
+            
+            if ($request->hasFile('file_jawaban')) {
+                $file = $request->file('file_jawaban');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('tugas/jawaban', $filename, 'public');
+                $data['file_jawaban'] = $path;
+            }
         }
         
         UserTugas::updateOrCreate(

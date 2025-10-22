@@ -12,7 +12,7 @@
                 <p class="mt-2 text-gray-300">{{ $tugas->tipe_tugas }} - {{ $tugas->KelasMapel->Kelas->name }}</p>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline">
+                <a href="{{ route('teacher.tasks') }}" class="btn btn-outline">
                     <i class="ph-arrow-left mr-2"></i>
                     Kembali
                 </a>
@@ -183,7 +183,7 @@ th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700" id="studentsTableBody">
-                        @foreach($tugas->KelasMapel->Kelas->users()->where('roles_id', 3)->get() as $student)
+                        @foreach($tugas->KelasMapel->Kelas->users()->where('roles_id', 4)->get() as $student)
                             @php
                                 $progress = $tugas->TugasProgress()->where('user_id', $student->id)->first();
                                 $feedback = $tugas->TugasFeedback()->where('user_id', $student->id)->first();
@@ -283,6 +283,7 @@ th>
                 <input type="hidden" id="gradingStudentId" name="user_id">
                 <input type="hidden" id="gradingIsGroup" name="is_group" value="0">
                 <input type="hidden" id="gradingGroupId" name="group_id">
+                <input type="hidden" id="gradingTaskType" name="task_type" value="{{ $tugas->tipe }}">
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Student Work Panel -->
@@ -297,20 +298,81 @@ th>
                     <div>
                         <h4 class="text-lg font-medium text-white mb-4">Penilaian</h4>
                         <div class="space-y-4">
-                            <div>
-                                <label class="form-label">Nilai (0-100)</label>
-                                <input type="number" name="score" id="gradingScore" 
-                                       class="form-input" min="0" max="100" required>
-                            </div>
+                            <!-- Task Type Specific Grading -->
+                            @if($tugas->tipe == 1)
+                                <!-- Multiple Choice - Read Only with Auto Score -->
+                                <div id="multipleChoiceGrading" class="grading-panel">
+                                    <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="ph-info text-blue-400"></i>
+                                            <span class="text-blue-300 font-medium">Tugas Pilihan Ganda</span>
+                                        </div>
+                                        <p class="text-sm text-blue-200">Nilai otomatis berdasarkan jawaban benar. Anda hanya dapat memberikan feedback.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Skor Otomatis</label>
+                                        <input type="text" id="gradingAutoScore" class="form-input bg-gray-700" readonly>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Feedback (Opsional)</label>
+                                        <textarea name="feedback" id="gradingFeedback" 
+                                                  class="form-textarea" rows="4" 
+                                                  placeholder="Berikan feedback yang konstruktif..."></textarea>
+                                    </div>
+                                </div>
+                            @elseif($tugas->tipe == 2 || $tugas->tipe == 3)
+                                <!-- Essay/Individual - Manual Grading -->
+                                <div id="essayGrading" class="grading-panel">
+                                    <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="ph-pencil text-green-400"></i>
+                                            <span class="text-green-300 font-medium">Tugas {{ $tugas->tipe == 2 ? 'Essay' : 'Mandiri' }}</span>
+                                        </div>
+                                        <p class="text-sm text-green-200">Berikan nilai manual dan feedback untuk hasil kerja siswa.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Nilai (0-100) *</label>
+                                        <input type="number" name="score" id="gradingScore" 
+                                               class="form-input" min="0" max="100" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Feedback *</label>
+                                        <textarea name="feedback" id="gradingFeedback" 
+                                                  class="form-textarea" rows="6" 
+                                                  placeholder="Berikan feedback yang konstruktif..." required></textarea>
+                                    </div>
+                                </div>
+                            @elseif($tugas->tipe == 4)
+                                <!-- Group Task - Group Grading -->
+                                <div id="groupGrading" class="grading-panel">
+                                    <div class="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 mb-4">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="ph-users text-purple-400"></i>
+                                            <span class="text-purple-300 font-medium">Tugas Kelompok</span>
+                                        </div>
+                                        <p class="text-sm text-purple-200">Nilai untuk seluruh kelompok. Anggota kelompok akan mendapat nilai yang sama.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Nilai Kelompok (0-100) *</label>
+                                        <input type="number" name="score" id="gradingScore" 
+                                               class="form-input" min="0" max="100" required>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label">Feedback untuk Kelompok *</label>
+                                        <textarea name="feedback" id="gradingFeedback" 
+                                                  class="form-textarea" rows="6" 
+                                                  placeholder="Berikan feedback untuk kerja kelompok..." required></textarea>
+                                    </div>
+                                </div>
+                            @endif
                             
-                            <div>
-                                <label class="form-label">Feedback</label>
-                                <textarea name="feedback" id="gradingFeedback" 
-                                          class="form-textarea" rows="6" 
-                                          placeholder="Berikan feedback yang konstruktif..."></textarea>
-                            </div>
-                            
-                            <div class="flex justify-end space-x-3">
+                            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-600">
                                 <button type="button" onclick="closeGradingModal()" class="btn btn-outline">
                                     Batal
                                 </button>
@@ -417,12 +479,43 @@ function gradeStudent(studentId) {
         .then(data => {
             document.getElementById('gradingStudentId').value = studentId;
             document.getElementById('gradingStudentWork').innerHTML = data.html;
+            
+            // Handle different task types
+            const taskType = {{ $tugas->tipe }};
+            
+            if (taskType == 1) {
+                // Multiple choice - calculate auto score
+                calculateAutoScore(studentId);
+            } else if (taskType == 4) {
+                // Group task - set group info
+                setGroupTaskInfo(studentId);
+            }
+            
             document.getElementById('gradingModal').classList.remove('hidden');
         })
         .catch(error => {
             console.error('Error loading student work:', error);
             alert('Gagal memuat hasil kerja siswa');
         });
+}
+
+function calculateAutoScore(studentId) {
+    // Calculate auto score for multiple choice
+    fetch(`/teacher/tasks/{{ $tugas->id }}/auto-score/${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('gradingAutoScore').value = data.score + '/100';
+        })
+        .catch(error => {
+            console.error('Error calculating auto score:', error);
+            document.getElementById('gradingAutoScore').value = '0/100';
+        });
+}
+
+function setGroupTaskInfo(studentId) {
+    // Set group task information
+    document.getElementById('gradingIsGroup').value = '1';
+    // You can add more group-specific logic here
 }
 
 function closeGradingModal() {

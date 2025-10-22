@@ -12,13 +12,26 @@
                 <p class="mt-2 text-gray-300">Buat dan kelola berbagai jenis tugas untuk siswa Anda</p>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline">
+                <a href="{{ route('teacher.tasks') }}" class="btn btn-outline">
                     <i class="ph-list mr-2"></i>
                     Kelola Tugas
                 </a>
             </div>
         </div>
     </div>
+
+    {{-- Success/Error Messages --}}
+    @if(session('success'))
+    <div class="alert alert-success mb-6" style="background: #10b981; color: white; padding: 1rem; border-radius: 8px;">
+        <strong>✓ Berhasil!</strong> {{ session('success') }}
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger mb-6" style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px;">
+        <strong>✗ Error!</strong> {{ session('error') }}
+    </div>
+    @endif
 
     <!-- Task Creation Cards -->
     <div class="task-cards-grid">
@@ -41,7 +54,7 @@
                     <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); createTask(1)">
                         Buat Baru
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks.management') }}'">
+                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks') }}'">
                         Kelola
                     </button>
                 </div>
@@ -67,7 +80,7 @@
                     <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); createTask(2)">
                         Buat Baru
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks.management') }}'">
+                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks') }}'">
                         Kelola
                     </button>
                 </div>
@@ -93,7 +106,7 @@
                     <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); createTask(3)">
                         Buat Baru
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks.management') }}'">
+                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks') }}'">
                         Kelola
                     </button>
                 </div>
@@ -119,7 +132,7 @@
                     <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); createTask(4)">
                         Buat Baru
                     </button>
-                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks.management') }}'">
+                    <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); window.location.href='{{ route('teacher.tasks') }}'">
                         Kelola
                     </button>
                 </div>
@@ -131,7 +144,7 @@
     <div class="mt-8">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-semibold text-white">Tugas Terbaru</h2>
-            <a href="{{ route('teacher.tasks.management') }}" class="text-blue-400 hover:text-blue-300 text-sm">
+            <a href="{{ route('teacher.tasks') }}" class="text-blue-400 hover:text-blue-300 text-sm">
                 Lihat Semua
             </a>
         </div>

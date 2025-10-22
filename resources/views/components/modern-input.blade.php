@@ -1,78 +1,70 @@
-{{-- Modern Input Component --}}
 @props([
     'type' => 'text',
-    'label' => null,
-    'error' => null,
-    'help' => null,
+    'name' => '',
+    'value' => '',
+    'placeholder' => '',
     'required' => false,
     'disabled' => false,
-    'placeholder' => null,
+    'readonly' => false,
+    'rows' => 3,
     'class' => ''
 ])
 
 @php
-    $inputClasses = 'form-input';
+    $baseClass = 'block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-colors duration-200';
     
-    if ($error) {
-        $inputClasses .= ' error';
+    if ($type === 'textarea') {
+        $inputClass = $baseClass . ' resize-vertical';
+    } else {
+        $inputClass = $baseClass;
+    }
+    
+    if ($required) {
+        $inputClass .= ' required';
     }
     
     if ($disabled) {
-        $inputClasses .= ' opacity-50 cursor-not-allowed';
+        $inputClass .= ' bg-gray-100 dark:bg-gray-600 cursor-not-allowed';
     }
     
-    $inputClasses .= ' ' . $class;
+    if ($readonly) {
+        $inputClass .= ' bg-gray-50 dark:bg-gray-600';
+    }
+    
+    $inputClass .= ' ' . $class;
 @endphp
 
-<div class="form-group">
-    @if($label)
-        <label class="form-label">
-            {{ $label }}
-            @if($required)
-                <span class="text-error-500">*</span>
-            @endif
-        </label>
-    @endif
-    
-    @if($type === 'textarea')
-        <textarea 
-            {{ $attributes->merge([
-                'class' => $inputClasses . ' form-textarea',
-                'placeholder' => $placeholder,
-                'disabled' => $disabled,
-                'required' => $required
-            ]) }}
-        >{{ $attributes->get('value') }}</textarea>
-    @elseif($type === 'select')
-        <select 
-            {{ $attributes->merge([
-                'class' => $inputClasses . ' form-select',
-                'disabled' => $disabled,
-                'required' => $required
-            ]) }}
-        >
-            @if($placeholder)
-                <option value="">{{ $placeholder }}</option>
-            @endif
-            {{ $slot }}
-        </select>
-    @else
-        <input 
-            type="{{ $type }}"
-            {{ $attributes->merge([
-                'class' => $inputClasses,
-                'placeholder' => $placeholder,
-                'disabled' => $disabled,
-                'required' => $required
-            ]) }}
-        />
-    @endif
-    
-    @if($error)
-        <div class="form-error">{{ $error }}</div>
-    @endif
-    
-    @if($help)
-        <div class="form-help">{{ $help }}</div>
-    @endif
-</div>
+@if($type === 'textarea')
+    <textarea 
+        name="{{ $name }}"
+        placeholder="{{ $placeholder }}"
+        rows="{{ $rows }}"
+        {{ $required ? 'required' : '' }}
+        {{ $disabled ? 'disabled' : '' }}
+        {{ $readonly ? 'readonly' : '' }}
+        class="{{ $inputClass }}"
+        {{ $attributes->except(['class', 'type', 'name', 'value', 'placeholder', 'required', 'disabled', 'readonly', 'rows']) }}
+    >{{ $value ?: $slot }}</textarea>
+@elseif($type === 'select')
+    <select 
+        name="{{ $name }}"
+        {{ $required ? 'required' : '' }}
+        {{ $disabled ? 'disabled' : '' }}
+        class="{{ $inputClass }}"
+        {{ $attributes->except(['class', 'type', 'name', 'value', 'placeholder', 'required', 'disabled', 'readonly', 'rows']) }}
+    >
+        {{ $slot }}
+    </select>
+@else
+    <input 
+        type="{{ $type }}"
+        name="{{ $name }}"
+        value="{{ $value }}"
+        placeholder="{{ $placeholder }}"
+        {{ $required ? 'required' : '' }}
+        {{ $disabled ? 'disabled' : '' }}
+        {{ $readonly ? 'readonly' : '' }}
+        class="{{ $inputClass }}"
+        {{ $attributes->except(['class', 'type', 'name', 'value', 'placeholder', 'required', 'disabled', 'readonly', 'rows']) }}
+    />
+@endif

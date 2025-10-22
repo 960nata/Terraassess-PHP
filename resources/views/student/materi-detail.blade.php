@@ -17,7 +17,7 @@
     <div class="materi-detail-card">
         <div class="materi-detail-header">
             <div class="materi-info">
-                <h2 class="materi-title">{{ $materi->judul }}</h2>
+                <h2 class="materi-title">{{ $materi->name }}</h2>
                 <div class="materi-meta">
                     <div class="materi-meta-item">
                         <i class="fas fa-book"></i>
@@ -40,6 +40,15 @@
                 <h3>Deskripsi Materi</h3>
                 <p>{{ $materi->deskripsi }}</p>
             </div>
+            
+            @if($materi->content)
+            <div class="materi-content">
+                <h3>Konten Materi</h3>
+                <div class="content-display">
+                    {!! $materi->content !!}
+                </div>
+            </div>
+            @endif
             
             @if($materi->file_materi)
             <div class="materi-files">
@@ -149,6 +158,95 @@
     color: #e2e8f0;
     line-height: 1.6;
     font-size: 1rem;
+}
+
+.materi-content {
+    margin-top: 1.5rem;
+}
+
+.content-display {
+    color: #e2e8f0;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.content-display h1, .content-display h2, .content-display h3, .content-display h4, .content-display h5, .content-display h6 {
+    color: #ffffff;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.content-display h1:first-child, .content-display h2:first-child, .content-display h3:first-child, 
+.content-display h4:first-child, .content-display h5:first-child, .content-display h6:first-child {
+    margin-top: 0;
+}
+
+.content-display p {
+    margin-bottom: 0.75rem;
+    color: #e2e8f0;
+}
+
+.content-display ul, .content-display ol {
+    margin: 0 0 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.content-display li {
+    margin: 0.25rem 0;
+    color: #e2e8f0;
+}
+
+.content-display blockquote {
+    border-left: 4px solid #60a5fa;
+    padding-left: 1rem;
+    margin: 0 0 0.75rem 0;
+    font-style: italic;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.content-display code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    color: #fbbf24;
+}
+
+.content-display pre {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0 0 0.75rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content-display pre code {
+    background: none;
+    padding: 0;
+    color: #e2e8f0;
+}
+
+.content-display img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+
+.content-display a {
+    color: #60a5fa;
+    text-decoration: underline;
+}
+
+.content-display a:hover {
+    color: #93c5fd;
 }
 
 .materi-files, .materi-links {

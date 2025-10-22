@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('file_kelompoks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("tugas_kelompok_id");
+            $table->foreignId("tugas_kelompok_id")->constrained('tugas_kelompoks')->onDelete('cascade');
             $table->text("file");
             $table->timestamps();
         });

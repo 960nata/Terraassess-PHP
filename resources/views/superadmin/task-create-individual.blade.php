@@ -210,7 +210,7 @@
 </div>
 
 <div class="task-form">
-    <form action="{{ route('superadmin.task-create-individual.store') }}" method="POST" enctype="multipart/form-data" id="taskForm">
+    <form action="{{ route('superadmin.tasks.store') }}" method="POST" enctype="multipart/form-data" id="taskForm">
         @csrf
         
         <!-- Basic Information Section -->
@@ -230,16 +230,33 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="class_id">Kelas *</label>
-                    <select id="class_id" name="class_id" required>
+                    <label for="kelas_id">Kelas *</label>
+                    <select id="kelas_id" name="kelas_id" required>
                         <option value="">Pilih Kelas</option>
-                        @foreach($classes as $class)
-                            <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>
-                                {{ $class->name }}
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
+                                {{ $k->name }} - {{ $k->level }}
                             </option>
                         @endforeach
                     </select>
-                    @error('class_id')
+                    @error('kelas_id')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="mapel_id">Mata Pelajaran *</label>
+                    <select id="mapel_id" name="mapel_id" required>
+                        <option value="">Pilih Mata Pelajaran</option>
+                        @foreach($mapel as $m)
+                            <option value="{{ $m->id }}" {{ old('mapel_id') == $m->id ? 'selected' : '' }}>
+                                {{ $m->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('mapel_id')
                         <div class="error-message">{{ $message }}</div>
                     @enderror
                 </div>
@@ -247,7 +264,10 @@
             
             <div class="form-group">
                 <label for="description">Deskripsi Tugas *</label>
-                <textarea id="description" name="description" placeholder="Masukkan deskripsi tugas yang jelas dan detail..." required>{{ old('description') }}</textarea>
+                <div class="bg-gray-700 rounded-lg border border-gray-600 overflow-hidden">
+                    <div id="description-editor" class="quill-editor-dark" style="height: 200px;"></div>
+                    <textarea name="description" id="description-textarea" style="display: none;">{{ old('description') }}</textarea>
+                </div>
                 @error('description')
                     <div class="error-message">{{ $message }}</div>
                 @enderror
@@ -303,40 +323,6 @@
             </div>
         </div>
 
-        <!-- File Upload Section -->
-        <div class="form-section">
-            <h3 class="section-title">
-                <i class="fas fa-paperclip"></i>
-                Lampiran (Opsional)
-            </h3>
-            
-            <div class="file-upload" id="fileUpload">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #667eea; margin-bottom: 1rem;"></i>
-                <p>Drag & drop file di sini atau klik untuk memilih file</p>
-                <p style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">
-                    Format yang didukung: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG (Max: 10MB)
-                </p>
-                <input type="file" id="fileInput" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png" style="display: none;">
-            </div>
-            
-            <div class="file-list" id="fileList"></div>
-        </div>
-
-        <!-- Instructions Section -->
-        <div class="form-section">
-            <h3 class="section-title">
-                <i class="fas fa-list-ol"></i>
-                Instruksi Pengerjaan
-            </h3>
-            
-            <div class="form-group">
-                <label for="instructions">Instruksi Detail *</label>
-                <textarea id="instructions" name="instructions" placeholder="Masukkan instruksi pengerjaan yang jelas dan terstruktur..." required>{{ old('instructions') }}</textarea>
-                @error('instructions')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-        </div>
 
         <!-- Action Buttons -->
         <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
@@ -354,127 +340,35 @@
 @endsection
 
 @section('scripts')
+<!-- Quill Editor JS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const fileUpload = document.getElementById('fileUpload');
-    const fileInput = document.getElementById('fileInput');
-    const fileList = document.getElementById('fileList');
     const form = document.getElementById('taskForm');
     
-    let files = [];
-    
-    // File upload click handler
-    fileUpload.addEventListener('click', () => {
-        fileInput.click();
-    });
-    
-    // File input change handler
-    fileInput.addEventListener('change', handleFiles);
-    
-    // Drag and drop handlers
-    fileUpload.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        fileUpload.classList.add('dragover');
-    });
-    
-    fileUpload.addEventListener('dragleave', () => {
-        fileUpload.classList.remove('dragover');
-    });
-    
-    fileUpload.addEventListener('drop', (e) => {
-        e.preventDefault();
-        fileUpload.classList.remove('dragover');
-        handleFiles({ target: { files: e.dataTransfer.files } });
-    });
-    
-    function handleFiles(e) {
-        const newFiles = Array.from(e.target.files);
-        
-        // Validate file size and type
-        const validFiles = newFiles.filter(file => {
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            const allowedTypes = [
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'image/jpeg',
-                'image/png'
-            ];
-            
-            if (file.size > maxSize) {
-                alert(`File ${file.name} terlalu besar. Maksimal 10MB.`);
-                return false;
+    // Initialize Quill for description
+    if (document.getElementById('description-editor')) {
+        const descriptionEditor = new Quill('#description-editor', {
+            theme: 'snow',
+            placeholder: 'Masukkan deskripsi tugas yang jelas dan detail...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
             }
-            
-            if (!allowedTypes.includes(file.type)) {
-                alert(`File ${file.name} tidak didukung.`);
-                return false;
-            }
-            
-            return true;
         });
-        
-        files = [...files, ...validFiles];
-        updateFileList();
+        descriptionEditor.on('text-change', function() {
+            document.getElementById('description-textarea').value = descriptionEditor.root.innerHTML;
+        });
+        // Set initial content if old content exists
+        if (document.getElementById('description-textarea').value) {
+            descriptionEditor.root.innerHTML = document.getElementById('description-textarea').value;
+        }
     }
-    
-    function updateFileList() {
-        fileList.innerHTML = '';
-        
-        files.forEach((file, index) => {
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-            fileItem.innerHTML = `
-                <div class="file-info">
-                    <i class="fas fa-file"></i>
-                    <span>${file.name}</span>
-                    <span style="color: #94a3b8; font-size: 0.875rem;">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                </div>
-                <div class="file-remove" onclick="removeFile(${index})">
-                    <i class="fas fa-times"></i>
-                </div>
-            `;
-            fileList.appendChild(fileItem);
-        });
-    }
-    
-    window.removeFile = function(index) {
-        files.splice(index, 1);
-        updateFileList();
-    };
-    
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        // Add files to form data
-        const formData = new FormData(form);
-        
-        // Clear existing file inputs
-        const existingFiles = form.querySelectorAll('input[type="file"]');
-        existingFiles.forEach(input => {
-            if (input.name === 'attachments[]') {
-                input.remove();
-            }
-        });
-        
-        // Add new file inputs
-        files.forEach((file, index) => {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.name = 'attachments[]';
-            fileInput.style.display = 'none';
-            
-            // Create a new FileList with the file
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-            
-            form.appendChild(fileInput);
-        });
-    });
     
     // Date validation
     const startDate = document.getElementById('start_date');
@@ -495,4 +389,66 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<!-- Quill Editor CSS -->
+<style>
+/* Quill Editor Styles - From material-create.blade.php */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 200px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-dark .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.quill-editor-dark .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-dark .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.quill-editor-dark .ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-fill {
+    fill: #ffffff;
+}
+</style>
 @endsection

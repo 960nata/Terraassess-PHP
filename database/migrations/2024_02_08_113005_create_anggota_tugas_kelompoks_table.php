@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('anggota_tugas_kelompoks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("tugas_kelompok_id");
-            $table->foreignId("user_id");
-            $table->foreignId("tugas_id");
+            $table->foreignId("tugas_kelompok_id")->constrained('tugas_kelompoks')->onDelete('cascade');
+            $table->foreignId("user_id")->constrained('users')->onDelete('cascade');
+            $table->foreignId("tugas_id")->constrained('tugas')->onDelete('cascade');
             $table->bigInteger("isKetua")->default(0);
             $table->timestamps();
+            
+            // Add unique constraint to prevent duplicate user-tugas membership
+            $table->unique(['user_id', 'tugas_id']);
         });
     }
 

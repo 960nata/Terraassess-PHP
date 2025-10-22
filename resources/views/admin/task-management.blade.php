@@ -678,49 +678,17 @@
                 </div>
             </div>
 
-            <div class="task-type-card individual" onclick="createIndividualTask()">
-                <div class="task-card-header">
-                    <div class="task-card-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="task-card-stats">
-                        <span class="task-count">{{ $tugasMandiri ?? 0 }}</span>
-                        <span class="task-label">Tugas</span>
-                    </div>
-                </div>
-                <div class="task-card-content">
-                    <h3 class="task-type-title">Mandiri</h3>
-                    <p class="task-type-description">Buat tugas individual untuk pembelajaran mandiri</p>
-                </div>
-                <div class="task-card-footer">
-                    <span class="task-card-action">Buat Tugas <i class="fas fa-arrow-right arrow-icon"></i></span>
-                </div>
-            </div>
-
-            <div class="task-type-card group" onclick="createGroupTask()">
-                <div class="task-card-header">
-                    <div class="task-card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="task-card-stats">
-                        <span class="task-count">{{ $tugasKelompok ?? 0 }}</span>
-                        <span class="task-label">Tugas</span>
-                    </div>
-                </div>
-                <div class="task-card-content">
-                    <h3 class="task-type-title">Kelompok</h3>
-                    <p class="task-type-description">Buat tugas kelompok untuk kolaborasi</p>
-                </div>
-                <div class="task-card-footer">
-                    <span class="task-card-action">Buat Tugas <i class="fas fa-arrow-right arrow-icon"></i></span>
-                </div>
-            </div>
+            @include('components.task-types', [
+                'user' => $user,
+                'tugasMandiri' => $tugasMandiri ?? 0,
+                'tugasKelompok' => $tugasKelompok ?? 0,
+            ])
         </div>
 
 
         <!-- Task Filters - Simplified -->
         <div class="task-filters">
-            <form action="{{ route('admin.task-management.filter') }}" method="GET" class="filter-form">
+            <form action="{{ route('admin.task-management') }}" method="GET" class="filter-form">
                 <div class="filter-row">
                     <div class="form-group">
                         <select id="filter_class" name="filter_class">
@@ -816,18 +784,18 @@
                                     <td>{{ $task->due ? \Carbon\Carbon::parse($task->due)->format('d M Y H:i') : 'N/A' }}</td>
                                     <td>
                                         <div class="task-actions">
-                                            <button class="btn-secondary" onclick="editTask('{{ $task->id }}')">
+                                            <button class="btn-secondary" onclick="editTask({{ $task->id }})">
                                                 <i class="fas fa-edit"></i> Edit
                                             </button>
-                                            <button class="btn-success" onclick="viewSubmissions('{{ $task->id }}')">
+                                            <button class="btn-success" onclick="viewSubmissions({{ $task->id }})">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </button>
                                             @if($task->isHidden == 1)
-                                                <button class="btn-warning" onclick="publishTask('{{ $task->id }}')">
+                                                <button class="btn-warning" onclick="publishTask({{ $task->id }})">
                                                     <i class="fas fa-paper-plane"></i> Publikasi
                                                 </button>
                                             @endif
-                                            <button class="btn-danger" onclick="deleteTask('{{ $task->id }}')">
+                                            <button class="btn-danger" onclick="deleteTask({{ $task->id }})">
                                                 <i class="fas fa-trash"></i> Hapus
                                             </button>
                                         </div>
@@ -885,18 +853,18 @@
                             </div>
                             
                             <div class="task-card-actions">
-                                <button class="btn-secondary" onclick="editTask('{{ $task->id }}')">
+                                <button class="btn-secondary" onclick="editTask({{ $task->id }})">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
-                                <button class="btn-success" onclick="viewSubmissions('{{ $task->id }}')">
+                                <button class="btn-success" onclick="viewSubmissions({{ $task->id }})">
                                     <i class="fas fa-eye"></i> Lihat
                                 </button>
                                 @if($task->isHidden == 1)
-                                    <button class="btn-warning" onclick="publishTask('{{ $task->id }}')">
+                                    <button class="btn-warning" onclick="publishTask({{ $task->id }})">
                                         <i class="fas fa-paper-plane"></i> Publikasi
                                     </button>
                                 @endif
-                                <button class="btn-danger" onclick="deleteTask('{{ $task->id }}')">
+                                <button class="btn-danger" onclick="deleteTask({{ $task->id }})">
                                     <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </div>
@@ -915,32 +883,75 @@
         </div>
 
 <script>
-// Task creation functions
+// Task creation functions - Multi-role support
 function createMultipleChoiceTask() {
-    window.location.href = "{{ route('admin.tugas.create', 1) }}";
+    console.log('createMultipleChoiceTask called');
+    console.log('User role ID: {{ $user->roles_id }}');
+    
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        const url = "{{ route('superadmin.tasks.create.multiple-choice') }}";
+        console.log('Redirecting to (superadmin):', url);
+        window.location.href = url;
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        const url = "{{ route('admin.tugas.create', 1) }}";
+        console.log('Redirecting to (admin):', url);
+        window.location.href = url;
+    @else {{-- Teacher --}}
+        const url = "{{ route('teacher.tasks.create.multiple-choice') }}";
+        console.log('Redirecting to (teacher):', url);
+        window.location.href = url;
+    @endif
 }
 
 function createEssayTask() {
-    window.location.href = "{{ route('admin.tugas.create', 2) }}";
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ route('superadmin.tasks.create.essay') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ route('admin.tugas.create', 2) }}";
+    @else {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create.essay') }}";
+    @endif
 }
 
 function createIndividualTask() {
-    window.location.href = "{{ route('admin.tugas.create', 3) }}";
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ route('superadmin.tasks.create.individual') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ route('admin.tugas.create', 3) }}";
+    @else {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create.individual') }}";
+    @endif
 }
 
 function createGroupTask() {
-    window.location.href = "{{ route('admin.tugas.create', 4) }}";
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ route('superadmin.tasks.create.group') }}";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ route('admin.tugas.create', 4) }}";
+    @else {{-- Teacher --}}
+        window.location.href = "{{ route('teacher.tasks.create.group') }}";
+    @endif
 }
 
 // Task action functions
 function editTask(taskId) {
-    console.log('Edit task:', taskId);
-    // Implement edit functionality
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId + "/edit";
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId + "/edit";
+    @else {{-- Teacher --}}
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId + "/edit";
+    @endif
 }
 
 function viewSubmissions(taskId) {
-    console.log('View submissions for task:', taskId);
-    // Implement view submissions functionality
+    @if($user->roles_id == 1) {{-- Super Admin --}}
+        window.location.href = "{{ url('superadmin/tugas') }}/" + taskId;
+    @elseif($user->roles_id == 2) {{-- Admin --}}
+        window.location.href = "{{ url('admin/tugas') }}/" + taskId;
+    @else {{-- Teacher --}}
+        window.location.href = "{{ url('teacher/tasks') }}/" + taskId;
+    @endif
 }
 
 function publishTask(taskId) {
@@ -950,8 +961,34 @@ function publishTask(taskId) {
 
 function deleteTask(taskId) {
     if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
-        console.log('Delete task:', taskId);
-        // Implement delete functionality
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        
+        @if($user->roles_id == 1) {{-- Super Admin --}}
+            form.action = "{{ url('superadmin/tugas') }}/" + taskId;
+        @elseif($user->roles_id == 2) {{-- Admin --}}
+            form.action = "{{ url('admin/tugas') }}/" + taskId;
+        @else {{-- Teacher --}}
+            form.action = "{{ url('teacher/tasks') }}/" + taskId;
+        @endif
+        
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        // Add method override for DELETE
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

@@ -6,7 +6,7 @@
     <title>Terra Assessment - Teacher Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.0.16/src/phosphor.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     @vite(['resources/css/app.css'])
@@ -274,7 +274,7 @@
             <!-- Notification Dropdown -->
             <div class="notification-container">
                 <button class="notification-btn" onclick="toggleNotificationDropdown()">
-                    <i class="ph-bell"></i>
+                    <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
                 </button>
                 
@@ -284,16 +284,16 @@
                         <h4>Notifikasi</h4>
                         <div class="notification-actions">
                             <button class="mark-all-read-btn" onclick="markAllAsRead()" title="Tandai Semua Dibaca">
-                                <i class="ph-check-double"></i>
+                                <i class="fas fa-check-double"></i>
                             </button>
                             <a href="{{ route('notifications.index') }}" class="view-all-btn" title="Lihat Semua">
-                                <i class="ph-list"></i>
+                                <i class="fas fa-list"></i>
                             </a>
                         </div>
                     </div>
                     <div class="notification-list" id="notificationList">
                         <div class="notification-loading">
-                            <i class="ph-spinner ph-spin"></i>
+                            <i class="fas fa-spinner fa-spin"></i>
                             <span>Memuat notifikasi...</span>
                         </div>
                     </div>
@@ -455,22 +455,8 @@
                 <p class="card-description">Lihat laporan performa siswa dan kelas</p>
             </a>
 
-            <a href="{{ route('iot.tugas') }}" class="card">
-                <div class="card-icon green">
-                    <i class="fas fa-clipboard-text"></i>
-                </div>
-                <h3 class="card-title">Tugas IoT</h3>
-                <p class="card-description">Buat dan kelola tugas penelitian IoT</p>
-            </a>
 
             <!-- Row 4 -->
-            <a href="{{ route('iot.research-projects') }}" class="card">
-                <div class="card-icon purple">
-                    <i class="fas fa-flask"></i>
-                </div>
-                <h3 class="card-title">Penelitian IoT</h3>
-                <p class="card-description">Lihat hasil penelitian IoT siswa</p>
-            </a>
 
             <a href="{{ route('teacher.settings') }}" class="card">
                 <div class="card-icon blue">

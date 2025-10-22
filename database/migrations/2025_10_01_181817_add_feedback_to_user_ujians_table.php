@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_ujians', function (Blueprint $table) {
-            $table->text('feedback')->nullable()->after('nilai');
-        });
+        // Check if table exists before modifying
+        if (Schema::hasTable('user_ujians')) {
+            Schema::table('user_ujians', function (Blueprint $table) {
+                // Check if column doesn't already exist
+                if (!Schema::hasColumn('user_ujians', 'feedback')) {
+                    $table->text('feedback')->nullable()->after('nilai');
+                }
+            });
+        }
     }
 
     /**

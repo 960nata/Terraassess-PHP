@@ -435,46 +435,70 @@
         }
         window.quillEditors[editorId] = quill;
         
-        // Add image upload handler
+        // Add image upload handler with compression
         const quillToolbar = quill.getModule('toolbar');
         quillToolbar.addHandler('image', function() {
             selectLocalImage();
         });
     
-    // Image upload handler
+    // Fungsi untuk kompres gambar base64
+    function compressImage(base64Str, maxWidth = 800, quality = 0.7) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // Resize jika lebih besar dari maxWidth
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Kompres dengan quality
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.src = base64Str;
+        });
+    }
+    
+    // Image upload handler with compression
     function selectLocalImage() {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
 
-        input.onchange = function() {
+        input.onchange = async function() {
             const file = input.files[0];
             if (file) {
-                const formData = new FormData();
-                formData.append('image', file);
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
-                fetch('{{ route("upload.editor.image") }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64 = e.target.result;
+                    
+                    try {
+                        // Kompres gambar
+                        const compressed = await compressImage(base64, 800, 0.7);
+                        
+                        // Insert ke Quill
                         const range = quill.getSelection();
-                        quill.insertEmbed(range.index, 'image', result.url);
-                    } else {
-                        alert('Error uploading image: ' + result.message);
+                        quill.insertEmbed(range.index, 'image', compressed);
+                    } catch (error) {
+                        console.error('Error compressing image:', error);
+                        // Fallback: insert original image
+                        const range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', base64);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error uploading image');
-                });
+                };
+                reader.readAsDataURL(file);
             }
         };
     }

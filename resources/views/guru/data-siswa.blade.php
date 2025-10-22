@@ -189,7 +189,7 @@
 ])
 
 <!-- Detail Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'siswaDetailModal',
     'title' => 'Detail Siswa',
     'icon' => 'fas fa-user-graduate',
@@ -207,7 +207,7 @@
 @endcomponent
 
 <!-- Progress Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'progressModal',
     'title' => 'Progress Siswa',
     'icon' => 'fas fa-chart-line',

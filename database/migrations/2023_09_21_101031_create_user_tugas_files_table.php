@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_tugas_files', function (Blueprint $table) {
-            $table->foreignid('user_tugas_id');
+            $table->id();
+            $table->foreignId('user_tugas_id')->constrained('user_tugas')->onDelete('cascade');
             $table->string('file');
             $table->timestamps();
         });

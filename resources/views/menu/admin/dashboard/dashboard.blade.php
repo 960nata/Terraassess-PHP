@@ -122,7 +122,7 @@
                 </a>
                 
                 <a href="{{ route('notifications.index') }}" class="flex items-center p-3 text-left text-gray-300 hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-300 hover:transform hover:scale-105">
-                    <i class="ph-bell text-yellow-400 text-lg mr-3"></i>
+                    <i class="fas fa-bell text-yellow-400 text-lg mr-3"></i>
                     <span class="font-medium">Notifikasi</span>
                 </a>
             </div>
@@ -265,7 +265,7 @@
 
             <div class="mobile-dashboard-card space-fade-in">
                 <div class="mobile-card-icon">
-                    <i class="ph-bell text-2xl"></i>
+                    <i class="fas fa-bell text-2xl"></i>
                 </div>
                 <div class="mobile-card-content">
                     <h3 class="mobile-card-title">Notifikasi</h3>

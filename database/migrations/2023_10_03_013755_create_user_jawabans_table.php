@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('user_jawabans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('multiple_id')->nullable();
-            $table->foreignId('essay_id')->nullable();
-            $table->foreignId('user_id');
+            $table->foreignId('multiple_id')->nullable()->constrained('soal_ujian_multiples')->onDelete('cascade');
+            $table->foreignId('essay_id')->nullable()->constrained('soal_ujian_essays')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('user_jawaban')->nullable();
             $table->double('nilai')->nullable();
             $table->timestamps();

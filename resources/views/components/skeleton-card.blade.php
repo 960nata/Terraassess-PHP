@@ -1,0 +1,10 @@
+<div class="skeleton-card">
+    <div class="skeleton-card-icon"></div>
+    <div class="skeleton-card-content">
+        <div class="skeleton-card-title"></div>
+        <div class="skeleton-card-value"></div>
+        <div class="skeleton-card-label"></div>
+    </div>
+</div>
+
+

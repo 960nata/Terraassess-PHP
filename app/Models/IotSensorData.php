@@ -15,11 +15,14 @@ class IotSensorData extends Model
         'kelas_id',
         'user_id',
         'research_project_id',
-        'temperature',
+        'soil_temperature',
         'humidity',
         'soil_moisture',
         'ph_level',
-        'nutrient_level',
+        'nitrogen',
+        'phosphorus',
+        'potassium',
+        'thingsboard_device_token',
         'location',
         'notes',
         'raw_data',
@@ -28,11 +31,13 @@ class IotSensorData extends Model
 
     protected $casts = [
         'measured_at' => 'datetime',
-        'temperature' => 'decimal:2',
+        'soil_temperature' => 'decimal:2',
         'humidity' => 'decimal:2',
         'soil_moisture' => 'decimal:2',
         'ph_level' => 'decimal:2',
-        'nutrient_level' => 'decimal:2',
+        'nitrogen' => 'decimal:2',
+        'phosphorus' => 'decimal:2',
+        'potassium' => 'decimal:2',
         'raw_data' => 'array'
     ];
 
@@ -69,11 +74,11 @@ class IotSensorData extends Model
     }
 
     /**
-     * Get formatted temperature
+     * Get formatted soil temperature
      */
-    public function getFormattedTemperatureAttribute(): string
+    public function getFormattedSoilTemperatureAttribute(): string
     {
-        return $this->temperature . '°C';
+        return $this->soil_temperature . '°C';
     }
 
     /**
@@ -90,6 +95,38 @@ class IotSensorData extends Model
     public function getFormattedSoilMoistureAttribute(): string
     {
         return $this->soil_moisture . '%';
+    }
+
+    /**
+     * Get formatted nitrogen
+     */
+    public function getFormattedNitrogenAttribute(): string
+    {
+        return $this->nitrogen . ' ppm';
+    }
+
+    /**
+     * Get formatted phosphorus
+     */
+    public function getFormattedPhosphorusAttribute(): string
+    {
+        return $this->phosphorus . ' ppm';
+    }
+
+    /**
+     * Get formatted potassium
+     */
+    public function getFormattedPotassiumAttribute(): string
+    {
+        return $this->potassium . ' ppm';
+    }
+
+    /**
+     * Check if data comes from ThingsBoard
+     */
+    public function isFromThingsBoard(): bool
+    {
+        return !empty($this->thingsboard_device_token);
     }
 
     /**

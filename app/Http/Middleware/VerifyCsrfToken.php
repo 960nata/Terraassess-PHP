@@ -13,6 +13,9 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         // Exclude specific routes from CSRF verification if needed
-        // 'api/*', // Uncomment if you have API routes that don't need CSRF
+        'api/iot/device-status', // ESP8266 device status updates
+        'api/iot/device-status/*', // ESP8266 device status updates
+        'groups/get-students/*', // Group management - get students
+        'groups/get-groups/*', // Group management - get groups
     ];
 }

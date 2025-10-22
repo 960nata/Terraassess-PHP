@@ -60,7 +60,6 @@ class MaterialController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'description' => 'nullable|string|max:500',
             'content' => 'nullable|string',
-            'youtube_url' => 'nullable|url',
             'file' => 'nullable|file|max:10240', // 10MB max
         ]);
 
@@ -74,11 +73,6 @@ class MaterialController extends Controller
             'content' => $request->content,
             'status' => $request->status ?? 'draft',
         ];
-
-        // Handle YouTube URL
-        if ($request->youtube_url) {
-            $data['youtube_url'] = $request->youtube_url;
-        }
 
         // Handle file upload
         if ($request->hasFile('file')) {

@@ -24,7 +24,12 @@ class NotificationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('notifications.index', compact('notifications'));
+        // Get counts for tab labels
+        $totalCount = Notification::where('user_id', $user->id)->count();
+        $unreadCount = Notification::where('user_id', $user->id)->where('is_read', false)->count();
+        $readCount = Notification::where('user_id', $user->id)->where('is_read', true)->count();
+
+        return view('notifications.index', compact('notifications', 'totalCount', 'unreadCount', 'readCount'));
     }
 
     /**

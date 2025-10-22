@@ -42,7 +42,7 @@
                     <x-modern-dropdown variant="notifications" position="bottom-right">
                         <x-slot name="trigger">
                             <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                                <i class="ph-bell text-lg"></i>
+                                <i class="fas fa-bell text-lg"></i>
                                 <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
                             </button>
                         </x-slot>
@@ -474,12 +474,12 @@
                 <span class="text-sm font-medium text-gray-700">View:</span>
                 <x-modern-dropdown position="bottom-left">
                     <button class="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                        <i class="ph-list text-gray-500"></i>
+                        <i class="fas fa-list text-gray-500"></i>
                         <span class="text-sm text-gray-700">List</span>
                         <i class="ph-caret-down text-gray-500 text-sm"></i>
                     </button>
                     <button class="dropdown-item">
-                        <i class="ph-list dropdown-item-icon"></i>
+                        <i class="fas fa-list dropdown-item-icon"></i>
                         <span class="dropdown-item-text">List View</span>
                     </button>
                     <button class="dropdown-item">

@@ -149,14 +149,18 @@ class MateriController extends Controller
     {
         // Lakukan validasi untuk inputan form
         $request->validate([
-            'name' => 'required',
-            'content' => 'required',
+            'name' => 'required|string|max:255',
+            'content' => 'nullable|string',
         ]);
 
         try {
             // Dekripsi token dan dapatkan KelasMapel
             $token = decrypt($request->kelasId);
             $kelasMapel = KelasMapel::where('mapel_id', $request->mapelId)->where('kelas_id', $token)->first();
+
+            if (!$kelasMapel) {
+                return response()->json(['message' => 'Kelas atau mata pelajaran tidak ditemukan'], 404);
+            }
 
             $isHidden = 1;
 
@@ -166,7 +170,7 @@ class MateriController extends Controller
             $temp = [
                 'kelas_mapel_id' => $kelasMapel['id'],
                 'name' => $request->name,
-                'content' => $request->content,
+                'content' => $request->content ?? '',
                 'isHidden' => $isHidden,
             ];
 
@@ -178,8 +182,12 @@ class MateriController extends Controller
 
             // Berikan respons sukses jika semuanya berjalan lancar
             return response()->json(['message' => 'Materi berhasil dibuat'], 200);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            \Log::error('Materi creation failed - Invalid token: ' . $e->getMessage());
+            return response()->json(['message' => 'Token tidak valid'], 400);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error'], 200);
+            \Log::error('Materi creation failed: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal membuat materi: ' . $e->getMessage()], 500);
         }
     }
 
@@ -192,14 +200,19 @@ class MateriController extends Controller
     {
         // Lakukan validasi untuk inputan form
         $request->validate([
-            'name' => 'required',
-            'content' => 'required',
+            'name' => 'required|string|max:255',
+            'content' => 'nullable|string',
         ]);
-        // return response()->json(['message' => $request->input()], 200);
-        // Dekripsi token hasil dari hidden form lalu dapatkan data KelasMapel
-        $materiId = decrypt($request->materiId);
-
+        
         try {
+            // Dekripsi token hasil dari hidden form lalu dapatkan data KelasMapel
+            $materiId = decrypt($request->materiId);
+            
+            $materi = Materi::find($materiId);
+            if (!$materi) {
+                return response()->json(['message' => 'Materi tidak ditemukan'], 404);
+            }
+
             $isHidden = 1;
 
             if ($request->opened) {
@@ -207,7 +220,7 @@ class MateriController extends Controller
             }
             $data = [
                 'name' => $request->name,
-                'content' => $request->content,
+                'content' => $request->content ?? '',
                 'isHidden' => $isHidden,
             ];
             // Simpan data Materi ke database
@@ -216,9 +229,13 @@ class MateriController extends Controller
             DB::commit();
 
             // Berikan respons sukses jika semuanya berjalan lancar
-            return response()->json(['message' => 'Materi berhasil dibuat'], 200);
+            return response()->json(['message' => 'Materi berhasil diperbarui'], 200);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            \Log::error('Materi update failed - Invalid token: ' . $e->getMessage());
+            return response()->json(['message' => 'Token tidak valid'], 400);
         } catch (Exception $e) {
-            return response()->json(['message' => 'Error'], 200);
+            \Log::error('Materi update failed: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal memperbarui materi: ' . $e->getMessage()], 500);
         }
     }
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('soal_ujian_multiples', function (Blueprint $table) {
             $table->id();
-            $table->foreignid('ujian_id');
+            $table->foreignId('ujian_id')->constrained('ujians')->onDelete('cascade');
             $table->longtext('soal');
             $table->longtext('a');
             $table->longtext('b');

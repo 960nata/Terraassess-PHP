@@ -1,33 +1,33 @@
 @extends('layout.template.dashboard-template')
 
 @section('dashboard-cards')
-    <a href="{{ route('student.tasks') }}" class="card">
+    <a href="{{ route('student.tugas') }}" class="card">
         <div class="card-icon blue">
-            <i class="fas fa-book"></i>
+            <i class="fas fa-tasks"></i>
         </div>
         <h3 class="card-title">Tugas Saya</h3>
         <p class="card-description">Lihat dan kerjakan tugas yang diberikan</p>
     </a>
 
-    <a href="{{ route('student.exams') }}" class="card">
+    <a href="{{ route('student.ujian') }}" class="card">
         <div class="card-icon green">
-            <i class="fas fa-bullseye"></i>
+            <i class="fas fa-file-alt"></i>
         </div>
         <h3 class="card-title">Ujian Saya</h3>
         <p class="card-description">Ikuti ujian yang telah dijadwalkan</p>
     </a>
 
-    <a href="{{ route('student.materials') }}" class="card">
+    <a href="{{ route('student.materi') }}" class="card">
         <div class="card-icon purple">
-            <i class="fas fa-file-alt"></i>
+            <i class="fas fa-book"></i>
         </div>
         <h3 class="card-title">Materi Saya</h3>
         <p class="card-description">Akses materi pembelajaran kelas</p>
     </a>
 
-    <a href="{{ route('student.iot-research') }}" class="card">
+    <a href="{{ route('student.esp8266-status') }}" class="card">
         <div class="card-icon orange">
-            <i class="fas fa-microscope"></i>
+            <i class="fas fa-microchip"></i>
         </div>
         <h3 class="card-title">Penelitian IoT</h3>
         <p class="card-description">Lakukan penelitian menggunakan perangkat IoT</p>
@@ -41,16 +41,24 @@
         <p class="card-description">Lihat informasi kelas dan teman sekelas</p>
     </a>
 
-    <a href="{{ route('student.profile') }}" class="card">
+    <a href="{{ route('student.complaints.index') }}" class="card">
         <div class="card-icon red">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="card-title">Pengaduan</h3>
+        <p class="card-description">Kirim pengaduan atau keluhan</p>
+    </a>
+
+    <a href="{{ route('student.profile') }}" class="card">
+        <div class="card-icon yellow">
             <i class="fas fa-user"></i>
         </div>
         <h3 class="card-title">Profile Saya</h3>
         <p class="card-description">Kelola informasi profil dan pengaturan akun</p>
     </a>
 
-    <a href="{{ route('notifications.index') }}" class="card">
-        <div class="card-icon yellow">
+    <a href="{{ route('student.notifications') }}" class="card">
+        <div class="card-icon indigo">
             <i class="fas fa-bell"></i>
         </div>
         <h3 class="card-title">Notifikasi</h3>

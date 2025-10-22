@@ -9,11 +9,11 @@
 ])
 
 <div class="notification-management-container">
-    <!-- Mobile-First Header -->
-    <div class="notification-header-mobile">
+    <!-- Modern Header -->
+    <div class="notification-header">
         <div class="header-content">
             <div class="header-left">
-                <button onclick="history.back()" class="back-btn-mobile">
+                <button onclick="history.back()" class="back-btn">
                     <i class="ph-arrow-left"></i>
                 </button>
                 <div class="header-text">
@@ -22,11 +22,11 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button onclick="refreshNotifications()" class="action-btn-mobile">
+                <button onclick="refreshNotifications()" class="action-btn">
                     <i class="ph-arrow-clockwise"></i>
                 </button>
                 @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
-                    <button onclick="openCreateModal()" class="action-btn-mobile primary">
+                    <button onclick="openCreateModal()" class="action-btn primary">
                         <i class="ph-plus"></i>
                     </button>
                 @endif
@@ -34,18 +34,18 @@
         </div>
     </div>
 
-    <!-- Mobile Stats Cards -->
-    <div class="stats-grid-mobile">
-        <div class="stat-card-mobile">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
             <div class="stat-icon">
-                <i class="ph-bell"></i>
+                <i class="fas fa-bell"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-number">{{ $totalNotifications }}</div>
                 <div class="stat-label">Total</div>
             </div>
         </div>
-        <div class="stat-card-mobile">
+        <div class="stat-card">
             <div class="stat-icon success">
                 <i class="ph-check-circle"></i>
             </div>
@@ -54,7 +54,7 @@
                 <div class="stat-label">Dibaca</div>
             </div>
         </div>
-        <div class="stat-card-mobile">
+        <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="ph-envelope"></i>
             </div>
@@ -63,7 +63,7 @@
                 <div class="stat-label">Belum Dibaca</div>
             </div>
         </div>
-        <div class="stat-card-mobile">
+        <div class="stat-card">
             <div class="stat-icon danger">
                 <i class="ph-warning"></i>
             </div>
@@ -74,19 +74,19 @@
         </div>
     </div>
 
-    <!-- Mobile Filter Section -->
-    <div class="filter-section-mobile">
+    <!-- Filter Section -->
+    <div class="filter-section">
         <div class="filter-row">
             <div class="search-container">
                 <i class="ph-magnifying-glass search-icon"></i>
-                <input type="text" id="mobileSearchInput" placeholder="Cari notifikasi..." class="search-input-mobile">
+                <input type="text" id="searchInput" placeholder="Cari notifikasi..." class="search-input">
             </div>
             <button onclick="toggleFilterMenu()" class="filter-toggle-btn">
                 <i class="ph-funnel"></i>
             </button>
         </div>
         
-        <div id="filterMenu" class="filter-menu-mobile hidden">
+        <div id="filterMenu" class="filter-menu hidden">
             <div class="filter-group">
                 <label class="filter-label">Tipe Notifikasi</label>
                 <select id="typeFilter" class="filter-select">
@@ -112,55 +112,55 @@
         </div>
     </div>
 
-    <!-- Mobile Notifications List -->
-    <div class="notifications-list-mobile">
+    <!-- Notifications List -->
+    <div class="notifications-list">
         @forelse($notifications ?? [] as $notification)
-            <div class="notification-item-mobile {{ $notification->is_read ? 'read' : 'unread' }}" 
+            <div class="notification-item {{ $notification->is_read ? 'read' : 'unread' }}" 
                  data-id="{{ $notification->id }}"
                  data-type="{{ $notification->type }}">
-                <div class="notification-content-mobile">
+                <div class="notification-content">
                     <div class="notification-header-item">
                         <div class="notification-type-badge {{ $notification->type }}">
                             @php
                                 $typeIcons = [
-                                    'info' => 'ph-info',
-                                    'warning' => 'ph-warning',
-                                    'success' => 'ph-check-circle',
-                                    'error' => 'ph-x-circle'
+                                    'info' => 'fa-info-circle',
+                                    'warning' => 'fa-exclamation-triangle',
+                                    'success' => 'fa-check-circle',
+                                    'error' => 'fa-times-circle'
                                 ];
                             @endphp
-                            <i class="ph {{ $typeIcons[$notification->type] ?? 'ph-bell' }}"></i>
+                            <i class="fas {{ $typeIcons[$notification->type] ?? 'fa-bell' }}"></i>
                         </div>
-                        <div class="notification-time-mobile">
+                        <div class="notification-time">
                             {{ $notification->created_at->diffForHumans() }}
                         </div>
                     </div>
                     
-                    <div class="notification-body-mobile">
-                        <h3 class="notification-title-mobile">{{ $notification->title }}</h3>
-                        <p class="notification-message-mobile">{{ Str::limit($notification->body, 100) }}</p>
+                    <div class="notification-body">
+                        <h3 class="notification-title">{{ $notification->title }}</h3>
+                        <p class="notification-message">{{ Str::limit($notification->body, 100) }}</p>
                         
                         @if($notification->user)
-                            <div class="notification-sender-mobile">
+                            <div class="notification-sender">
                                 <i class="ph-user"></i>
                                 <span>{{ $notification->user->name }}</span>
                             </div>
                         @endif
                     </div>
                     
-                    <div class="notification-actions-mobile">
+                    <div class="notification-actions">
                         @if(!$notification->is_read)
-                            <button onclick="markAsRead('{{ $notification->id }}')" class="action-btn-mobile small">
+                            <button onclick="markAsRead('{{ $notification->id }}')" class="action-btn small">
                                 <i class="ph-check"></i>
                                 <span>Tandai Dibaca</span>
                             </button>
                         @endif
-                        <button onclick="viewNotification('{{ $notification->id }}')" class="action-btn-mobile small">
+                        <button onclick="viewNotification('{{ $notification->id }}')" class="action-btn small">
                             <i class="ph-eye"></i>
                             <span>Lihat</span>
                         </button>
                         @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
-                            <button onclick="deleteNotification('{{ $notification->id }}')" class="action-btn-mobile small danger">
+                            <button onclick="deleteNotification('{{ $notification->id }}')" class="action-btn small danger">
                                 <i class="ph-trash"></i>
                                 <span>Hapus</span>
                             </button>
@@ -169,9 +169,9 @@
                 </div>
             </div>
         @empty
-            <div class="empty-state-mobile">
+            <div class="empty-state">
                 <div class="empty-icon">
-                    <i class="ph-bell-slash"></i>
+                    <i class="fas fa-bell-slash"></i>
                 </div>
                 <h3 class="empty-title">Belum Ada Notifikasi</h3>
                 <p class="empty-message">Belum ada notifikasi yang diterima.</p>
@@ -185,42 +185,42 @@
         @endforelse
     </div>
 
-    <!-- Mobile Pagination -->
+    <!-- Pagination -->
     @if(isset($notifications) && is_object($notifications) && method_exists($notifications, 'hasPages') && $notifications->hasPages())
-        <div class="pagination-mobile">
+        <div class="pagination">
             {{ $notifications->links() }}
         </div>
     @endif
 </div>
 
-<!-- Create Notification Modal (Mobile) -->
+<!-- Create Notification Modal -->
 @if($userRole === 'superadmin' || $userRole === 'admin' || $userRole === 'teacher')
-<div id="createNotificationModal" class="modal-mobile hidden">
+<div id="createNotificationModal" class="modal hidden">
     <div class="modal-backdrop" onclick="closeCreateModal()"></div>
-    <div class="modal-content-mobile">
-        <div class="modal-header-mobile">
-            <h3 class="modal-title-mobile">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
                 <i class="ph-paper-plane-tilt"></i>
                 Buat Notifikasi
             </h3>
             <button onclick="closeCreateModal()" class="modal-close-btn">
-                <i class="ph-x"></i>
+                <i class="fas fa-times"></i>
             </button>
         </div>
         
         <form id="createNotificationForm" method="POST" action="{{
             $userRole === 'superadmin' ? route('superadmin.push-notification.send') :
-            ($userRole === 'admin' ? route('superadmin.push-notification.send') : route('teacher.push-notification.send'))
-        }}" class="modal-body-mobile">
+            ($userRole === 'admin' ? route('admin.push-notification.send') : route('teacher.push-notification.send'))
+        }}" class="modal-body">
             @csrf
-            <div class="form-group-mobile">
-                <label class="form-label-mobile">Judul Notifikasi</label>
-                <input type="text" name="title" class="form-input-mobile" placeholder="Masukkan judul notifikasi" required>
+            <div class="form-group">
+                <label class="form-label">Judul Notifikasi</label>
+                <input type="text" name="title" class="form-input" placeholder="Masukkan judul notifikasi" required>
             </div>
             
-            <div class="form-group-mobile">
-                <label class="form-label-mobile">Tipe Notifikasi</label>
-                <select name="type" class="form-input-mobile" required>
+            <div class="form-group">
+                <label class="form-label">Tipe Notifikasi</label>
+                <select name="type" class="form-input" required>
                     <option value="info">Informasi</option>
                     <option value="warning">Peringatan</option>
                     <option value="success">Sukses</option>
@@ -228,14 +228,14 @@
                 </select>
             </div>
             
-            <div class="form-group-mobile">
-                <label class="form-label-mobile">Pesan</label>
-                <textarea name="body" class="form-input-mobile form-textarea-mobile" placeholder="Tulis pesan notifikasi..." required></textarea>
+            <div class="form-group">
+                <label class="form-label">Pesan</label>
+                <textarea name="body" class="form-input form-textarea" placeholder="Tulis pesan notifikasi..." required></textarea>
             </div>
             
-            <div class="form-group-mobile">
-                <label class="form-label-mobile">Penerima</label>
-                <select name="recipient_type" class="form-input-mobile" onchange="updateRecipients()" required>
+            <div class="form-group">
+                <label class="form-label">Penerima</label>
+                <select name="recipient_type" class="form-input" onchange="updateRecipients()" required>
                     @if($userRole === 'teacher')
                         <option value="my_students">Siswa di Kelas Saya</option>
                         <option value="specific_students">Pilih Siswa Spesifik</option>
@@ -249,12 +249,12 @@
                 </select>
             </div>
             
-            <div id="specificRecipients" class="form-group-mobile hidden">
-                <label class="form-label-mobile">Pilih Penerima Spesifik</label>
-                <div class="recipients-list-mobile">
+            <div id="specificRecipients" class="form-group hidden">
+                <label class="form-label">Pilih Penerima Spesifik</label>
+                <div class="recipients-list">
                     @if($userRole === 'teacher')
                         @foreach($students ?? [] as $student)
-                            <label class="recipient-item-mobile">
+                            <label class="recipient-item">
                                 <input type="checkbox" name="specific_students[]" value="{{ $student->id }}" class="recipient-checkbox">
                                 <div class="recipient-info">
                                     <div class="recipient-name">{{ $student->name }}</div>
@@ -264,7 +264,7 @@
                         @endforeach
                     @else
                         @foreach($users ?? [] as $user)
-                            <label class="recipient-item-mobile">
+                            <label class="recipient-item">
                                 <input type="checkbox" name="specific_users[]" value="{{ $user->id }}" class="recipient-checkbox">
                                 <div class="recipient-info">
                                     <div class="recipient-name">{{ $user->name }}</div>
@@ -277,12 +277,12 @@
             </div>
         </form>
         
-        <div class="modal-footer-mobile">
-            <button onclick="closeCreateModal()" class="modal-btn-mobile secondary">
-                <i class="ph-x"></i>
+        <div class="modal-footer">
+            <button onclick="closeCreateModal()" class="modal-btn secondary">
+                <i class="fas fa-times"></i>
                 Batal
             </button>
-            <button onclick="submitCreateForm()" class="modal-btn-mobile primary">
+            <button onclick="submitCreateForm()" class="modal-btn primary">
                 <i class="ph-paper-plane-tilt"></i>
                 Kirim
             </button>
@@ -291,29 +291,29 @@
 </div>
 @endif
 
-<!-- Notification Detail Modal (Mobile) -->
-<div id="notificationDetailModal" class="modal-mobile hidden">
+<!-- Notification Detail Modal -->
+<div id="notificationDetailModal" class="modal hidden">
     <div class="modal-backdrop" onclick="closeDetailModal()"></div>
-    <div class="modal-content-mobile">
-        <div class="modal-header-mobile">
-            <h3 class="modal-title-mobile">
-                <i class="ph-bell"></i>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-bell"></i>
                 Detail Notifikasi
             </h3>
             <button onclick="closeDetailModal()" class="modal-close-btn">
-                <i class="ph-x"></i>
+                <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <div class="modal-body-mobile">
+        <div class="modal-body">
             <div id="notificationDetailContent">
                 <!-- Content will be loaded here -->
             </div>
         </div>
         
-        <div class="modal-footer-mobile">
-            <button onclick="closeDetailModal()" class="modal-btn-mobile secondary">
-                <i class="ph-x"></i>
+        <div class="modal-footer">
+            <button onclick="closeDetailModal()" class="modal-btn secondary">
+                <i class="fas fa-times"></i>
                 Tutup
             </button>
         </div>
@@ -321,52 +321,74 @@
 </div>
 
 <style>
-/* Mobile-First Notification Styles */
+/* Modern Notification Management Styles */
 .notification-management-container {
-    padding: 0;
-    background: #0f172a;
+    padding: var(--space-6);
+    background: var(--secondary-50);
     min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Mobile Header */
-.notification-header-mobile {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    padding: 16px;
-    border-bottom: 1px solid #475569;
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .notification-management-container {
+        background: var(--secondary-900);
+    }
+}
+
+/* Header */
+.notification-header {
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-sm);
     position: sticky;
-    top: 0;
+    top: var(--space-4);
     z-index: 10;
+}
+
+@media (prefers-color-scheme: dark) {
+    .notification-header {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
 }
 
 .header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-4);
 }
 
 .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
     flex: 1;
 }
 
-.back-btn-mobile {
-    width: 40px;
-    height: 40px;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 10px;
+.back-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3b82f6;
+    color: var(--primary-600);
     font-size: 18px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.back-btn-mobile:hover {
-    background: rgba(59, 130, 246, 0.2);
+.back-btn:hover {
+    background: var(--primary-100);
+    border-color: var(--primary-300);
     transform: translateX(-2px);
 }
 
@@ -375,130 +397,208 @@
 }
 
 .header-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #ffffff;
+    font-size: var(--text-h2);
+    font-weight: var(--font-semibold);
+    color: var(--secondary-900);
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
 .header-subtitle {
-    font-size: 14px;
-    color: #94a3b8;
+    font-size: var(--text-small);
+    color: var(--secondary-500);
     margin: 0;
-    margin-top: 2px;
+    margin-top: var(--space-1);
 }
 
 .header-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
-.action-btn-mobile {
-    width: 40px;
-    height: 40px;
-    background: rgba(148, 163, 184, 0.1);
-    border: 1px solid rgba(148, 163, 184, 0.3);
-    border-radius: 10px;
+.action-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--secondary-100);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--secondary-600);
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.action-btn-mobile.primary {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
+.action-btn.primary {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
 }
 
-.action-btn-mobile:hover {
-    background: rgba(148, 163, 184, 0.2);
+.action-btn:hover {
+    background: var(--secondary-200);
     transform: scale(1.05);
 }
 
-.action-btn-mobile.primary:hover {
-    background: rgba(59, 130, 246, 0.2);
+.action-btn.primary:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-600);
 }
 
-/* Mobile Stats Grid */
-.stats-grid-mobile {
+@media (prefers-color-scheme: dark) {
+    .header-title {
+        color: var(--secondary-50);
+    }
+    
+    .header-subtitle {
+        color: var(--secondary-400);
+    }
+    
+    .back-btn {
+        background: var(--primary-900);
+        border-color: var(--primary-700);
+        color: var(--primary-400);
+    }
+    
+    .back-btn:hover {
+        background: var(--primary-800);
+        border-color: var(--primary-600);
+    }
+    
+    .action-btn {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .action-btn:hover {
+        background: var(--secondary-600);
+    }
+}
+
+/* Stats Grid */
+.stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
 }
 
-.stat-card-mobile {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border: 1px solid #475569;
-    border-radius: 12px;
-    padding: 16px;
+.stat-card {
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
     display: flex;
     align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
+    gap: var(--space-4);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.stat-card-mobile:hover {
+.stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-200);
 }
 
 .stat-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    background: var(--primary-50);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3b82f6;
-    font-size: 18px;
+    color: var(--primary-600);
+    font-size: 20px;
+    flex-shrink: 0;
 }
 
 .stat-icon.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    background: var(--success-50);
+    color: var(--success-600);
 }
 
 .stat-icon.warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    background: var(--warning-50);
+    color: var(--warning-600);
 }
 
 .stat-icon.danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: var(--error-50);
+    color: var(--error-600);
 }
 
 .stat-content {
     flex: 1;
+    min-width: 0;
 }
 
 .stat-number {
-    font-size: 24px;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1;
+    font-size: var(--text-h3);
+    font-weight: var(--font-bold);
+    color: var(--secondary-900);
+    line-height: 1.2;
+    margin: 0;
 }
 
 .stat-label {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 2px;
+    font-size: var(--text-caption);
+    color: var(--secondary-500);
+    margin: 0;
+    margin-top: var(--space-1);
+    font-weight: var(--font-medium);
 }
 
-/* Mobile Filter Section */
-.filter-section-mobile {
-    padding: 0 16px 16px;
+@media (prefers-color-scheme: dark) {
+    .stat-card {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .stat-card:hover {
+        border-color: var(--primary-600);
+    }
+    
+    .stat-number {
+        color: var(--secondary-50);
+    }
+    
+    .stat-label {
+        color: var(--secondary-400);
+    }
+}
+
+@media (min-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-6);
+    }
+}
+
+/* Filter Section */
+.filter-section {
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-color-scheme: dark) {
+    .filter-section {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
 }
 
 .filter-row {
     display: flex;
-    gap: 8px;
+    gap: var(--space-3);
     align-items: center;
 }
 
@@ -509,379 +609,687 @@
 
 .search-icon {
     position: absolute;
-    left: 12px;
+    left: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
-    color: #64748b;
+    color: var(--secondary-500);
     font-size: 16px;
+    z-index: 1;
 }
 
-.search-input-mobile {
+.search-input {
     width: 100%;
-    padding: 12px 12px 12px 40px;
-    background: #0f172a;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    color: #e2e8f0;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    padding: var(--space-3) var(--space-3) var(--space-3) 44px;
+    background: var(--secondary-50);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-900);
+    font-size: var(--text-small);
+    transition: all 0.2s ease;
 }
 
-.search-input-mobile:focus {
+.search-input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+    background: var(--white);
 }
 
 .filter-toggle-btn {
     width: 44px;
     height: 44px;
-    background: #374151;
-    border: 1px solid #4b5563;
-    border-radius: 10px;
+    background: var(--secondary-100);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #9ca3af;
+    color: var(--secondary-600);
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .filter-toggle-btn:hover {
-    background: #4b5563;
-    color: #d1d5db;
+    background: var(--secondary-200);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
 }
 
-.filter-menu-mobile {
-    background: #1e293b;
-    border: 1px solid #475569;
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 12px;
-    transition: all 0.3s ease;
+.filter-menu {
+    background: var(--secondary-50);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    margin-top: var(--space-4);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.filter-menu-mobile.hidden {
+.filter-menu.hidden {
     display: none;
 }
 
 .filter-group {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
 }
 
 .filter-label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #e2e8f0;
-    margin-bottom: 8px;
+    font-size: var(--text-small);
+    font-weight: var(--font-medium);
+    color: var(--secondary-700);
+    margin-bottom: var(--space-2);
 }
 
 .filter-select {
     width: 100%;
-    padding: 10px 12px;
-    background: #0f172a;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    color: #e2e8f0;
-    font-size: 14px;
+    padding: var(--space-3);
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-900);
+    font-size: var(--text-small);
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
 }
 
 .filter-buttons {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
     flex-wrap: wrap;
 }
 
 .filter-btn {
-    padding: 8px 16px;
-    background: #374151;
-    border: 1px solid #4b5563;
-    border-radius: 8px;
-    color: #9ca3af;
-    font-size: 12px;
-    font-weight: 500;
+    padding: var(--space-2) var(--space-4);
+    background: var(--secondary-100);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-600);
+    font-size: var(--text-caption);
+    font-weight: var(--font-medium);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .filter-btn.active {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
 }
 
-.filter-btn:hover {
-    background: #4b5563;
-    color: #d1d5db;
+.filter-btn:hover:not(.active) {
+    background: var(--secondary-200);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
 }
 
 .filter-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 16px;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
 }
 
 .apply-btn, .clear-btn {
     flex: 1;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-small);
+    font-weight: var(--font-medium);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .apply-btn {
-    background: #3b82f6;
-    border: 1px solid #3b82f6;
-    color: white;
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
 }
 
 .apply-btn:hover {
-    background: #1d4ed8;
+    background: var(--primary-600);
+    border-color: var(--primary-600);
 }
 
 .clear-btn {
-    background: #374151;
-    border: 1px solid #4b5563;
-    color: #9ca3af;
+    background: var(--secondary-100);
+    border-color: var(--secondary-200);
+    color: var(--secondary-600);
 }
 
 .clear-btn:hover {
-    background: #4b5563;
-    color: #d1d5db;
+    background: var(--secondary-200);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
 }
 
-/* Mobile Notifications List */
-.notifications-list-mobile {
-    padding: 0 16px;
+@media (prefers-color-scheme: dark) {
+    .search-input {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+        color: var(--secondary-100);
+    }
+    
+    .search-input:focus {
+        background: var(--secondary-700);
+        border-color: var(--primary-500);
+    }
+    
+    .filter-toggle-btn {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .filter-toggle-btn:hover {
+        background: var(--secondary-600);
+        color: var(--secondary-100);
+    }
+    
+    .filter-menu {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .filter-label {
+        color: var(--secondary-300);
+    }
+    
+    .filter-select {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-100);
+    }
+    
+    .filter-select:focus {
+        background: var(--secondary-600);
+        border-color: var(--primary-500);
+    }
+    
+    .filter-btn {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .filter-btn:hover:not(.active) {
+        background: var(--secondary-600);
+        color: var(--secondary-100);
+    }
+    
+    .clear-btn {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .clear-btn:hover {
+        background: var(--secondary-600);
+        color: var(--secondary-100);
+    }
 }
 
-.notification-item-mobile {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border: 1px solid #475569;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    transition: all 0.3s ease;
+/* Notifications List */
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.notification-item {
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    transition: all 0.2s ease;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
-.notification-item-mobile.unread {
-    border-left: 4px solid #3b82f6;
+.notification-item.unread {
+    border-left: 4px solid var(--primary-500);
+    box-shadow: var(--shadow-md);
 }
 
-.notification-item-mobile.read {
+.notification-item.read {
     opacity: 0.8;
 }
 
-.notification-item-mobile:hover {
+.notification-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-200);
 }
 
-.notification-content-mobile {
-    padding: 16px;
+.notification-content {
+    padding: var(--space-5);
 }
 
 .notification-header-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
 }
 
 .notification-type-badge {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    color: white;
+    font-size: 16px;
+    color: var(--white);
+    flex-shrink: 0;
 }
 
 .notification-type-badge.info {
-    background: #3b82f6;
+    background: var(--primary-500);
 }
 
 .notification-type-badge.warning {
-    background: #f59e0b;
+    background: var(--warning-500);
 }
 
 .notification-type-badge.success {
-    background: #10b981;
+    background: var(--success-500);
 }
 
 .notification-type-badge.error {
-    background: #ef4444;
+    background: var(--error-500);
 }
 
-.notification-time-mobile {
-    font-size: 12px;
-    color: #94a3b8;
+.notification-time {
+    font-size: var(--text-caption);
+    color: var(--secondary-500);
+    font-weight: var(--font-medium);
 }
 
-.notification-body-mobile {
-    margin-bottom: 16px;
+.notification-body {
+    margin-bottom: var(--space-4);
 }
 
-.notification-title-mobile {
-    font-size: 16px;
-    font-weight: 600;
-    color: #e2e8f0;
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-}
-
-.notification-message-mobile {
-    font-size: 14px;
-    color: #cbd5e1;
+.notification-title {
+    font-size: var(--text-body);
+    font-weight: var(--font-semibold);
+    color: var(--secondary-900);
+    margin: 0 0 var(--space-2) 0;
     line-height: 1.4;
-    margin: 0 0 8px 0;
 }
 
-.notification-sender-mobile {
+.notification-message {
+    font-size: var(--text-small);
+    color: var(--secondary-600);
+    line-height: 1.5;
+    margin: 0 0 var(--space-2) 0;
+}
+
+.notification-sender {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #94a3b8;
+    gap: var(--space-2);
+    font-size: var(--text-caption);
+    color: var(--secondary-500);
+    font-weight: var(--font-medium);
 }
 
-.notification-actions-mobile {
+.notification-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
     flex-wrap: wrap;
 }
 
-.action-btn-mobile.small {
-    padding: 8px 12px;
-    font-size: 12px;
+.action-btn.small {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-caption);
     height: auto;
     width: auto;
-    min-width: 80px;
+    min-width: 100px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: var(--space-1);
+    font-weight: var(--font-medium);
 }
 
-.action-btn-mobile.small span {
-    font-size: 11px;
+.action-btn.small span {
+    font-size: var(--text-caption);
 }
 
-.action-btn-mobile.danger {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #ef4444;
+.action-btn.danger {
+    background: var(--error-50);
+    border-color: var(--error-200);
+    color: var(--error-600);
 }
 
-.action-btn-mobile.danger:hover {
-    background: rgba(239, 68, 68, 0.2);
+.action-btn.danger:hover {
+    background: var(--error-100);
+    border-color: var(--error-300);
+    color: var(--error-700);
+}
+
+@media (prefers-color-scheme: dark) {
+    .notification-item {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .notification-item:hover {
+        border-color: var(--primary-600);
+    }
+    
+    .notification-title {
+        color: var(--secondary-50);
+    }
+    
+    .notification-message {
+        color: var(--secondary-300);
+    }
+    
+    .notification-sender {
+        color: var(--secondary-400);
+    }
+    
+    .notification-time {
+        color: var(--secondary-400);
+    }
 }
 
 /* Empty State */
-.empty-state-mobile {
+.empty-state {
     text-align: center;
-    padding: 48px 16px;
+    padding: var(--space-16) var(--space-6);
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
 }
 
 .empty-icon {
     width: 80px;
     height: 80px;
-    background: rgba(148, 163, 184, 0.1);
-    border-radius: 20px;
+    background: var(--secondary-100);
+    border-radius: var(--radius-2xl);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 24px;
-    color: #94a3b8;
+    margin: 0 auto var(--space-6);
+    color: var(--secondary-400);
     font-size: 32px;
 }
 
 .empty-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #e2e8f0;
-    margin: 0 0 8px 0;
+    font-size: var(--text-h3);
+    font-weight: var(--font-semibold);
+    color: var(--secondary-700);
+    margin: 0 0 var(--space-2) 0;
 }
 
 .empty-message {
-    font-size: 14px;
-    color: #94a3b8;
-    margin: 0 0 24px 0;
+    font-size: var(--text-small);
+    color: var(--secondary-500);
+    margin: 0 0 var(--space-6) 0;
+    line-height: 1.5;
 }
 
 .empty-action-btn {
-    background: #3b82f6;
-    border: 1px solid #3b82f6;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
+    background: var(--primary-500);
+    border: 1px solid var(--primary-500);
+    color: var(--white);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-small);
+    font-weight: var(--font-medium);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
 .empty-action-btn:hover {
-    background: #1d4ed8;
+    background: var(--primary-600);
+    border-color: var(--primary-600);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
-/* Mobile Pagination */
-.pagination-mobile {
-    padding: 16px;
+@media (prefers-color-scheme: dark) {
+    .empty-state {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .empty-icon {
+        background: var(--secondary-700);
+        color: var(--secondary-500);
+    }
+    
+    .empty-title {
+        color: var(--secondary-200);
+    }
+    
+    .empty-message {
+        color: var(--secondary-400);
+    }
+}
+
+/* Pagination */
+.pagination {
     display: flex;
     justify-content: center;
+    margin-top: var(--space-6);
 }
 
-.pagination-mobile .pagination {
+.pagination .pagination {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2);
     align-items: center;
 }
 
-.pagination-mobile .page-link {
-    padding: 8px 12px;
-    background: #374151;
-    border: 1px solid #4b5563;
-    border-radius: 8px;
-    color: #9ca3af;
+.pagination .page-link {
+    padding: var(--space-2) var(--space-3);
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-600);
     text-decoration: none;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    font-size: var(--text-small);
+    font-weight: var(--font-medium);
+    transition: all 0.2s ease;
+    min-width: 40px;
+    text-align: center;
 }
 
-.pagination-mobile .page-link:hover {
-    background: #4b5563;
-    color: #d1d5db;
+.pagination .page-link:hover {
+    background: var(--secondary-100);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
 }
 
-.pagination-mobile .page-item.active .page-link {
-    background: #3b82f6;
-    border-color: #3b82f6;
-    color: white;
+.pagination .page-item.active .page-link {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
 }
 
-/* Mobile Modal */
-.modal-mobile {
+@media (prefers-color-scheme: dark) {
+    .pagination .page-link {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+        color: var(--secondary-300);
+    }
+    
+    .pagination .page-link:hover {
+        background: var(--secondary-700);
+        color: var(--secondary-100);
+    }
+}
+
+/* Icon Font Fix - Ensure proper loading */
+.ph, .fas, .fa {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure Phosphor Icons load correctly */
+.ph {
+    font-family: "Phosphor", "PhosphorIcons", sans-serif;
+}
+
+/* Ensure Font Awesome load correctly */
+.fas, .fa {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "FontAwesome", sans-serif;
+}
+
+/* Icon fallback styles */
+.icon-fallback .fas.fa-bell::before {
+    content: "🔔";
+}
+
+.icon-fallback .fas.fa-arrow-left::before {
+    content: "←";
+}
+
+.icon-fallback .fas.fa-arrow-clockwise::before {
+    content: "↻";
+}
+
+.icon-fallback .fas.fa-plus::before {
+    content: "+";
+}
+
+.icon-fallback .fas.fa-check-circle::before {
+    content: "✓";
+}
+
+.icon-fallback .fas.fa-envelope::before {
+    content: "✉";
+}
+
+.icon-fallback .fas.fa-warning::before {
+    content: "⚠";
+}
+
+.icon-fallback .fas.fa-info-circle::before {
+    content: "ℹ";
+}
+
+.icon-fallback .fas.fa-exclamation-triangle::before {
+    content: "⚠";
+}
+
+.icon-fallback .fas.fa-times-circle::before {
+    content: "✕";
+}
+
+.icon-fallback .fas.fa-bell-slash::before {
+    content: "🔕";
+}
+
+.icon-fallback .fas.fa-user::before {
+    content: "👤";
+}
+
+.icon-fallback .fas.fa-check::before {
+    content: "✓";
+}
+
+.icon-fallback .fas.fa-eye::before {
+    content: "👁";
+}
+
+.icon-fallback .fas.fa-trash::before {
+    content: "🗑";
+}
+
+.icon-fallback .fas.fa-times::before {
+    content: "×";
+}
+
+.icon-fallback .ph-arrow-left::before {
+    content: "←";
+}
+
+.icon-fallback .ph-arrow-clockwise::before {
+    content: "↻";
+}
+
+.icon-fallback .ph-plus::before {
+    content: "+";
+}
+
+.icon-fallback .ph-check-circle::before {
+    content: "✓";
+}
+
+.icon-fallback .ph-envelope::before {
+    content: "✉";
+}
+
+.icon-fallback .ph-warning::before {
+    content: "⚠";
+}
+
+.icon-fallback .ph-user::before {
+    content: "👤";
+}
+
+.icon-fallback .ph-check::before {
+    content: "✓";
+}
+
+.icon-fallback .ph-eye::before {
+    content: "👁";
+}
+
+.icon-fallback .ph-trash::before {
+    content: "🗑";
+}
+
+.icon-fallback .ph-paper-plane-tilt::before {
+    content: "✈";
+}
+
+.icon-fallback .ph-magnifying-glass::before {
+    content: "🔍";
+}
+
+.icon-fallback .ph-funnel::before {
+    content: "🔽";
+}
+
+/* Modern Modal */
+.modal {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 50;
+    z-index: 9999;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
+    padding: var(--space-4);
+    animation: fadeIn 0.2s ease-out;
 }
 
-.modal-mobile.hidden {
+.modal.hidden {
     display: none;
 }
 
@@ -892,134 +1300,266 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1;
+    animation: fadeIn 0.2s ease-out;
 }
 
-.modal-content-mobile {
-    background: #1e293b;
-    border-radius: 20px 20px 0 0;
+.modal-content {
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-2xl);
     width: 100%;
+    max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
-    z-index: 1;
-    animation: slideUp 0.3s ease;
+    z-index: 10;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-2xl);
+}
+
+@media (prefers-color-scheme: dark) {
+    .modal-content {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+    
+    .modal-content {
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        max-width: 100%;
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
     from {
         transform: translateY(100%);
+        opacity: 0;
     }
     to {
         transform: translateY(0);
+        opacity: 1;
     }
 }
 
-.modal-header-mobile {
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
-    border-bottom: 1px solid #475569;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--secondary-200);
     position: sticky;
     top: 0;
-    background: #1e293b;
+    background: var(--white);
     z-index: 10;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.modal-title-mobile {
-    font-size: 18px;
-    font-weight: 600;
-    color: #e2e8f0;
+.modal-title {
+    font-size: var(--text-h3);
+    font-weight: var(--font-semibold);
+    color: var(--secondary-900);
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-3);
+    letter-spacing: -0.01em;
 }
 
 .modal-close-btn {
-    width: 32px;
-    height: 32px;
-    background: rgba(148, 163, 184, 0.1);
-    border: none;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    background: var(--secondary-100);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
-    font-size: 16px;
+    color: var(--secondary-500);
+    font-size: 18px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .modal-close-btn:hover {
-    background: rgba(148, 163, 184, 0.2);
-    color: #e2e8f0;
+    background: var(--secondary-200);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
+    transform: scale(1.05);
 }
 
-.modal-body-mobile {
-    padding: 20px;
+.modal-body {
+    padding: var(--space-6);
 }
 
-.form-group-mobile {
-    margin-bottom: 20px;
+@media (prefers-color-scheme: dark) {
+    .modal-header {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .modal-title {
+        color: var(--secondary-50);
+    }
+    
+    .modal-close-btn {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .modal-close-btn:hover {
+        background: var(--secondary-600);
+        color: var(--secondary-100);
+    }
 }
 
-.form-label-mobile {
+.form-group {
+    margin-bottom: var(--space-6);
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #e2e8f0;
-    margin-bottom: 8px;
+    font-size: var(--text-small);
+    font-weight: var(--font-semibold);
+    color: var(--secondary-700);
+    margin-bottom: var(--space-3);
+    letter-spacing: -0.01em;
 }
 
-.form-input-mobile {
+.form-input {
     width: 100%;
-    padding: 12px 16px;
-    background: #0f172a;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    color: #e2e8f0;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    padding: var(--space-4);
+    background: var(--white);
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-900);
+    font-size: var(--text-body);
+    line-height: 1.5;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.form-input-mobile:focus {
+.form-input:hover {
+    border-color: var(--secondary-300);
+    background: var(--secondary-50);
+}
+
+.form-input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-500);
+    background: var(--white);
+    box-shadow: 0 0 0 3px var(--primary-100);
+    transform: translateY(-1px);
 }
 
-.form-textarea-mobile {
-    min-height: 100px;
+.form-input::placeholder {
+    color: var(--secondary-400);
+    font-weight: var(--font-normal);
+}
+
+.form-textarea {
+    min-height: 120px;
     resize: vertical;
+    line-height: 1.6;
+    font-family: inherit;
 }
 
-.recipients-list-mobile {
-    max-height: 200px;
+@media (prefers-color-scheme: dark) {
+    .form-label {
+        color: var(--secondary-300);
+    }
+    
+    .form-input {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-100);
+    }
+    
+    .form-input:hover {
+        background: var(--secondary-600);
+        border-color: var(--secondary-500);
+    }
+    
+    .form-input:focus {
+        background: var(--secondary-600);
+        border-color: var(--primary-500);
+    }
+    
+    .form-input::placeholder {
+        color: var(--secondary-400);
+    }
+}
+
+.recipients-list {
+    max-height: 240px;
     overflow-y: auto;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    padding: 8px;
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    background: var(--secondary-50);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.recipient-item-mobile {
+.recipient-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px;
-    border-radius: 8px;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    margin-bottom: var(--space-2);
 }
 
-.recipient-item-mobile:hover {
-    background: rgba(148, 163, 184, 0.1);
+.recipient-item:last-child {
+    margin-bottom: 0;
+}
+
+.recipient-item:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-200);
+    transform: translateY(-1px);
 }
 
 .recipient-checkbox {
-    width: 16px;
-    height: 16px;
-    accent-color: #3b82f6;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-500);
+    border-radius: var(--radius-base);
 }
 
 .recipient-info {
@@ -1027,98 +1567,133 @@
 }
 
 .recipient-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #e2e8f0;
+    font-size: var(--text-body);
+    font-weight: var(--font-medium);
+    color: var(--secondary-700);
 }
 
 .recipient-email {
-    font-size: 12px;
-    color: #94a3b8;
+    font-size: var(--text-small);
+    color: var(--secondary-500);
+    margin-top: var(--space-1);
 }
 
-.modal-footer-mobile {
+.modal-footer {
     display: flex;
-    gap: 12px;
-    padding: 20px;
-    border-top: 1px solid #475569;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-top: 1px solid var(--secondary-200);
     position: sticky;
     bottom: 0;
-    background: #1e293b;
+    background: var(--white);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.modal-btn-mobile {
+.modal-btn {
     flex: 1;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: var(--space-4) var(--space-6);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    font-weight: var(--font-semibold);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--space-2);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
 }
 
-.modal-btn-mobile.secondary {
-    background: #374151;
-    border: 1px solid #4b5563;
-    color: #9ca3af;
+.modal-btn.secondary {
+    background: var(--secondary-100);
+    border-color: var(--secondary-200);
+    color: var(--secondary-600);
 }
 
-.modal-btn-mobile.secondary:hover {
-    background: #4b5563;
-    color: #d1d5db;
+.modal-btn.secondary:hover {
+    background: var(--secondary-200);
+    border-color: var(--secondary-300);
+    color: var(--secondary-700);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
-.modal-btn-mobile.primary {
-    background: #3b82f6;
-    border: 1px solid #3b82f6;
-    color: white;
+.modal-btn.primary {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
 }
 
-.modal-btn-mobile.primary:hover {
-    background: #1d4ed8;
+.modal-btn.primary:hover {
+    background: var(--primary-600);
+    border-color: var(--primary-600);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-btn.primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+}
+
+@media (prefers-color-scheme: dark) {
+    .recipients-list {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+    }
+    
+    .recipient-item:hover {
+        background: var(--primary-900);
+        border-color: var(--primary-700);
+    }
+    
+    .recipient-name {
+        color: var(--secondary-200);
+    }
+    
+    .recipient-email {
+        color: var(--secondary-400);
+    }
+    
+    .modal-footer {
+        background: var(--secondary-800);
+        border-color: var(--secondary-700);
+    }
+    
+    .modal-btn.secondary {
+        background: var(--secondary-700);
+        border-color: var(--secondary-600);
+        color: var(--secondary-300);
+    }
+    
+    .modal-btn.secondary:hover {
+        background: var(--secondary-600);
+        color: var(--secondary-100);
+    }
 }
 
 /* Responsive Design */
 @media (min-width: 768px) {
-    .stats-grid-mobile {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .modal-content-mobile {
-        max-width: 500px;
-        border-radius: 20px;
-        margin: 20px;
-    }
-    
-    .modal-mobile {
-        align-items: center;
+    .notification-management-container {
+        padding: var(--space-8);
     }
 }
 
 @media (min-width: 1024px) {
     .notification-management-container {
-        padding: 24px;
+        padding: var(--space-10);
     }
     
-    .notification-header-mobile {
-        border-radius: 12px;
-        margin-bottom: 24px;
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-6);
     }
     
-    .stats-grid-mobile {
-        margin-bottom: 24px;
-    }
-    
-    .filter-section-mobile {
-        margin-bottom: 24px;
-    }
-    
-    .notifications-list-mobile {
-        padding: 0;
+    .notification-item {
+        max-width: none;
     }
 }
 </style>
@@ -1138,7 +1713,7 @@ function toggleFilterMenu() {
 }
 
 function applyFilters() {
-    const searchTerm = document.getElementById('mobileSearchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const typeFilter = document.getElementById('typeFilter').value;
     
     currentFilters.search = searchTerm;
@@ -1149,7 +1724,7 @@ function applyFilters() {
 }
 
 function clearFilters() {
-    document.getElementById('mobileSearchInput').value = '';
+    document.getElementById('searchInput').value = '';
     document.getElementById('typeFilter').value = '';
     
     // Reset filter buttons
@@ -1180,7 +1755,7 @@ function filterByStatus(status) {
 }
 
 function filterNotifications() {
-    const notifications = document.querySelectorAll('.notification-item-mobile');
+    const notifications = document.querySelectorAll('.notification-item');
     
     notifications.forEach(notification => {
         const text = notification.textContent.toLowerCase();
@@ -1211,7 +1786,7 @@ function filterNotifications() {
 }
 
 // Search functionality
-document.getElementById('mobileSearchInput').addEventListener('input', function() {
+document.getElementById('searchInput').addEventListener('input', function() {
     currentFilters.search = this.value.toLowerCase();
     filterNotifications();
 });
@@ -1233,7 +1808,7 @@ function markAsRead(notificationId) {
                 notificationItem.classList.remove('unread');
                 notificationItem.classList.add('read');
                 
-                const markButton = notificationItem.querySelector('.action-btn-mobile.small');
+                const markButton = notificationItem.querySelector('.action-btn.small');
                 if (markButton && markButton.textContent.includes('Tandai Dibaca')) {
                     markButton.remove();
                 }
@@ -1348,6 +1923,9 @@ function clearCreateForm() {
     document.querySelectorAll('input[name="specific_users[]"]').forEach(checkbox => {
         checkbox.checked = false;
     });
+    document.querySelectorAll('input[name="specific_students[]"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
 }
 
 function submitCreateForm() {
@@ -1356,12 +1934,12 @@ function submitCreateForm() {
 
 function getTypeIcon(type) {
     const icons = {
-        'info': 'ph-info',
-        'warning': 'ph-warning',
-        'success': 'ph-check-circle',
-        'error': 'ph-x-circle'
+        'info': 'fa-info-circle',
+        'warning': 'fa-exclamation-triangle',
+        'success': 'fa-check-circle',
+        'error': 'fa-times-circle'
     };
-    return icons[type] || 'ph-bell';
+    return icons[type] || 'fa-bell';
 }
 
 function updateUnreadCount() {
@@ -1384,6 +1962,23 @@ function updateUnreadCount() {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     updateUnreadCount();
+    
+    // Check icon loading
+    setTimeout(function() {
+        const testIcon = document.querySelector('.fas, .ph');
+        if (testIcon) {
+            const computedStyle = window.getComputedStyle(testIcon, '::before');
+            const content = computedStyle.content;
+            
+            // If icons are not loading, add fallback class
+            if (content === 'none' || content === '""' || content === '') {
+                console.warn('Icons not loading, using fallback');
+                document.body.classList.add('icon-fallback');
+            } else {
+                console.log('Icons loaded successfully');
+            }
+        }
+    }, 1000);
     
     // Close modals when clicking outside
     document.getElementById('createNotificationModal').addEventListener('click', function(e) {

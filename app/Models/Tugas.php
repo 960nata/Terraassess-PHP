@@ -14,6 +14,7 @@ class Tugas extends Model
         'name',
         'content',
         'kelas_mapel_id',
+        'created_by',
         'due',
         'isHidden',
         'tipe'
@@ -30,14 +31,49 @@ class Tugas extends Model
         return $this->belongsTo(KelasMapel::class);
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function userTugas()
     {
         return $this->hasMany(UserTugas::class);
     }
 
+    public function tugasProgress()
+    {
+        return $this->hasMany(TugasProgress::class);
+    }
+
+    public function tugasFeedback()
+    {
+        return $this->hasMany(TugasFeedback::class);
+    }
+
     public function rubrik()
     {
         return $this->hasMany(RubrikPenilaian::class);
+    }
+
+    public function TugasQuiz()
+    {
+        return $this->hasMany(TugasQuiz::class);
+    }
+
+    public function TugasMultiple()
+    {
+        return $this->hasMany(TugasMultiple::class);
+    }
+
+    public function TugasKelompok()
+    {
+        return $this->hasMany(TugasKelompok::class);
+    }
+
+    public function TugasMandiri()
+    {
+        return $this->hasMany(TugasMandiri::class);
     }
 
     // Accessors

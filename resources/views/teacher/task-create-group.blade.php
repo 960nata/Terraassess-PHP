@@ -12,7 +12,11 @@
                 <p class="mt-2 text-gray-300">Buat tugas kolaboratif dengan sistem penilaian antar-rekan</p>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline">
+                <a href="{{ route('teacher.groups.index') }}" class="btn btn-outline">
+                    <i class="ph-users mr-2"></i>
+                    Kelola Kelompok
+                </a>
+                <a href="{{ route('teacher.tasks') }}" class="btn btn-outline">
                     <i class="ph-arrow-left mr-2"></i>
                     Kembali
                 </a>
@@ -23,6 +27,8 @@
     <form id="groupForm" method="POST" action="{{ route('teacher.tasks.store') }}">
         @csrf
         <input type="hidden" name="tipe" value="4">
+        <!-- Hidden field untuk kelas_mapel_id yang akan diisi oleh JavaScript -->
+        <input type="hidden" name="kelas_mapel_id" id="kelas_mapel_id" value="">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Form -->
@@ -56,7 +62,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Kelas Tujuan *</label>
-                                    <select name="kelas_id" class="form-select" required onchange="loadStudents()">
+                                    <select name="kelas_id" class="form-select" required onchange="loadGroups(); loadStudents();">
                                         <option value="">Pilih Kelas</option>
                                         @foreach($kelas as $k)
                                             <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
@@ -107,22 +113,41 @@
                         </div>
                     </div>
 
-                    <!-- Group Formation -->
+                    <!-- Group Selection -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Pembentukan Kelompok</h3>
+                            <div class="flex items-center justify-between">
+                                <h3 class="card-title">Pilih Kelompok</h3>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="selectAllGroups()" class="btn btn-outline btn-sm">
+                                        <i class="ph-check-square mr-1"></i>
+                                        Pilih Semua
+                                    </button>
+                                    <button type="button" onclick="clearAllGroups()" class="btn btn-outline btn-sm">
+                                        <i class="ph-square mr-1"></i>
+                                        Batal Semua
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body space-y-6">
-                            <div class="flex justify-between items-center">
-                                <h4 class="text-lg font-medium text-white">Kelompok</h4>
-                                <button type="button" onclick="addGroup()" class="btn btn-primary btn-sm">
-                                    <i class="ph-plus mr-1"></i>
-                                    Tambah Kelompok
-                                </button>
+                        <div class="card-body space-y-4">
+                            <div class="alert alert-info">
+                                <i class="ph-info mr-2"></i>
+                                <div>
+                                    <h4 class="font-medium">Cara Kerja:</h4>
+                                    <p class="text-sm mt-1">
+                                        Pilih kelas terlebih dahulu untuk melihat kelompok yang tersedia. 
+                                        Kelompok yang dipilih akan mengerjakan tugas ini.
+                                    </p>
+                                </div>
                             </div>
                             
                             <div id="groupsContainer">
-                                <!-- Groups will be added here dynamically -->
+                                <div class="empty-state">
+                                    <i class="ph-users"></i>
+                                    <h3>Pilih Kelas Dulu</h3>
+                                    <p>Pilih kelas untuk melihat kelompok yang tersedia</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,7 +186,7 @@
                             Buat Tugas
                         </button>
                         
-                        <a href="{{ route('teacher.tasks.management') }}" class="btn btn-outline w-full">
+                        <a href="{{ route('teacher.tasks') }}" class="btn btn-outline w-full">
                             <i class="ph-x mr-2"></i>
                             Batal
                         </a>
@@ -169,8 +194,8 @@
                         <div class="border-t border-gray-600 pt-4">
                             <h4 class="text-sm font-medium text-gray-300 mb-2">Tips:</h4>
                             <ul class="text-xs text-gray-400 space-y-1">
-                                <li>• Bagi kelompok secara merata</li>
-                                <li>• Tentukan ketua kelompok yang bertanggung jawab</li>
+                                <li>• Pastikan kelompok sudah dibuat sebelumnya</li>
+                                <li>• Pilih kelompok yang relevan dengan tugas</li>
                                 <li>• Buat rubrik penilaian yang objektif</li>
                                 <li>• Berikan instruksi yang jelas</li>
                                 <li>• Atur tenggat waktu yang realistis</li>
@@ -186,6 +211,16 @@
                                 <li>• Rubrik penilaian otomatis</li>
                             </ul>
                         </div>
+
+                        <div class="border-t border-gray-600 pt-4">
+                            <h4 class="text-sm font-medium text-gray-300 mb-2">Statistik:</h4>
+                            <div class="text-xs text-gray-400 space-y-1">
+                                <div class="flex justify-between">
+                                    <span>Kelompok Terpilih:</span>
+                                    <span id="selectedGroupsCount">0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,13 +233,14 @@
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    overflow: hidden;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .card-header {
-    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
 }
 
 .card-title {
@@ -215,14 +251,14 @@
 }
 
 .card-body {
-    padding: 1.5rem;
+    color: #e5e7eb;
 }
 
 .form-label {
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: white;
+    color: #d1d5db;
     margin-bottom: 0.5rem;
 }
 
@@ -242,272 +278,613 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.group-block, .rubric-item {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.students-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.student-item {
-    display: flex;
+.btn {
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.student-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+.btn-primary {
+    background: #3b82f6;
+    color: white;
 }
 
-.student-item.selected {
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #9ca3af;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.group-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.group-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.group-item.selected {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.group-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.group-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.group-item-checkbox {
+    width: 1rem;
+    height: 1rem;
 }
 
 .group-members {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
-.member-tag {
+.member-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.leader-badge {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: #3b82f6;
 }
 
-.leader-tag {
-    background: rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.3);
-    color: #f59e0b;
+.group-description {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+}
+
+.rubric-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rubric-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.rubric-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.rubric-item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rubric-item-body {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.rubric-description {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.rubric-points {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rubric-points input {
+    width: 4rem;
+    text-align: center;
 }
 </style>
 
 <script>
-let groupCount = 0;
-let rubricCount = 0;
-let students = [];
+let rubricItemCount = 0;
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Add first group and rubric item
-    addGroup();
-    addRubricItem();
-});
+// Global variable to store students data
+let studentsData = [];
 
+// Function to load students when class is selected
 function loadStudents() {
     const kelasId = document.querySelector('select[name="kelas_id"]').value;
-    if (!kelasId) return;
     
-    // Load students for the selected class
-    fetch(`/api/students/class/${kelasId}`)
+    if (!kelasId) {
+        studentsData = [];
+        updateAllStudentDropdowns([]);
+        return;
+    }
+    
+    // Show loading state
+    const classSelect = document.querySelector('select[name="kelas_id"]');
+    classSelect.disabled = true;
+    
+    // Fetch students from the selected class
+    fetch(`/groups/get-students/${kelasId}`, {
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
         .then(response => response.json())
-        .then(data => {
-            students = data;
-            updateStudentsList();
+        .then(students => {
+            studentsData = students;
+            updateAllStudentDropdowns(students);
         })
         .catch(error => {
             console.error('Error loading students:', error);
+            alert('Gagal memuat data siswa. Silakan coba lagi.');
+        })
+        .finally(() => {
+            classSelect.disabled = false;
         });
 }
 
-function updateStudentsList() {
-    const studentsList = document.querySelectorAll('.students-list');
-    studentsList.forEach(list => {
-        list.innerHTML = students.map(student => `
-            <div class="student-item" onclick="toggleStudent(this, ${student.id})">
-                <input type="checkbox" class="hidden">
-                <span class="text-white text-sm">${student.name}</span>
+function loadGroups() {
+    const kelasId = document.querySelector('select[name="kelas_id"]').value;
+    const container = document.getElementById('groupsContainer');
+    
+    if (!kelasId) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="ph-users"></i>
+                <h3>Pilih Kelas Dulu</h3>
+                <p>Pilih kelas untuk melihat kelompok yang tersedia</p>
             </div>
-        `).join('');
+        `;
+        return;
+    }
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="empty-state">
+            <i class="ph-spinner ph-spin"></i>
+            <h3>Memuat Kelompok...</h3>
+            <p>Sedang mengambil data kelompok</p>
+        </div>
+    `;
+    
+    fetch(`/groups/get-groups/${kelasId}`, {
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="ph-users"></i>
+                        <h3>Belum Ada Kelompok</h3>
+                        <p>Kelas ini belum memiliki kelompok. <a href="/teacher/groups/create/${kelasId}" class="text-blue-400 hover:text-blue-300">Buat kelompok dulu</a></p>
+            </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = data.map(group => `
+                <div class="group-item" onclick="toggleGroup(${group.id})">
+                    <div class="group-item-header">
+                        <h4 class="group-item-title">${group.name}</h4>
+                        <input type="checkbox" name="selected_groups[]" value="${group.id}" 
+                               class="group-item-checkbox" style="display: none;">
+                </div>
+                    <div class="group-members">
+                        ${group.members.map(member => {
+                            const isLeader = member === group.leader;
+                            return isLeader 
+                                ? `<span class="leader-badge"><i class="ph-crown"></i>${member}</span>`
+                                : `<span class="member-badge">${member}</span>`;
+                        }).join('')}
+                    </div>
+                    ${group.description ? `<p class="group-description">${group.description}</p>` : ''}
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error loading groups:', error);
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="ph-warning"></i>
+                    <h3>Error</h3>
+                    <p>Gagal memuat data kelompok.</p>
+                </div>
+            `;
+        });
+}
+
+// Function to update all student dropdowns
+function updateAllStudentDropdowns(students) {
+    // Update all member dropdowns
+    const memberSelects = document.querySelectorAll('select[name*="[members]"]');
+    memberSelects.forEach(select => {
+        updateStudentDropdown(select, students);
+    });
+    
+    // Update all leader dropdowns
+    const leaderSelects = document.querySelectorAll('select[name*="[leader]"]');
+    leaderSelects.forEach(select => {
+        updateStudentDropdown(select, students);
     });
 }
 
-function addGroup() {
-    groupCount++;
-    const container = document.getElementById('groupsContainer');
+// Function to update a single student dropdown
+function updateStudentDropdown(selectElement, students) {
+    const currentValue = selectElement.value;
     
-    const groupHTML = `
-        <div class="group-block" id="group-${groupCount}">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="text-lg font-medium text-white">Kelompok ${groupCount}</h4>
-                <button type="button" onclick="removeGroup(${groupCount})" class="text-red-400 hover:text-red-300">
-                    <i class="ph-trash"></i>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label">Nama Kelompok</label>
-                    <input type="text" name="groups[${groupCount}][name]" class="form-input" 
-                           placeholder="Kelompok ${groupCount}" required>
-                </div>
-                
-                <div>
-                    <label class="form-label">Pilih Anggota</label>
-                    <div class="students-list" id="students-${groupCount}">
-                        <!-- Students will be loaded here -->
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="form-label">Ketua Kelompok</label>
-                    <select name="groups[${groupCount}][leader]" class="form-select" required>
-                        <option value="">Pilih Ketua</option>
-                    </select>
-                </div>
-                
-                <div class="group-members" id="members-${groupCount}">
-                    <!-- Selected members will be shown here -->
-                </div>
-            </div>
-        </div>
-    `;
+    // Keep the first option (placeholder)
+    selectElement.innerHTML = selectElement.querySelector('option:first-child').outerHTML;
     
-    container.insertAdjacentHTML('beforeend', groupHTML);
-    updateStudentsList();
-}
-
-function removeGroup(id) {
-    if (groupCount <= 1) {
-        alert('Minimal harus ada 1 kelompok');
-        return;
+    // Add student options
+    students.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student.id;
+        option.textContent = student.name;
+        selectElement.appendChild(option);
+    });
+    
+    // Restore previous selection if still valid
+    if (currentValue && students.some(s => s.id == currentValue)) {
+        selectElement.value = currentValue;
     }
-    
-    document.getElementById(`group-${id}`).remove();
 }
 
-function toggleStudent(element, studentId) {
-    const groupBlock = element.closest('.group-block');
-    const groupId = groupBlock.id.split('-')[1];
-    const membersContainer = document.getElementById(`members-${groupId}`);
-    const leaderSelect = groupBlock.querySelector('select[name*="[leader]"]');
+function toggleGroup(groupId) {
+    const groupItem = document.querySelector(`[onclick="toggleGroup(${groupId})"]`);
+    const checkbox = groupItem.querySelector('input[type="checkbox"]');
     
-    if (element.classList.contains('selected')) {
-        // Remove student
-        element.classList.remove('selected');
-        const memberTag = membersContainer.querySelector(`[data-student-id="${studentId}"]`);
-        if (memberTag) {
-            memberTag.remove();
-        }
-        
-        // Remove from leader options
-        const leaderOption = leaderSelect.querySelector(`option[value="${studentId}"]`);
-        if (leaderOption) {
-            leaderOption.remove();
-        }
+    checkbox.checked = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        groupItem.classList.add('selected');
     } else {
-        // Add student
-        element.classList.add('selected');
-        
-        // Add member tag
-        const student = students.find(s => s.id == studentId);
-        const memberTag = document.createElement('div');
-        memberTag.className = 'member-tag';
-        memberTag.setAttribute('data-student-id', studentId);
-        memberTag.innerHTML = `
-            <span>${student.name}</span>
-            <button type="button" onclick="removeMember(this, ${studentId}, ${groupId})" class="text-red-400 hover:text-red-300">
-                <i class="ph-x"></i>
-            </button>
-        `;
-        membersContainer.appendChild(memberTag);
-        
-        // Add to leader options
-        const leaderOption = document.createElement('option');
-        leaderOption.value = studentId;
-        leaderOption.textContent = student.name;
-        leaderSelect.appendChild(leaderOption);
+        groupItem.classList.remove('selected');
     }
+    
+    updateSelectedCount();
 }
 
-function removeMember(button, studentId, groupId) {
-    const memberTag = button.parentElement;
-    memberTag.remove();
+function selectAllGroups() {
+    const checkboxes = document.querySelectorAll('input[name="selected_groups[]"]');
+    const groupItems = document.querySelectorAll('.group-item');
     
-    // Remove from selected state
-    const groupBlock = document.getElementById(`group-${groupId}`);
-    const studentItem = groupBlock.querySelector(`[onclick*="${studentId}"]`);
-    if (studentItem) {
-        studentItem.classList.remove('selected');
-    }
+    checkboxes.forEach(checkbox => checkbox.checked = true);
+    groupItems.forEach(item => item.classList.add('selected'));
     
-    // Remove from leader options
-    const leaderSelect = groupBlock.querySelector('select[name*="[leader]"]');
-    const leaderOption = leaderSelect.querySelector(`option[value="${studentId}"]`);
-    if (leaderOption) {
-        leaderOption.remove();
-    }
+    updateSelectedCount();
+}
+
+function clearAllGroups() {
+    const checkboxes = document.querySelectorAll('input[name="selected_groups[]"]');
+    const groupItems = document.querySelectorAll('.group-item');
+    
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    groupItems.forEach(item => item.classList.remove('selected'));
+    
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const selectedCount = document.querySelectorAll('input[name="selected_groups[]"]:checked').length;
+    document.getElementById('selectedGroupsCount').textContent = selectedCount;
 }
 
 function addRubricItem() {
-    rubricCount++;
+    rubricItemCount++;
     const container = document.getElementById('rubricContainer');
     
-    const rubricHTML = `
-        <div class="rubric-item" id="rubric-${rubricCount}">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="text-lg font-medium text-white">Item Penilaian ${rubricCount}</h4>
-                <button type="button" onclick="removeRubricItem(${rubricCount})" class="text-red-400 hover:text-red-300">
-                    <i class="ph-trash"></i>
+    const rubricItem = document.createElement('div');
+    rubricItem.className = 'rubric-item';
+    rubricItem.innerHTML = `
+        <div class="rubric-item-header">
+            <h4 class="rubric-item-title">Item Penilaian ${rubricItemCount}</h4>
+            <div class="rubric-item-actions">
+                <button type="button" onclick="removeRubricItem(this)" class="btn btn-outline btn-sm">
+                    <i class="ph-trash mr-1"></i>
+                    Hapus
                 </button>
             </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label">Item Penilaian</label>
-                    <input type="text" name="rubric_items[${rubricCount}][item]" class="form-input" 
-                           placeholder="Contoh: Apakah diskusi kelompok berjalan dengan baik?" required>
                 </div>
-                
+        <div class="rubric-item-body">
                 <div>
-                    <label class="form-label">Tipe Jawaban</label>
-                    <select name="rubric_items[${rubricCount}][type]" class="form-select" required>
-                        <option value="yes_no">Ya/Tidak</option>
-                        <option value="scale">Skala (Sangat Baik, Baik, Cukup, Kurang)</option>
-                        <option value="text">Teks Bebas</option>
-                    </select>
+                <label class="form-label">Deskripsi Penilaian</label>
+                <input type="text" name="rubric_items[${rubricItemCount}][description]" 
+                       class="form-input" placeholder="Contoh: Kerjasama tim, Kreativitas, dll" required>
                 </div>
-                
-                <div>
-                    <label class="form-label">Poin Maksimal</label>
-                    <input type="number" name="rubric_items[${rubricCount}][points]" class="form-input" 
-                           value="10" min="0" required>
-                </div>
+            <div class="rubric-points">
+                <label class="form-label">Poin</label>
+                <input type="number" name="rubric_items[${rubricItemCount}][points]" 
+                       class="form-input" min="1" max="100" value="10" required>
             </div>
         </div>
     `;
     
-    container.insertAdjacentHTML('beforeend', rubricHTML);
+    container.appendChild(rubricItem);
 }
 
-function removeRubricItem(id) {
-    if (rubricCount <= 1) {
-        alert('Minimal harus ada 1 item penilaian');
-        return;
-    }
-    
-    document.getElementById(`rubric-${id}`).remove();
+function removeRubricItem(button) {
+    button.closest('.rubric-item').remove();
 }
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add initial rubric item
+    addRubricItem();
+    
+    // Handle form submission - gabungkan kelas_id dan mapel_id menjadi kelas_mapel_id
+    const form = document.getElementById('groupForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const kelasId = document.getElementById('kelas_id').value;
+            const mapelId = document.getElementById('mapel_id').value;
+            
+            // Validasi bahwa kedua dropdown sudah dipilih
+            if (!kelasId || !mapelId) {
+                e.preventDefault();
+                alert('Kelas Tujuan dan Mata Pelajaran wajib dipilih!');
+                return false;
+            }
+            
+            // Gabungkan kelas_id dan mapel_id menjadi kelas_mapel_id
+            // Format: "kelas_id:mapel_id" untuk sementara, nanti controller akan handle
+            const kelasMapelId = `${kelasId}:${mapelId}`;
+            document.getElementById('kelas_mapel_id').value = kelasMapelId;
+            
+            console.log('Form submit (Group) - Kelas ID:', kelasId, 'Mapel ID:', mapelId, 'Kombinasi:', kelasMapelId);
+        });
+    }
+
+    // Restore groups dan rubric dari old input jika ada
+    @if(old('groups'))
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldGroups = @json(old('groups'));
+            console.log('Restoring old groups:', oldGroups);
+            
+            // Load students data if kelas_id is available
+            const kelasId = document.querySelector('select[name="kelas_id"]').value;
+            if (kelasId) {
+                loadStudents();
+            }
+            
+            oldGroups.forEach((group, index) => {
+                // Note: Teacher version doesn't support creating new groups dynamically
+                // Groups must be created first in the groups management page
+                console.log('Restoring group data for existing group:', group);
+                
+                // Fill group data
+                const groupIndex = index;
+                
+                // Fill group name
+                const groupNameInput = document.querySelector(`input[name="groups[${groupIndex}][name]"]`);
+                if (groupNameInput) {
+                    groupNameInput.value = group.name || '';
+                }
+                
+                // Fill group description
+                const groupDescInput = document.querySelector(`input[name="groups[${groupIndex}][description]"]`);
+                if (groupDescInput) {
+                    groupDescInput.value = group.description || '';
+                }
+                
+                // Fill members (multiple select)
+                if (group.members && Array.isArray(group.members)) {
+                    const memberSelect = document.querySelector(`select[name="groups[${groupIndex}][members][]"]`);
+                    if (memberSelect) {
+                        group.members.forEach(memberId => {
+                            const option = memberSelect.querySelector(`option[value="${memberId}"]`);
+                            if (option) {
+                                option.selected = true;
+                            }
+                        });
+                    }
+                }
+                
+                // Fill leader
+                if (group.leader) {
+                    const leaderSelect = document.querySelector(`select[name="groups[${groupIndex}][leader]"]`);
+                    if (leaderSelect) {
+                        leaderSelect.value = group.leader;
+                    }
+                }
+            });
+        });
+    @endif
+
+    // Restore rubric items dari old input jika ada
+    @if(old('rubric_items'))
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldRubricItems = @json(old('rubric_items'));
+            console.log('Restoring old rubric items:', oldRubricItems);
+            
+            oldRubricItems.forEach((item, index) => {
+                addRubricItem();
+                
+                // Fill rubric item data
+                const itemIndex = index;
+                
+                // Fill description
+                const descInput = document.querySelector(`input[name="rubric_items[${itemIndex}][description]"]`);
+                if (descInput) {
+                    descInput.value = item.description || '';
+                }
+                
+                // Fill points
+                const pointsInput = document.querySelector(`input[name="rubric_items[${itemIndex}][points]"]`);
+                if (pointsInput) {
+                    pointsInput.value = item.points || 1;
+                }
+            });
+        });
+    @endif
+
+    // Show notification that data was restored
+    @if(session('error') && (old('groups') || old('rubric_items')))
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('Data Anda tersimpan! Silakan perbaiki error dan submit kembali. Data yang sudah Anda isi tidak hilang.', 'warning');
+        });
+    @endif
+});
 </script>
+
+<!-- Quill Editor CSS -->
+<style>
+/* Quill Editor Styles - From material-create.blade.php */
+.ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 200px;
+}
+
+.ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.ql-snow .ql-fill {
+    fill: #ffffff;
+}
+
+.quill-editor-dark .ql-editor {
+    color: #ffffff;
+    background: #2a2a3e;
+    min-height: 120px;
+}
+
+.quill-editor-dark .ql-toolbar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+
+.quill-editor-dark .ql-container {
+    border: 1px solid #334155;
+    border-top: none;
+}
+
+.quill-editor-dark .ql-snow .ql-picker {
+    color: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-stroke {
+    stroke: #ffffff;
+}
+
+.quill-editor-dark .ql-snow .ql-fill {
+    fill: #ffffff;
+}
+</style>
 @endsection

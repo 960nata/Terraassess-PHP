@@ -386,12 +386,36 @@ function viewStudentProgress(ujianId, userId) {
 }
 
 function giveFeedback(ujianId, userId) {
-    window.location.href = "{{ route('teacher.enhanced-exam-management.show', '') }}/" + ujianId + "?action=feedback&user=" + userId;
+    window.location.href = "{{ url('teacher/enhanced-exam-management') }}/" + ujianId + "?action=feedback&user=" + userId;
 }
 
 function exportProgress() {
-    // TODO: Implement export functionality
-    alert('Fitur export akan segera tersedia');
+    // Export progress data to CSV
+    try {
+        // Get current exam ID from the page
+        const examId = {{ $ujian->id ?? 'null' }};
+        
+        if (!examId) {
+            alert('Tidak dapat menemukan ID ujian');
+            return;
+        }
+        
+        // Create export URL
+        const exportUrl = `/teacher/exam-progress/${examId}/export`;
+        
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.href = exportUrl;
+        link.download = `progress-ujian-${examId}-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Export progress data initiated');
+    } catch (error) {
+        console.error('Error exporting progress:', error);
+        alert('Terjadi kesalahan saat mengexport data. Silakan coba lagi.');
+    }
 }
 </script>
 @endsection

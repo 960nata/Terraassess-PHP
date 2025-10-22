@@ -1,89 +1,31 @@
-{{-- Modern Collapsible Section Component --}}
 @props([
     'title' => '',
     'open' => false,
-    'class' => '',
-    'headerClass' => '',
-    'contentClass' => '',
-    'icon' => 'ph-caret-down',
-    'iconClass' => ''
+    'class' => ''
 ])
 
-@php
-    $collapsibleId = 'collapsible-' . uniqid();
-    $isOpen = $open ? 'true' : 'false';
-    $headerClasses = 'collapsible-header ' . $headerClass;
-    $contentClasses = 'collapsible-content ' . $contentClass;
-    $iconClasses = 'collapsible-icon ' . $iconClass;
-@endphp
-
-<div {{ $attributes->merge(['class' => 'collapsible-section ' . $class]) }} 
-     data-collapsible-id="{{ $collapsibleId }}">
-    
-    {{-- Header --}}
+<div class="border border-gray-200 dark:border-gray-700 rounded-lg {{ $class }}" x-data="{ open: {{ $open ? 'true' : 'false' }} }">
     <button 
-        class="{{ $headerClasses }}"
-        type="button"
-        aria-expanded="{{ $isOpen }}"
-        aria-controls="{{ $collapsibleId }}-content"
-        data-collapsible-trigger
+        @click="open = !open"
+        class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
     >
-        <span class="collapsible-title">{{ $title }}</span>
-        <i class="{{ $iconClasses }} {{ $icon }}" data-collapsible-icon></i>
+        <span class="font-medium text-gray-900 dark:text-white">{{ $title }}</span>
+        <i class="ph-caret-down text-gray-500 dark:text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
     </button>
     
-    {{-- Content --}}
     <div 
-        id="{{ $collapsibleId }}-content"
-        class="{{ $contentClasses }}"
-        data-collapsible-content
-        aria-hidden="{{ $isOpen ? 'false' : 'true' }}"
+        x-show="open"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 transform -translate-y-2"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 transform translate-y-0"
+        x-transition:leave-end="opacity-0 transform -translate-y-2"
+        class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700"
+        style="display: none;"
     >
-        <div class="collapsible-content-inner">
+        <div class="pt-4">
             {{ $slot }}
         </div>
     </div>
 </div>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all collapsible sections
-    const collapsibleSections = document.querySelectorAll('.collapsible-section');
-    
-    collapsibleSections.forEach(section => {
-        const trigger = section.querySelector('[data-collapsible-trigger]');
-        const content = section.querySelector('[data-collapsible-content]');
-        const icon = section.querySelector('[data-collapsible-icon]');
-        
-        if (!trigger || !content) return;
-        
-        // Set initial state
-        const isInitiallyOpen = trigger.getAttribute('aria-expanded') === 'true';
-        section.setAttribute('data-expanded', isInitiallyOpen);
-        
-        // Add click event listener
-        trigger.addEventListener('click', function() {
-            const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-            const newState = !isExpanded;
-            
-            // Update ARIA attributes
-            trigger.setAttribute('aria-expanded', newState);
-            content.setAttribute('aria-hidden', !newState);
-            section.setAttribute('data-expanded', newState);
-            
-            // Update content height
-            if (newState) {
-                content.style.maxHeight = content.scrollHeight + 'px';
-            } else {
-                content.style.maxHeight = '0px';
-            }
-        });
-        
-        // Set initial height if open
-        if (isInitiallyOpen) {
-            content.style.maxHeight = content.scrollHeight + 'px';
-        }
-    });
-});
-</script>

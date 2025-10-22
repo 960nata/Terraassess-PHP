@@ -599,23 +599,91 @@
 <script>
 function viewMaterial(materialId) {
     // Implementation for viewing material
-    console.log('View material:', materialId);
+    const userRole = '{{ $userRole ?? "teacher" }}';
+    let viewUrl;
+    
+    if (userRole === 'superadmin') {
+        viewUrl = '/superadmin/material-management/' + materialId;
+    } else if (userRole === 'admin') {
+        viewUrl = '/admin/material-management/' + materialId;
+    } else {
+        viewUrl = '/teacher/material-management/' + materialId;
+    }
+    
+    window.location.href = viewUrl;
 }
 
 function editMaterial(materialId) {
-    // Implementation for editing material
-    console.log('Edit material:', materialId);
+    const userRole = '{{ $userRole ?? "teacher" }}';
+    let editUrl;
+    
+    if (userRole === 'superadmin') {
+        editUrl = '/superadmin/material-management/' + materialId + '/edit';
+    } else if (userRole === 'admin') {
+        editUrl = '/admin/material-management/' + materialId + '/edit';
+    } else {
+        editUrl = '/teacher/material-management/' + materialId + '/edit';
+    }
+    
+    window.location.href = editUrl;
 }
 
 function downloadMaterial(materialId) {
     // Implementation for downloading material
-    console.log('Download material:', materialId);
+    const userRole = '{{ $userRole ?? "teacher" }}';
+    let downloadUrl;
+    
+    if (userRole === 'superadmin') {
+        downloadUrl = '/superadmin/material-management/' + materialId + '/download';
+    } else if (userRole === 'admin') {
+        downloadUrl = '/admin/material-management/' + materialId + '/download';
+    } else {
+        downloadUrl = '/teacher/material-management/' + materialId + '/download';
+    }
+    
+    // Create a temporary link to trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 function deleteMaterial(materialId) {
-    if (confirm('Apakah Anda yakin ingin menghapus materi ini?')) {
-        // Implementation for deleting material
-        console.log('Delete material:', materialId);
+    if (confirm('Apakah Anda yakin ingin menghapus materi ini?\n\nTindakan ini tidak dapat dibatalkan dan akan menghapus semua file terkait.')) {
+        const userRole = '{{ $userRole ?? "teacher" }}';
+        let deleteUrl;
+        
+        if (userRole === 'superadmin') {
+            deleteUrl = '/superadmin/material-management/' + materialId;
+        } else if (userRole === 'admin') {
+            deleteUrl = '/admin/material/' + materialId;
+        } else {
+            deleteUrl = '/teacher/material-management/' + materialId;
+        }
+        
+        // Create form untuk DELETE request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = deleteUrl;
+        
+        // CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+        
+        // Method DELETE
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 

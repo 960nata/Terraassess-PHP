@@ -212,7 +212,7 @@
 ])
 
 <!-- Detail Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'mapelDetailModal',
     'title' => 'Detail Mata Pelajaran',
     'icon' => 'fas fa-book',
@@ -230,7 +230,7 @@
 @endcomponent
 
 <!-- Schedule Modal -->
-@include('components.modal', [
+@include('components.galaxy-modal', [
     'id' => 'scheduleModal',
     'title' => 'Jadwal Mata Pelajaran',
     'icon' => 'fas fa-calendar',
