@@ -990,10 +990,7 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Password berhasil diubah');
     }
-            return redirect()->route('superadmin.profile')
-                ->with('error', 'Gagal memperbarui profil: ' . $e->getMessage());
-        }
-    }
+
 
     /**
      * Upload photo for Super Admin profile.
@@ -3994,26 +3991,7 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Password berhasil diubah');
     }
-    {
-        $user = auth()->user();
-        
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User tidak terautentikasi.');
-        }
-        
-        // Cast to User model to access Eloquent methods
-        $user = User::find($user->id);
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-        ]);
 
-        $user->update($request->only(['name', 'email']));
-
-        return redirect()->route('admin.profile')
-            ->with('success', 'Profil berhasil diperbarui');
-    }
 
     /**
      * Upload admin photo.
