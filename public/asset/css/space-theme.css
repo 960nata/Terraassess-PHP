@@ -1,0 +1,1273 @@
+/* Advanced Space Theme CSS */
+:root {
+    --space-primary: #0a0a0a;
+    --space-secondary: #1a1a2e;
+    --space-accent: #16213e;
+    --space-purple: #533483;
+    --space-cyan: #00d4ff;
+    --space-pink: #ff006e;
+    --space-gold: #ffd700;
+    --space-silver: #c0c0c0;
+    --space-green: #00ff88;
+    --space-orange: #ff6b35;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+    --text-white: #ffffff;
+    --text-white-50: rgba(255, 255, 255, 0.5);
+    --text-white-75: rgba(255, 255, 255, 0.75);
+    --border-white-25: rgba(255, 255, 255, 0.25);
+}
+
+/* Space Background */
+body {
+    background: 
+        radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #0a0a0a 100%),
+        linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated space particles */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.06) 0%, transparent 60%),
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 60%),
+        radial-gradient(circle at 0% 100%, rgba(0, 255, 136, 0.04) 0%, transparent 60%),
+        radial-gradient(circle at 80% 100%, rgba(255, 107, 53, 0.05) 0%, transparent 60%),
+        radial-gradient(circle at 0% 0%, rgba(83, 52, 131, 0.06) 0%, transparent 60%),
+        /* Static bright stars */
+        radial-gradient(2px 2px at 100px 150px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 300px 80px, rgba(0, 212, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 500px 200px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 700px 120px, rgba(255, 215, 0, 0.8), transparent),
+        radial-gradient(1px 1px at 900px 180px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(2px 2px at 1100px 90px, rgba(0, 255, 136, 0.7), transparent),
+        radial-gradient(1px 1px at 1300px 160px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 1500px 110px, rgba(255, 107, 53, 0.8), transparent);
+    animation: spaceFloat 60s ease-in-out infinite;
+    z-index: -2;
+}
+
+/* Animated stars */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 40px 70px, rgba(0, 212, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(255, 0, 110, 0.5), transparent),
+        radial-gradient(1px 1px at 160px 30px, rgba(255, 215, 0, 0.6), transparent),
+        radial-gradient(1px 1px at 200px 90px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 240px 50px, rgba(0, 255, 136, 0.5), transparent),
+        radial-gradient(1px 1px at 280px 20px, rgba(255, 107, 53, 0.6), transparent),
+        radial-gradient(1px 1px at 320px 70px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 360px 40px, rgba(83, 52, 131, 0.6), transparent),
+        radial-gradient(1px 1px at 400px 80px, rgba(0, 212, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 440px 30px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 480px 60px, rgba(255, 215, 0, 0.5), transparent),
+        radial-gradient(1px 1px at 520px 10px, rgba(255, 0, 110, 0.6), transparent),
+        radial-gradient(1px 1px at 560px 90px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 600px 20px, rgba(0, 255, 136, 0.5), transparent),
+        radial-gradient(1px 1px at 640px 60px, rgba(255, 107, 53, 0.6), transparent),
+        radial-gradient(1px 1px at 680px 90px, rgba(255, 255, 255, 0.8), transparent);
+    background-repeat: repeat;
+    background-size: 800px 120px;
+    animation: twinkle 4s ease-in-out infinite;
+    z-index: -1;
+}
+
+/* Space animation - lebih tenang */
+@keyframes spaceFloat {
+    0%, 100% {
+        transform: translate(0px, 0px) rotate(0deg);
+        opacity: 0.6;
+    }
+    25% {
+        transform: translate(10px, -8px) rotate(22deg);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-8px, 10px) rotate(45deg);
+        opacity: 0.7;
+    }
+    75% {
+        transform: translate(8px, 5px) rotate(67deg);
+        opacity: 0.5;
+    }
+}
+
+/* Twinkling stars - halus tanpa zoom */
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}
+
+/* Advanced Glass Card Effect */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 32px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.glass-card:hover::before {
+    left: 100%;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        0 20px 60px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-color: var(--space-cyan);
+}
+
+/* Login Card Specific */
+.login-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    box-shadow: 
+        0 15px 50px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+        0 25px 60px var(--glass-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, var(--space-cyan), transparent, var(--space-pink), transparent);
+    animation: rotate 10s linear infinite;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Text styling */
+.text-white {
+    color: var(--text-white) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.text-white-75 {
+    color: var(--text-white-75) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.text-white-50 {
+    color: var(--text-white-50) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Form elements */
+.form-control {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-white);
+    border-radius: 15px;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--space-cyan);
+    box-shadow: 
+        0 0 0 0.2rem rgba(0, 212, 255, 0.25),
+        0 0 20px rgba(0, 212, 255, 0.3);
+    color: var(--text-white);
+    transform: translateY(-2px);
+}
+
+.form-control::placeholder {
+    color: var(--text-white-50);
+}
+
+/* Form group focus effects */
+.form-group.focused .form-control {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 0 0.2rem rgba(0, 212, 255, 0.15),
+        0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.form-group.focused label {
+    color: var(--space-cyan) !important;
+    transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(45deg, var(--space-cyan), var(--space-purple));
+    border: none;
+    border-radius: 15px;
+    padding: 12px 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+}
+
+.btn-outline-primary {
+    background: transparent;
+    border: 2px solid var(--space-cyan);
+    color: var(--space-cyan);
+    border-radius: 15px;
+    padding: 10px 28px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--space-cyan);
+    color: var(--space-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+}
+
+.btn-outline-info {
+    background: transparent;
+    border: 2px solid var(--space-pink);
+    color: var(--space-pink);
+    border-radius: 15px;
+    padding: 10px 28px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-info:hover {
+    background: var(--space-pink);
+    color: var(--space-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 0, 110, 0.4);
+}
+
+/* Animations */
+.animate-btn-small {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-btn-small:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Space animation placeholder */
+.space-animation-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    position: relative;
+    padding: 20px;
+}
+
+.space-animation-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px currentColor);
+    color: var(--space-cyan);
+}
+
+.space-animation-placeholder small {
+    animation: pulse 2s ease-in-out infinite;
+    font-size: 0.9rem;
+    color: var(--text-white-75);
+}
+
+/* Text primary color */
+.text-primary {
+    color: var(--space-cyan) !important;
+}
+
+/* Text info color */
+.text-info {
+    color: var(--space-cyan) !important;
+}
+
+/* ===== TERRA ASSESSMENT ENHANCED FEATURES ===== */
+
+/* Enhanced Nebula Background Animation */
+.nebula-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        /* Deep space gradient base */
+        linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a0a 100%),
+        /* Animated nebula clouds */
+        radial-gradient(ellipse 800px 600px at 20% 30%, rgba(139, 92, 246, 0.4) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 800px at 80% 20%, rgba(59, 130, 246, 0.35) 0%, transparent 65%),
+        radial-gradient(ellipse 700px 500px at 40% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 60%),
+        radial-gradient(ellipse 500px 700px at 70% 70%, rgba(139, 92, 246, 0.25) 0%, transparent 55%),
+        radial-gradient(ellipse 600px 400px at 10% 90%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse 400px 600px at 90% 10%, rgba(236, 72, 153, 0.15) 0%, transparent 45%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: -1;
+    animation: nebulaDrift 25s ease-in-out infinite;
+    overflow: hidden;
+}
+
+/* Nebula cloud layers for depth */
+.nebula-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(ellipse 1000px 800px at 30% 40%, rgba(139, 92, 246, 0.3) 0%, transparent 80%),
+        radial-gradient(ellipse 800px 1000px at 70% 60%, rgba(59, 130, 246, 0.25) 0%, transparent 75%),
+        radial-gradient(ellipse 900px 600px at 50% 20%, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
+    animation: nebulaCloud1 30s ease-in-out infinite;
+    opacity: 0.6;
+}
+
+.nebula-bg::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    background: 
+        radial-gradient(ellipse 600px 900px at 60% 30%, rgba(236, 72, 153, 0.25) 0%, transparent 85%),
+        radial-gradient(ellipse 700px 500px at 20% 70%, rgba(139, 92, 246, 0.2) 0%, transparent 80%),
+        radial-gradient(ellipse 500px 700px at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 75%);
+    animation: nebulaCloud2 35s ease-in-out infinite;
+    opacity: 0.4;
+}
+
+/* Particle effects */
+.nebula-bg .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: particleFloat 40s linear infinite;
+}
+
+.nebula-bg .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.nebula-bg .particle:nth-child(2) { top: 40%; left: 30%; animation-delay: 5s; }
+.nebula-bg .particle:nth-child(3) { top: 60%; left: 50%; animation-delay: 10s; }
+.nebula-bg .particle:nth-child(4) { top: 80%; left: 70%; animation-delay: 15s; }
+.nebula-bg .particle:nth-child(5) { top: 30%; left: 90%; animation-delay: 20s; }
+.nebula-bg .particle:nth-child(6) { top: 70%; left: 20%; animation-delay: 25s; }
+.nebula-bg .particle:nth-child(7) { top: 10%; left: 60%; animation-delay: 30s; }
+.nebula-bg .particle:nth-child(8) { top: 90%; left: 40%; animation-delay: 35s; }
+
+/* Main nebula drift animation */
+@keyframes nebulaDrift {
+    0%, 100% { 
+        transform: translate(0px, 0px) rotate(0deg) scale(1); 
+        opacity: 0.7;
+    }
+    25% { 
+        transform: translate(-20px, -15px) rotate(1deg) scale(1.05); 
+        opacity: 0.5;
+    }
+    50% { 
+        transform: translate(-40px, -30px) rotate(2deg) scale(1.1); 
+        opacity: 0.8;
+    }
+    75% { 
+        transform: translate(-20px, -15px) rotate(1deg) scale(1.05); 
+        opacity: 0.6;
+    }
+}
+
+/* Cloud layer 1 animation */
+@keyframes nebulaCloud1 {
+    0%, 100% { 
+        transform: translate(0px, 0px) rotate(0deg); 
+        opacity: 0.6;
+    }
+    33% { 
+        transform: translate(30px, -20px) rotate(1.5deg); 
+        opacity: 0.4;
+    }
+    66% { 
+        transform: translate(-20px, 25px) rotate(-1deg); 
+        opacity: 0.7;
+    }
+}
+
+/* Cloud layer 2 animation */
+@keyframes nebulaCloud2 {
+    0%, 100% { 
+        transform: translate(0px, 0px) rotate(0deg); 
+        opacity: 0.4;
+    }
+    40% { 
+        transform: translate(-25px, 30px) rotate(-1.5deg); 
+        opacity: 0.6;
+    }
+    80% { 
+        transform: translate(35px, -15px) rotate(2deg); 
+        opacity: 0.3;
+    }
+}
+
+/* Particle floating animation */
+@keyframes particleFloat {
+    0% { 
+        transform: translateY(0px) translateX(0px); 
+        opacity: 0.6;
+    }
+    25% { 
+        transform: translateY(-20px) translateX(10px); 
+        opacity: 0.8;
+    }
+    50% { 
+        transform: translateY(-40px) translateX(-5px); 
+        opacity: 0.4;
+    }
+    75% { 
+        transform: translateY(-20px) translateX(15px); 
+        opacity: 0.7;
+    }
+    100% { 
+        transform: translateY(0px) translateX(0px); 
+        opacity: 0.6;
+    }
+}
+
+/* Additional nebula enhancements */
+.nebula-bg {
+    /* Ensure smooth performance */
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Enhanced particle effects */
+.nebula-bg .particle {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+
+/* Nebula glow effects */
+.nebula-bg::before,
+.nebula-bg::after {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    filter: blur(1px);
+}
+
+/* Responsive nebula adjustments */
+@media (max-width: 768px) {
+    .nebula-bg {
+        background: 
+            linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%, #0a0a0a 100%),
+            radial-gradient(ellipse 600px 400px at 20% 30%, rgba(139, 92, 246, 0.3) 0%, transparent 70%),
+            radial-gradient(ellipse 400px 600px at 80% 20%, rgba(59, 130, 246, 0.25) 0%, transparent 65%),
+            radial-gradient(ellipse 500px 350px at 40% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 60%);
+    }
+    
+    .nebula-bg::before {
+        background: 
+            radial-gradient(ellipse 700px 500px at 30% 40%, rgba(139, 92, 246, 0.2) 0%, transparent 80%),
+            radial-gradient(ellipse 500px 700px at 70% 60%, rgba(59, 130, 246, 0.15) 0%, transparent 75%);
+    }
+    
+    .nebula-bg::after {
+        background: 
+            radial-gradient(ellipse 400px 600px at 60% 30%, rgba(236, 72, 153, 0.15) 0%, transparent 85%),
+            radial-gradient(ellipse 500px 350px at 20% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 80%);
+    }
+}
+
+/* Enhanced Animated Star Field */
+.star-field {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        /* Layer 1: Small stars (1px) - High density */
+        radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 45px 70px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 70px 15px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 95px 55px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 120px 25px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 145px 80px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 170px 40px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 195px 65px, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 220px 10px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 245px 85px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 270px 35px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 295px 75px, rgba(255, 255, 255, 0.6), transparent),
+        
+        /* Layer 2: Medium stars (2px) - Medium density */
+        radial-gradient(2px 2px at 35px 45px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 85px 20px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 135px 60px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 185px 35px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 235px 80px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 285px 15px, rgba(255, 255, 255, 0.7), transparent),
+        
+        /* Layer 3: Large stars (3px) - Low density */
+        radial-gradient(3px 3px at 60px 50px, rgba(255, 255, 255, 1.0), transparent),
+        radial-gradient(3px 3px at 160px 25px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(3px 3px at 260px 70px, rgba(255, 255, 255, 1.0), transparent);
+    
+    background-repeat: repeat;
+    background-size: 320px 100px;
+    z-index: 0;
+    animation: starFieldTwinkle 3s ease-in-out infinite;
+    will-change: opacity;
+    transform: translateZ(0);
+}
+
+/* Star field twinkling animation */
+@keyframes starFieldTwinkle {
+    0%, 100% { 
+        opacity: 1.0;
+        filter: brightness(1.0);
+    }
+    25% { 
+        opacity: 0.8;
+        filter: brightness(0.8);
+    }
+    50% { 
+        opacity: 0.6;
+        filter: brightness(0.6);
+    }
+    75% { 
+        opacity: 0.9;
+        filter: brightness(0.9);
+    }
+}
+
+/* Individual star twinkling effects */
+.star-field::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(1px 1px at 15px 25px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 55px 65px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 105px 35px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 155px 75px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 205px 45px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 255px 85px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 25px 55px, rgba(255, 255, 255, 1.0), transparent),
+        radial-gradient(2px 2px at 125px 15px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 225px 65px, rgba(255, 255, 255, 1.0), transparent);
+    background-repeat: repeat;
+    background-size: 280px 100px;
+    animation: starLayer1Twinkle 2.5s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+
+.star-field::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(1px 1px at 30px 40px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 80px 10px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 130px 50px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 180px 90px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 230px 30px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 280px 70px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(3px 3px at 50px 20px, rgba(255, 255, 255, 1.0), transparent),
+        radial-gradient(3px 3px at 150px 60px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(3px 3px at 250px 40px, rgba(255, 255, 255, 1.0), transparent);
+    background-repeat: repeat;
+    background-size: 310px 100px;
+    animation: starLayer2Twinkle 3.5s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+/* Layer 1 twinkling animation */
+@keyframes starLayer1Twinkle {
+    0%, 100% { 
+        opacity: 0.9;
+        filter: brightness(1.0);
+    }
+    33% { 
+        opacity: 0.7;
+        filter: brightness(0.7);
+    }
+    66% { 
+        opacity: 0.8;
+        filter: brightness(0.8);
+    }
+}
+
+/* Layer 2 twinkling animation */
+@keyframes starLayer2Twinkle {
+    0%, 100% { 
+        opacity: 0.8;
+        filter: brightness(0.9);
+    }
+    40% { 
+        opacity: 0.6;
+        filter: brightness(0.6);
+    }
+    80% { 
+        opacity: 0.9;
+        filter: brightness(1.0);
+    }
+}
+
+/* Dynamic star twinkling animation */
+@keyframes dynamicStarTwinkle {
+    0%, 100% { 
+        opacity: 1.0;
+        transform: scale(1);
+        filter: brightness(1.0);
+    }
+    25% { 
+        opacity: 0.7;
+        transform: scale(0.8);
+        filter: brightness(0.7);
+    }
+    50% { 
+        opacity: 0.4;
+        transform: scale(1.2);
+        filter: brightness(0.4);
+    }
+    75% { 
+        opacity: 0.8;
+        transform: scale(0.9);
+        filter: brightness(0.8);
+    }
+}
+
+/* Dynamic star styling */
+.dynamic-star {
+    will-change: opacity, transform, filter;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    pointer-events: none;
+}
+
+/* Responsive star field adjustments */
+@media (max-width: 768px) {
+    .star-field {
+        background-size: 250px 80px;
+    }
+    
+    .star-field::before {
+        background-size: 220px 80px;
+    }
+    
+    .star-field::after {
+        background-size: 240px 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .star-field {
+        background-size: 200px 60px;
+    }
+    
+    .star-field::before {
+        background-size: 180px 60px;
+    }
+    
+    .star-field::after {
+        background-size: 190px 60px;
+    }
+}
+
+/* Welcome Animation */
+.welcome-animation {
+    animation: welcomePulse 3s ease-in-out infinite;
+}
+
+@keyframes welcomePulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.05); 
+        opacity: 0.9; 
+    }
+}
+
+/* System Status */
+.system-status {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-indicator.online {
+    background: var(--space-green);
+    box-shadow: 0 0 10px var(--space-green);
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.status-text {
+    font-size: 0.8rem;
+    color: var(--text-white-75);
+}
+
+/* Role Selector */
+.role-selector {
+    margin-bottom: 30px;
+}
+
+.role-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.role-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 12px 8px;
+    color: var(--text-white-75);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+}
+
+.role-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--space-cyan);
+    transform: translateY(-2px);
+}
+
+.role-btn.active {
+    background: linear-gradient(45deg, var(--space-cyan), var(--space-purple));
+    border-color: var(--space-cyan);
+    color: var(--text-white);
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+}
+
+.role-btn i {
+    font-size: 1.2rem;
+}
+
+/* Modern Card */
+.modern-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Modern Alerts */
+.modern-alert {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px 20px;
+}
+
+.alert-warning.modern-alert {
+    background: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+}
+
+.alert-success.modern-alert {
+    background: rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.3);
+    color: #28a745;
+}
+
+.alert-danger.modern-alert {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+}
+
+.alert-info.modern-alert {
+    background: rgba(13, 202, 240, 0.15);
+    border-color: rgba(13, 202, 240, 0.3);
+    color: #0dcaf0;
+}
+
+/* Modern Input Groups */
+.modern-input-group {
+    position: relative;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.modern-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 15px 20px 15px 50px;
+    color: var(--text-white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.modern-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--space-cyan);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.modern-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.input-icon {
+    position: absolute;
+    left: 18px;
+    color: var(--text-white-75);
+    z-index: 2;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 18px;
+    background: none;
+    border: none;
+    color: var(--text-white-75);
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: var(--space-cyan);
+}
+
+.input-wrapper.focused .input-icon {
+    color: var(--space-cyan);
+}
+
+.input-wrapper.valid {
+    border-color: var(--space-green);
+}
+
+.input-wrapper.invalid {
+    border-color: #dc3545;
+}
+
+/* Form Options */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-check-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.form-check-input:checked {
+    background: var(--space-cyan);
+    border-color: var(--space-cyan);
+}
+
+.forgot-password-link {
+    color: var(--space-cyan);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.forgot-password-link:hover {
+    color: var(--text-white);
+    text-decoration: underline;
+}
+
+/* Modern Buttons */
+.modern-btn {
+    background: linear-gradient(45deg, var(--space-cyan), var(--space-purple));
+    border: none;
+    border-radius: 12px;
+    padding: 15px 30px;
+    color: var(--text-white);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-btn:hover::before {
+    left: 100%;
+}
+
+.modern-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+}
+
+.modern-btn:active {
+    transform: translateY(-1px);
+}
+
+.modern-btn-outline {
+    background: transparent;
+    border: 2px solid var(--space-cyan);
+    border-radius: 12px;
+    padding: 12px 30px;
+    color: var(--space-cyan);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.modern-btn-outline:hover {
+    background: var(--space-cyan);
+    color: var(--space-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Register Link */
+.register-link {
+    color: var(--space-cyan);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.register-link:hover {
+    color: var(--text-white);
+    text-decoration: underline;
+}
+
+/* Modern Modal */
+.modern-modal {
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: var(--text-white);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-title {
+    color: var(--text-white);
+}
+
+/* System Info */
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+/* Rocket Icon Animation */
+.rocket-icon {
+    animation: rocketFloat 3s ease-in-out infinite;
+}
+
+@keyframes rocketFloat {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
+    50% { 
+        transform: translateY(-10px) rotate(5deg); 
+    }
+}
+
+/* Responsive Design for New Features */
+@media (max-width: 768px) {
+    .role-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .role-btn {
+        padding: 10px 6px;
+        font-size: 0.7rem;
+    }
+    
+    .role-btn i {
+        font-size: 1rem;
+    }
+    
+    .modern-input {
+        padding: 12px 15px 12px 45px;
+    }
+    
+    .input-icon {
+        left: 15px;
+    }
+    
+    .password-toggle {
+        right: 15px;
+    }
+    
+    .form-options {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .system-status {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .space-animation-placeholder {
+        height: 150px;
+        padding: 15px;
+    }
+    
+    .space-animation-placeholder i {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .login-card {
+        margin: 20px 10px;
+        padding: 20px 15px !important;
+    }
+    
+    .display-4 {
+        font-size: 2rem !important;
+    }
+    
+    .fs-5 {
+        font-size: 1rem !important;
+    }
+}
+
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0px) rotate(0deg); 
+    }
+    50% { 
+        transform: translateY(-15px) rotate(5deg); 
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 0.8; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.1);
+    }
+}
+
+/* Modal styling */
+.modal-content {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 15px 50px var(--glass-shadow);
+}
+
+.modal-content p {
+    color: var(--text-white) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.close {
+    color: var(--space-gold) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    transition: all 0.3s ease;
+}
+
+.close:hover {
+    color: var(--space-pink) !important;
+    transform: scale(1.2);
+}
+
+/* Footer */
+footer {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    color: var(--text-white-75) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .space-animation-placeholder i {
+        font-size: 3rem;
+    }
+    
+    .glass-card {
+        margin-bottom: 15px;
+    }
+    
+    .login-card {
+        border-radius: 20px;
+    }
+}

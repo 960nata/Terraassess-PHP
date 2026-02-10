@@ -1,0 +1,377 @@
+/* ========================================
+   SKELETON LOADER CSS
+   Modern loading animations for Terra Assessment
+   ======================================== */
+
+/* ===== PAGE LOADER ===== */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.page-loader.show {
+    display: flex;
+    opacity: 1;
+}
+
+.page-loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.page-loader-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #e2e8f0;
+}
+
+.page-loader-spinner {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 2rem;
+}
+
+.spinner-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 3px solid rgba(102, 126, 234, 0.2);
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: #667eea;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.page-loader-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: #94a3b8;
+    animation: fadeInOut 2s ease-in-out infinite;
+}
+
+.page-loader-progress {
+    width: 200px;
+    height: 3px;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    animation: progress 2s ease-in-out infinite;
+}
+
+/* ===== SKELETON CARD ===== */
+.skeleton-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 120px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+.skeleton-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: rgba(51, 65, 85, 0.6);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.skeleton-card-title {
+    height: 16px;
+    width: 60%;
+    background: rgba(51, 65, 85, 0.6);
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-card-value {
+    height: 24px;
+    width: 40%;
+    background: rgba(51, 65, 85, 0.6);
+    border-radius: 6px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-card-label {
+    height: 14px;
+    width: 80%;
+    background: rgba(51, 65, 85, 0.6);
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== SKELETON TABLE ===== */
+.skeleton-table {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.skeleton-table::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    animation: shimmer 3s infinite;
+    z-index: 1;
+}
+
+.skeleton-table-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(51, 65, 85, 0.3);
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.skeleton-table-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+.skeleton-table-row:last-child {
+    border-bottom: none;
+}
+
+.skeleton-cell {
+    height: 20px;
+    background: rgba(51, 65, 85, 0.6);
+    border-radius: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-cell-header {
+    height: 16px;
+    background: rgba(51, 65, 85, 0.8);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .page-loader-spinner {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .loader-icon {
+        font-size: 1.5rem;
+    }
+    
+    .page-loader-text {
+        font-size: 1rem;
+    }
+    
+    .page-loader-progress {
+        width: 150px;
+    }
+    
+    .skeleton-card {
+        padding: 1rem;
+        min-height: 100px;
+    }
+    
+    .skeleton-card-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .skeleton-table-header,
+    .skeleton-table-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* ===== DARK THEME VARIATIONS ===== */
+.page-loader.theme-purple .spinner-ring {
+    border-top-color: #8b5cf6;
+}
+
+.page-loader.theme-purple .loader-icon {
+    color: #8b5cf6;
+}
+
+.page-loader.theme-purple .progress-bar {
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+}
+
+.page-loader.theme-blue .spinner-ring {
+    border-top-color: #3b82f6;
+}
+
+.page-loader.theme-blue .loader-icon {
+    color: #3b82f6;
+}
+
+.page-loader.theme-blue .progress-bar {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.page-loader.theme-green .spinner-ring {
+    border-top-color: #10b981;
+}
+
+.page-loader.theme-green .loader-icon {
+    color: #10b981;
+}
+
+.page-loader.theme-green .progress-bar {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    .spinner-ring,
+    .loader-icon,
+    .page-loader-text,
+    .progress-bar,
+    .skeleton-card::before,
+    .skeleton-table::before,
+    .skeleton-card-icon,
+    .skeleton-card-title,
+    .skeleton-card-value,
+    .skeleton-card-label,
+    .skeleton-cell {
+        animation: none;
+    }
+    
+    .skeleton-card::before,
+    .skeleton-table::before {
+        display: none;
+    }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.skeleton-hidden {
+    display: none !important;
+}
+
+.skeleton-visible {
+    display: block !important;
+}
+
+.skeleton-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.skeleton-fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+
