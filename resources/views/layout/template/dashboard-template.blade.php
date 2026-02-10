@@ -144,8 +144,29 @@
 /* Mobile: 2 columns */
 @media (max-width: 767px) {
     .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem;
+    }
+    
+    .card {
+        padding: 1rem;
+        min-height: 120px;
+    }
+
+    .card-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .card-description {
+        display: none; /* Hide descriptions on mobile to keep grid compact */
     }
     
     .welcome-content {
@@ -163,28 +184,19 @@
     .welcome-title {
         font-size: 1.5rem;
     }
-    
-    .welcome-subtitle {
-        font-size: 1rem;
+}
+
+/* Extra Small Mobile Adjustment */
+@media (max-width: 375px) {
+    .dashboard-grid {
+        gap: 0.5rem;
     }
     
-    .welcome-message {
-        font-size: 0.9rem;
+    .card {
+        padding: 0.75rem;
     }
 }
 
-/* Small Mobile: 2 columns with smaller cards */
-@media (max-width: 480px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-    
-    .welcome-section {
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-}
 
 /* Role Information Section */
 .role-info-section {
